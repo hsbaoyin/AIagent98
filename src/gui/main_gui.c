@@ -42,6 +42,7 @@
 #include "../../third_party/cjson/cJSON.h"
 
 #include <richedit.h>
+#include <ole2.h>
 
 #ifndef EM_EXLIMITTEXT
 #define EM_EXLIMITTEXT (WM_USER + 37)
@@ -175,6 +176,7 @@ typedef struct {
 
     int rich;               /* 0 = EDIT, 1 = RichEdit 1.0, 2 = RichEdit 2.0 */
     HINSTANCE rich_dll;
+    int emoji_pics;         /* transcript keeps inline emoji pictures */
     char mono_face[LF_FACESIZE];
     BYTE mono_charset;
     int line_h;             /* transcript line height in pixels */
@@ -493,6 +495,122 @@ static void transcript_scroll_after_append(App *app)
     }
 }
 
+/* Does s[from..len) continue with a ":shortcode:" the pack knows?  The
+ * transcript turns those into the pack's artwork, so this scan has to agree
+ * with a98_emoji_fold() about what a token looks like. */
+static int emoji_token_at(const char *s, size_t len, size_t from, size_t *a,
+                          size_t *b, const A98EmojiEntry **out)
+{
+    size_t i;
+
+    for (i = from; i < len; i++) {
+        size_t j;
+        size_t n;
+        char name[A98_EMOJI_MAX_TOKEN + 1];
+        const A98EmojiEntry *e;
+
+        if (s[i] != ':') {
+            continue;
+        }
+        j = i + 1;
+        while (j < len && j - i - 1 < A98_EMOJI_MAX_TOKEN) {
+            char c = s[j];
+
+            if (c == '_' || c == '-' || c == '+' ||
+                (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9')) {
+                j++;
+                continue;
+            }
+            break;
+        }
+        n = j - i - 1;
+        if (n == 0 || j >= len || s[j] != ':') {
+            continue;
+        }
+        memcpy(name, s + i + 1, n);
+        name[n] = '\0';
+        e = a98_emoji_by_shortcode(name);
+        if (e != NULL) {
+            *a = i;
+            *b = j + 1;
+            *out = e;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* One plain text run, at the end of the transcript, in the given format. */
+static void transcript_insert_run(App *app, const char *text, COLORREF color,
+                                  int bold)
+{
+    CHARRANGE cr;
+    LONG start;
+    LONG end;
+
+    /* Move to the end.  Whether the control collapses the selection or
+     * selects everything, cpMax is the end of the text. */
+    SendMessageA(app->transcript, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+    SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
+    cr.cpMin = cr.cpMax;
+    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
+    start = cr.cpMax;
+
+    /* Give the insertion point the CJK-capable face and charset before
+     * inserting.  RichEdit 2.0 on Windows 9x otherwise lets the first
+     * character of a DBCS run keep the previous run's ANSI charset, so GDI
+     * substitutes a font that has no Chinese glyphs and only that first
+     * character comes out as a box. */
+    transcript_apply_format(app, start, start, color, bold, 0);
+
+    SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE,
+                 (LPARAM)text);
+    SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
+    end = cr.cpMax;
+
+    transcript_apply_format(app, start, end, color, bold, 0);
+
+    cr.cpMin = end;
+    cr.cpMax = end;
+    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
+}
+
+/* Append folded text, drawing every ":shortcode:" the pack knows as its
+ * picture (RichEdit 2.0 only).  Without artwork, or when the control refuses
+ * the picture, the shortcode stays as text, so nothing is ever lost. */
+static void transcript_insert_folded(App *app, char *acp, COLORREF color,
+                                     int bold)
+{
+    size_t len = strlen(acp);
+    size_t i = 0;
+
+    while (i < len) {
+        size_t a = 0;
+        size_t b = 0;
+        const A98EmojiEntry *e = NULL;
+        char keep;
+
+        if (!app->emoji_pics || !emoji_token_at(acp, len, i, &a, &b, &e)) {
+            transcript_insert_run(app, acp + i, color, bold);
+            return;
+        }
+        if (a > i) {
+            keep = acp[a];
+            acp[a] = '\0';
+            transcript_insert_run(app, acp + i, color, bold);
+            acp[a] = keep;
+        }
+        if (!a98_emoji_insert_picture(app->transcript, app->exe_dir, e)) {
+            keep = acp[b];
+            acp[b] = '\0';
+            transcript_insert_run(app, acp + a, color, bold);
+            acp[b] = keep;
+        }
+        i = b;
+    }
+}
+
 /* Append UTF-8 text, normalising LF to CRLF, and give the inserted range a
  * character format.  On plain EDIT controls the text is appended uncoloured. */
 static void transcript_append_colored_bg(App *app, const char *utf8,
@@ -502,8 +620,6 @@ static void transcript_append_colored_bg(App *app, const char *utf8,
     Str s;
     size_t i;
     char *acp;
-    LONG start;
-    LONG end;
 
     if (app == NULL || app->transcript == NULL || utf8 == NULL) {
         return;
@@ -543,35 +659,8 @@ static void transcript_append_colored_bg(App *app, const char *utf8,
         return;
     }
 
-    {
-        CHARRANGE cr;
-        /* Move to the end.  Whether the control collapses the selection or
-         * selects everything, cpMax is the end of the text. */
-        SendMessageA(app->transcript, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
-        SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
-        cr.cpMin = cr.cpMax;
-        SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
-        start = cr.cpMax;
-
-        /* Give the insertion point the CJK-capable face and charset before
-         * inserting.  RichEdit 2.0 on Windows 9x otherwise lets the first
-         * character of a DBCS run keep the previous run's ANSI charset, so
-         * GDI substitutes a font that has no Chinese glyphs and only that
-         * first character comes out as a box. */
-        transcript_apply_format(app, start, start, color, bold, 0);
-
-        SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE,
-                     (LPARAM)acp);
-        SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
-        end = cr.cpMax;
-
-        transcript_apply_format(app, start, end, color, bold, 0);
-
-        cr.cpMin = end;
-        cr.cpMax = end;
-        SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
-        transcript_scroll_after_append(app);
-    }
+    transcript_insert_folded(app, acp, color, bold);
+    transcript_scroll_after_append(app);
     a98_free(acp);
 }
 
@@ -2997,6 +3086,9 @@ static void create_controls(App *app, HWND hwnd)
         SendMessageA(app->transcript, EM_EXLIMITTEXT, 0, (LPARAM)TRANSCRIPT_LIMIT);
         SendMessageA(app->transcript, EM_SETBKGNDCOLOR, 0,
                      (LPARAM)GetSysColor(COLOR_WINDOW));
+        /* RichEdit needs an OLE callback before it will keep an inline
+         * picture; without it the emoji stay ":shortcode:" text. */
+        app->emoji_pics = a98_emoji_ole_attach(app->transcript);
     } else {
         /* EM_SETLIMITTEXT takes the limit in wParam (0 = default ~32 KiB,
          * which truncated long conversations on machines without RichEdit). */
@@ -3510,6 +3602,9 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
 
     memset(app, 0, sizeof(*app));
     app->hinst = hinst;
+    /* RichEdit stores an inline emoji picture as an OLE object, so the UI
+     * thread has to have OLE up before the transcript exists. */
+    OleInitialize(NULL);
 
     /* One instance at a time: two processes would race the INI writes and
      * the session auto-save.  A second launch just raises the first one. */
@@ -3693,6 +3788,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (app->rich_dll != NULL) {
         FreeLibrary(app->rich_dll);
     }
+    OleUninitialize();
     if (app->single_mutex != NULL) {
         /* Releases the named mutex so a new instance can start right away. */
         CloseHandle(app->single_mutex);

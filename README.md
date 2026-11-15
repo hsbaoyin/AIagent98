@@ -295,8 +295,11 @@ Windows 9x has no color emoji font, and the local ANSI code page cannot hold an
 emoji code point, so an emoji pushed straight into a RichEdit control arrived as
 a `?`. AIagent98 folds it instead:
 
-- the transcript shows `😀` as `:grinning_face:`; an emoji the pack does not
-  carry shows as `[U+1FAF9]`, which still beats a box
+- the transcript draws `😀` as its 16x16 picture from the pack, streamed into
+  the control as a RichEdit object; an emoji the pack does not carry shows as
+  `[U+1FAF9]`, which still beats a box
+- without the artwork, or on a machine that only has RichEdit 1.0 (no
+  `riched20.dll`), the same text falls back to `:grinning_face:`
 - the reverse happens on send: a `:shortcode:` from the picker (or typed by
   hand) leaves the machine as the real emoji, so the model sees the character
 - **Emoji** button or **Tools -> Insert emoji...** (`Ctrl+J`) opens the picker:
@@ -326,6 +329,15 @@ them). `src/gui/emoji_table.h` is generated from
 `assets/emoji/mapping/emoji.csv` by `tools\gen_emoji_table.ps1`. Artwork
 derives from Noto Color Emoji (SIL OFL 1.1): keep `LICENSE-NOTO.txt` beside the
 BMPs.
+
+An inline picture is an OLE object as far as RichEdit is concerned, so the GUI
+calls `OleInitialize` before creating the transcript and hands it an
+`IRichEditOleCallback` whose `GetNewStorage` returns an in-memory docfile
+(`src/gui/emoji_ui.c`). Without that callback RichEdit parses the RTF `\pict`
+group and throws it away without an error - the reason the transcript used to
+be text only. Each picture is a bare (non-placeable) metafile recorded at 16 px
+from the 24 px art, so the icon fits the 9pt line; `d7cdc69a`-prefixed Aldus
+metafiles are rejected.
 
 #### Agent loop and loop guard
 
@@ -521,7 +533,10 @@ It checks the shortcode table and the fold/expand round trip, then the asset
 search against the tracked artwork (it resolves `assets\emoji\bmp\24`, that
 folder holds exactly one BMP per table entry, and the BMP for U+1F600 loads as
 24x24), the release `emoji\bmp\24` layout via a fixture under `build\`, the
-no-artwork degradation path, and - without ever showing a window - that
+no-artwork degradation path, the inline picture path (the RTF is a bare
+`\wmetafile8` at 16 px with no Aldus prefix, and a RichEdit 2.0 control given
+the OLE callback really keeps the `\pict` group while replacing the
+`:shortcode:` it was streamed over), and - without ever showing a window - that
 `IDD_EMOJI` is created, loads 1219 icons and lists 1219 rows. Run it from the
 repository root; the expected last line is `all emoji tests passed`.
 
@@ -800,8 +815,10 @@ model=llama3.1
 Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位，直接塞进
 RichEdit 只会变成 `?`。AIagent98 的做法是先折叠、发送时再展开：
 
-- 对话区把 `😀` 显示成 `:grinning_face:`，包里没有的 emoji 显示成
-  `[U+1FAF9]`，至少不是方块或问号
+- 对话区把 `😀` 画成素材里那张 16×16 的图标（以 RichEdit 对象流进去），
+  包里没有的 emoji 显示成 `[U+1FAF9]`，至少不是方块或问号
+- 素材缺失时，或机器上只有 RichEdit 1.0（没有 `riched20.dll`）时，同一段文本
+  退回显示 `:grinning_face:`
 - 发送时反过来：从面板选中（或手打）的 `:shortcode:` 会还原成真正的 emoji
   发给模型
 - **Emoji** 按钮或 **Tools -> Insert emoji...**（`Ctrl+J`）打开面板：过滤框 +
@@ -825,6 +842,13 @@ BMP、72 px PNG，约 11 MiB）继续由 `.gitignore` 挡住，所以 clone 下�
 列表视图控件，Win95 需要 IE3 以上的 comctl32，98/Me 自带。`src/gui/emoji_table.h` 由 `tools\gen_emoji_table.ps1`
 从 `assets/emoji/mapping/emoji.csv` 生成。图标来自 Noto Color Emoji（SIL OFL 1.1），
 请把 `LICENSE-NOTO.txt` 和 BMP 一起保留。
+
+内联图标在 RichEdit 眼里是 OLE 对象，所以 GUI 在创建对话区之前先调用
+`OleInitialize`，再给控件挂一个 `IRichEditOleCallback`，由 `GetNewStorage`
+返回内存中的 docfile（`src/gui/emoji_ui.c`）。没有这个回调时，RichEdit 会解析
+RTF 里的 `\pict` 组然后不报错地丢掉——这正是之前对话区只有文本的原因。每张图
+都是从 24 px 素材录制到 16 px 的裸（非 placeable）metafile，刚好塞进 9pt 的行；
+带 `d7cdc69a` Aldus 头的 metafile 会被拒绝。
 
 #### Agent 循环与死循环保护
 
@@ -998,7 +1022,9 @@ build\cmake\test_emoji.exe
 覆盖 shortcode 表和折叠/展开往返，再用仓库自带的素材断言定位结果（返回的目录必须是
 `assets\emoji\bmp\24`、其中 BMP 数正好等于表项数、U+1F600 的 BMP 用 LoadImage
 得到 24×24），检查 `build\` 下模拟的发布布局
-`emoji\bmp\24`、无素材时的降级路径，以及不显示任何窗口地证明 `IDD_EMOJI` 能
+`emoji\bmp\24`、无素材时的降级路径、内联图片这条路径（RTF 必须是 16 px 的裸
+`\wmetafile8`、不带 Aldus 头；挂上 OLE 回调的 RichEdit 2.0 控件确实会保留
+`\pict` 并替换掉被流过的 `:shortcode:`），以及不显示任何窗口地证明 `IDD_EMOJI` 能
 创建、加载 1219 个图标并列出 1219 行。在仓库根目录运行，最后一行应为
 `all emoji tests passed`。
 

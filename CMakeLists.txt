@@ -38,7 +38,9 @@ else()
     target_compile_options(agent98_core PRIVATE -w)
 endif()
 
-target_link_libraries(agent98_core PUBLIC ws2_32 advapi32 user32 gdi32 comdlg32)
+# ole32: RichEdit keeps an inline emoji picture as an OLE object, so the
+# transcript needs OLE up and an IRichEditOleCallback (see emoji_ui.c).
+target_link_libraries(agent98_core PUBLIC ws2_32 advapi32 user32 gdi32 comdlg32 ole32)
 
 add_executable(a98 src/main.c)
 target_link_libraries(a98 PRIVATE agent98_core)

@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Emoji support: the transcript now draws each emoji from the model as the
+  pack's 16x16 picture instead of leaving `:shortcode:` text on screen. The
+  pictures are RichEdit objects, so the GUI calls `OleInitialize` and installs
+  an `IRichEditOleCallback` whose `GetNewStorage` hands back an in-memory
+  docfile - without it RichEdit parses an RTF `\pict` group and discards it
+  silently. Each icon is a bare (non-placeable) metafile recorded at 16 px from
+  the 24 px art; with no artwork, or with only RichEdit 1.0, the transcript
+  falls back to `:shortcode:` text. `test_emoji` covers the RTF form and the
+  control actually keeping the picture.
 - Emoji support: the transcript folds emoji from the model into `:shortcode:`
   (`😀` -> `:grinning_face:`, unknown ones -> `[U+1FAF9]`) and the send path
   expands shortcodes back to the real character, so Win9x (no color emoji font,

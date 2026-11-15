@@ -129,6 +129,8 @@ A: 先确认程序是从硬盘运行的，然后把 AGENT98.LOG 的最后几十行发出来。
 Emoji
 -----
 The Emoji button and Tools > Insert emoji... (Ctrl+J) open a picker
-with the 1219 pictures in emoji\bmp\24. In the chat emoji appear as
-:shortcode: (Windows 9x has no color emoji font); a shortcode you pick or
-type is sent to the model as the real character.
+with the 1219 pictures in emoji\bmp\24. In the chat an emoji is drawn as
+its 16x16 picture from that folder, streamed into the transcript as a
+RichEdit object; a shortcode you pick or type is sent to the model as the
+real character. Without the pack, or with RichEdit 1.0 only, the transcript
+shows the :shortcode: text instead.

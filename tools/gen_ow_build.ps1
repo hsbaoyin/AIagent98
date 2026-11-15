@@ -132,6 +132,8 @@ function Write-LinkFile($path, $name, $subsystem, $list, $resource) {
     $link.Add('library advapi32.lib')
     $link.Add('library user32.lib')
     $link.Add('library gdi32.lib')
+    # RichEdit stores inline emoji pictures as OLE objects (emoji_ui.c).
+    $link.Add('library ole32.lib')
     $link.Add('library comdlg32.lib')
     if ($subsystem -eq 'nt_win') {
         # Status bar common control and ShellExecuteA for "Open workspace".

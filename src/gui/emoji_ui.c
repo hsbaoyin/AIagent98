@@ -12,6 +12,8 @@
 #include "resource.h"
 
 #include <commctrl.h>
+#include <ole2.h>
+#include <richedit.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -311,4 +313,368 @@ int a98_emoji_dialog_probe(HINSTANCE hinst, const char *exe_dir, int *images,
     g_list = NULL;
     g_image_count = 0;
     return 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Inline pictures in the transcript                                   */
+/* ------------------------------------------------------------------ */
+/*
+ * RichEdit builds an object out of an RTF \pict group and asks the host where
+ * to keep it through IRichEditOleCallback::GetNewStorage.  With no callback
+ * it parses the group and throws it away without an error - which is why the
+ * transcript used to be text only.  An in-memory docfile per picture is all
+ * it needs.
+ *
+ * The picture itself is a bare Windows metafile: a METAHEADER followed by
+ * one SetDIBitsToDevice record, no Aldus "placeable" prefix (WordPad writes
+ * the bare form too; RichEdit rejects a prefixed one).  It is recorded at
+ * A98_EMOJI_INLINE_PX rather than the pack's 24, so the icon fits the 9pt
+ * transcript line instead of doubling its height.
+ */
+
+#define A98_EMOJI_INLINE_PX    16
+#define A98_EMOJI_TWIPS_PER_PX 15
+
+#if defined(_WIN64)
+typedef DWORD_PTR A98Cookie;
+#else
+typedef DWORD A98Cookie;
+#endif
+
+/* The control reads the RTF through this; one picture is a few kilobytes. */
+typedef struct {
+    const char *p;
+    size_t len;
+    size_t pos;
+} PicStream;
+
+static DWORD CALLBACK pic_stream_cb(A98Cookie cookie, LPBYTE buf, LONG cb,
+                                    LONG *pcb)
+{
+    PicStream *s = (PicStream *)cookie;
+    size_t left = s->len - s->pos;
+    size_t n = left;
+
+    if (cb > 0 && (size_t)cb < left) {
+        n = (size_t)cb;
+    }
+    memcpy(buf, s->p + s->pos, n);
+    s->pos += n;
+    *pcb = (LONG)n;
+    return 0;
+}
+
+/* ---- IRichEditOleCallback ---------------------------------------- */
+/* Only GetNewStorage matters here; the rest is the minimum a C vtable has
+ * to carry so RichEdit can call through it. */
+
+typedef struct PicOle PicOle;
+
+typedef struct {
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(PicOle *, const IID *const,
+                                                void **);
+    ULONG (STDMETHODCALLTYPE *AddRef)(PicOle *);
+    ULONG (STDMETHODCALLTYPE *Release)(PicOle *);
+    HRESULT (STDMETHODCALLTYPE *GetNewStorage)(PicOle *, IStorage **);
+    HRESULT (STDMETHODCALLTYPE *GetInPlaceContext)(PicOle *, void **, void **,
+                                                   void **);
+    HRESULT (STDMETHODCALLTYPE *ShowContainerUI)(PicOle *, BOOL);
+    HRESULT (STDMETHODCALLTYPE *QueryAcceptData)(PicOle *, IDataObject *,
+                                                 CLIPFORMAT *, DWORD, BOOL,
+                                                 void *);
+    HRESULT (STDMETHODCALLTYPE *DeleteObject)(PicOle *, IUnknown *);
+    HRESULT (STDMETHODCALLTYPE *GetClipboardData)(PicOle *, void **,
+                                                  CLIPFORMAT, void **);
+    HRESULT (STDMETHODCALLTYPE *GetDragDropEffect)(PicOle *, BOOL, DWORD,
+                                                   DWORD *);
+    HRESULT (STDMETHODCALLTYPE *GetContextMenu)(PicOle *, WORD, IUnknown *,
+                                                void **);
+} PicOleVtbl;
+
+struct PicOle {
+    const PicOleVtbl *vtbl;
+    long refs;
+};
+
+static HRESULT STDMETHODCALLTYPE pic_qi(PicOle *me, const IID *const iid,
+                                        void **out)
+{
+    (void)iid;
+    *out = me;
+    me->refs++;
+    return S_OK;
+}
+
+static ULONG STDMETHODCALLTYPE pic_addref(PicOle *me)
+{
+    return (ULONG)++me->refs;
+}
+
+static ULONG STDMETHODCALLTYPE pic_release(PicOle *me)
+{
+    return (ULONG)--me->refs;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_new_storage(PicOle *me, IStorage **out)
+{
+    (void)me;
+    /* NULL name: a docfile that lives in memory, which is exactly what an
+     * inline icon needs. */
+    return StgCreateDocfile(NULL,
+                            STGM_READWRITE | STGM_SHARE_EXCLUSIVE |
+                                STGM_CREATE | STGM_DIRECT,
+                            0, out);
+}
+
+static HRESULT STDMETHODCALLTYPE pic_inplace(PicOle *me, void **a, void **b,
+                                             void **c)
+{
+    (void)me;
+    (void)a;
+    (void)b;
+    (void)c;
+    return E_NOTIMPL;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_show(PicOle *me, BOOL show)
+{
+    (void)me;
+    (void)show;
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_accept(PicOle *me, IDataObject *data,
+                                            CLIPFORMAT *cf, DWORD effect,
+                                            BOOL accept, void *src)
+{
+    (void)me;
+    (void)data;
+    (void)cf;
+    (void)effect;
+    (void)accept;
+    (void)src;
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_delete(PicOle *me, IUnknown *obj)
+{
+    (void)me;
+    (void)obj;
+    return E_NOTIMPL;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_clipboard(PicOle *me, void **data,
+                                               CLIPFORMAT cf, void **res)
+{
+    (void)me;
+    (void)data;
+    (void)cf;
+    (void)res;
+    return E_NOTIMPL;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_dnd(PicOle *me, BOOL from, DWORD keys,
+                                         DWORD *effect)
+{
+    (void)me;
+    (void)from;
+    (void)keys;
+    *effect = 0;
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE pic_menu(PicOle *me, WORD sel,
+                                          IUnknown *obj, void **hmenu)
+{
+    (void)me;
+    (void)sel;
+    (void)obj;
+    (void)hmenu;
+    return E_NOTIMPL;
+}
+
+static const PicOleVtbl g_pic_vtbl = {
+    pic_qi,     pic_addref,  pic_release, pic_new_storage, pic_inplace,
+    pic_show,   pic_accept,  pic_delete,  pic_clipboard,   pic_dnd,
+    pic_menu,
+};
+
+/* One shared instance; the control only borrows it. */
+static PicOle g_pic_ole = { &g_pic_vtbl, 1 };
+
+int a98_emoji_ole_attach(HWND edit)
+{
+    if (edit == NULL) {
+        return 0;
+    }
+    return SendMessageA(edit, EM_SETOLECALLBACK, 0,
+                        (LPARAM)&g_pic_ole) ? 1 : 0;
+}
+
+/* ---- picture build ----------------------------------------------- */
+
+/* Resolved once per EXE directory: the transcript asks for one picture per
+ * emoji, and the pack search walks five directories per base. */
+static char g_pic_dir[A98_MAX_PATH];
+static char g_pic_base[A98_MAX_PATH];
+static int g_pic_state; /* 0 = unknown, 1 = found, -1 = missing */
+
+static const char *pic_dir(const char *exe_dir)
+{
+    const char *base = exe_dir != NULL ? exe_dir : "";
+
+    if (g_pic_state != 0 && strcmp(base, g_pic_base) == 0) {
+        return g_pic_state > 0 ? g_pic_dir : NULL;
+    }
+    strncpy(g_pic_base, base, sizeof(g_pic_base) - 1);
+    g_pic_base[sizeof(g_pic_base) - 1] = '\0';
+    g_pic_dir[0] = '\0';
+    g_pic_state = a98_emoji_asset_dir(exe_dir, g_pic_dir,
+                                      sizeof(g_pic_dir))
+                      ? 1
+                      : -1;
+    return g_pic_state > 0 ? g_pic_dir : NULL;
+}
+
+/* Hex form of a one-record metafile that draws the BMP at the inline size. */
+static char *pic_metafile_hex(const char *path)
+{
+    static const char digits[] = "0123456789abcdef";
+    HBITMAP bmp;
+    DIBSECTION ds;
+    BITMAPINFO bmi;
+    HDC mf;
+    HMETAFILE hmf;
+    HGLOBAL h;
+    UINT size;
+    const unsigned char *bits;
+    char *hex;
+    size_t i;
+    int w;
+    int hgt;
+
+    bmp = (HBITMAP)LoadImageA(NULL, path, IMAGE_BITMAP, 0, 0,
+                              LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+    if (bmp == NULL) {
+        return NULL;
+    }
+    memset(&ds, 0, sizeof(ds));
+    if (!GetObjectA(bmp, sizeof(ds), &ds) || ds.dsBm.bmBits == NULL) {
+        DeleteObject(bmp);
+        return NULL;
+    }
+    w = (int)ds.dsBmih.biWidth;
+    hgt = (int)ds.dsBmih.biHeight;
+    if (hgt < 0) {
+        hgt = -hgt;
+    }
+    if (w <= 0 || hgt <= 0) {
+        DeleteObject(bmp);
+        return NULL;
+    }
+    memset(&bmi, 0, sizeof(bmi));
+    bmi.bmiHeader = ds.dsBmih;
+    bmi.bmiHeader.biHeight = hgt;
+
+    mf = CreateMetaFileA(NULL);
+    if (mf == NULL) {
+        DeleteObject(bmp);
+        return NULL;
+    }
+    SetDIBitsToDevice(mf, 0, 0, A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX, 0,
+                      0, 0, hgt, ds.dsBm.bmBits, &bmi, DIB_RGB_COLORS);
+    hmf = CloseMetaFile(mf);
+    DeleteObject(bmp);
+    if (hmf == NULL) {
+        return NULL;
+    }
+
+    size = GetMetaFileBitsEx(hmf, 0, NULL);
+    if (size == 0) {
+        DeleteMetaFile(hmf);
+        return NULL;
+    }
+    h = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, size);
+    if (h == NULL) {
+        DeleteMetaFile(hmf);
+        return NULL;
+    }
+    bits = (const unsigned char *)GlobalLock(h);
+    GetMetaFileBitsEx(hmf, size, (LPVOID)bits);
+    DeleteMetaFile(hmf);
+
+    hex = (char *)a98_alloc((size_t)size * 2 + 1);
+    if (hex == NULL) {
+        GlobalUnlock(h);
+        GlobalFree(h);
+        return NULL;
+    }
+    for (i = 0; i < size; i++) {
+        hex[i * 2] = digits[bits[i] >> 4];
+        hex[i * 2 + 1] = digits[bits[i] & 15];
+    }
+    hex[(size_t)size * 2] = '\0';
+    GlobalUnlock(h);
+    GlobalFree(h);
+    return hex;
+}
+
+char *a98_emoji_picture_rtf(const char *exe_dir, const A98EmojiEntry *e)
+{
+    const char *dir;
+    char path[A98_MAX_PATH];
+    char head[160];
+    char *hex;
+    char *out;
+    size_t cap;
+
+    dir = pic_dir(exe_dir);
+    if (dir == NULL || e == NULL) {
+        return NULL;
+    }
+    if (a98_emoji_asset_file(dir, e, path, sizeof(path)) != 0) {
+        return NULL;
+    }
+    hex = pic_metafile_hex(path);
+    if (hex == NULL) {
+        return NULL;
+    }
+    snprintf(head, sizeof(head),
+             "{\\rtf1\\ansi\\deff0{\\pict\\wmetafile8"
+             "\\picw%d\\pich%d\\picwgoal%d\\pichgoal%d ",
+             A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX,
+             A98_EMOJI_INLINE_PX * A98_EMOJI_TWIPS_PER_PX,
+             A98_EMOJI_INLINE_PX * A98_EMOJI_TWIPS_PER_PX);
+    cap = strlen(head) + strlen(hex) + 3;
+    out = (char *)a98_alloc(cap);
+    if (out != NULL) {
+        snprintf(out, cap, "%s%s}}", head, hex);
+    }
+    a98_free(hex);
+    return out;
+}
+
+int a98_emoji_insert_picture(HWND edit, const char *exe_dir,
+                             const A98EmojiEntry *e)
+{
+    char *rtf;
+    EDITSTREAM es;
+    PicStream in;
+
+    if (edit == NULL) {
+        return 0;
+    }
+    rtf = a98_emoji_picture_rtf(exe_dir, e);
+    if (rtf == NULL) {
+        return 0;
+    }
+    memset(&in, 0, sizeof(in));
+    in.p = rtf;
+    in.len = strlen(rtf);
+    memset(&es, 0, sizeof(es));
+    es.dwCookie = (A98Cookie)(size_t)&in;
+    es.pfnCallback = (EDITSTREAMCALLBACK)pic_stream_cb;
+    SendMessageA(edit, EM_STREAMIN, SF_RTF | SFF_SELECTION, (LPARAM)&es);
+    a98_free(rtf);
+    return es.dwError == 0 ? 1 : 0;
 }

@@ -23,6 +23,8 @@
 #include <string.h>
 #include <windows.h>
 #include <commctrl.h>
+#include <ole2.h>
+#include <richedit.h>
 
 static int failures = 0;
 
@@ -365,6 +367,110 @@ static void test_dialog_probe(const char *exe_dir, const char *asset_dir)
     }
 }
 
+/* The transcript shows emoji as the pack's artwork.  Two things have to hold:
+ * the RTF we build is the bare-metafile form RichEdit accepts (a prefixed
+ * Aldus metafile is silently dropped), and the control keeps the \pict group
+ * once it has our OLE callback - without one RichEdit throws the picture away
+ * without an error, which is exactly the bug this covers. */
+typedef struct {
+    char *p;
+    size_t cap;
+    size_t pos;
+} TestOut;
+
+static DWORD CALLBACK test_out_cb(DWORD_PTR cookie, LPBYTE buf, LONG cb,
+                                  LONG *pcb)
+{
+    TestOut *s = (TestOut *)cookie;
+    size_t room = s->cap - s->pos;
+    size_t n = (cb > 0 && (size_t)cb < room) ? (size_t)cb : room;
+
+    memcpy(s->p + s->pos, buf, n);
+    s->pos += n;
+    *pcb = (LONG)n;
+    return n == (size_t)cb ? 0 : 1;
+}
+
+static void test_transcript_pictures(const char *exe_dir)
+{
+    static char out[8192];
+    const A98EmojiEntry *e = a98_emoji_by_codepoint(0x1F600UL);
+    const char *token = ":grinning_face:";
+    char *rtf;
+    HWND wnd;
+    EDITSTREAM es;
+    TestOut so;
+
+    InitCommonControls();
+    if (e == NULL) {
+        printf("SKIP: transcript picture test (no U+1F600 in the pack)\n");
+        return;
+    }
+
+    rtf = a98_emoji_picture_rtf(exe_dir, e);
+    ok(rtf != NULL, "a picture RTF was built for U+1F600");
+    if (rtf == NULL) {
+        return;
+    }
+    printf("  rtf    : %d chars\n", (int)strlen(rtf));
+    ok(strncmp(rtf, "{\\rtf1", 6) == 0, "the picture is a complete RTF body");
+    ok(strstr(rtf, "\\wmetafile8") != NULL,
+       "the picture is a \\wmetafile8 (what WordPad also writes)");
+    ok(strstr(rtf, "\\picw16\\pich16") != NULL,
+       "the picture is laid out at the 16 px inline size");
+    ok(strstr(rtf, "d7cdc69a") == NULL,
+       "the metafile carries no Aldus prefix RichEdit would reject");
+    a98_free(rtf);
+
+    if (LoadLibraryA("riched20.dll") == NULL) {
+        printf("SKIP: no RichEdit 2.0 here, the transcript falls back to "
+               "text\n");
+        return;
+    }
+    OleInitialize(NULL);
+    wnd = CreateWindowExA(0, "RichEdit20A", "",
+                          WS_POPUP | ES_MULTILINE | ES_READONLY,
+                          0, 0, 400, 200, NULL, NULL,
+                          GetModuleHandleA(NULL), NULL);
+    if (wnd == NULL) {
+        printf("SKIP: RichEdit20A could not be created (error %lu)\n",
+               (unsigned long)GetLastError());
+        return;
+    }
+
+    ok(a98_emoji_ole_attach(wnd) == 1,
+       "the transcript accepts the OLE storage callback");
+
+    SetWindowTextA(wnd, "hi :grinning_face: yo");
+    {
+        CHARRANGE cr;
+
+        cr.cpMin = 3;
+        cr.cpMax = 3 + (LONG)strlen(token);
+        SendMessageA(wnd, EM_EXSETSEL, 0, (LPARAM)&cr);
+    }
+    ok(a98_emoji_insert_picture(wnd, exe_dir, e) == 1,
+       "the picture streams into the selected shortcode");
+
+    memset(&so, 0, sizeof(so));
+    so.p = out;
+    so.cap = sizeof(out) - 1;
+    memset(&es, 0, sizeof(es));
+    es.dwCookie = (DWORD_PTR)&so;
+    es.pfnCallback = test_out_cb;
+    SendMessageA(wnd, EM_STREAMOUT, SF_RTF, (LPARAM)&es);
+    out[so.pos] = '\0';
+    ok(strstr(out, "\\pict") != NULL,
+       "RichEdit kept the picture instead of dropping it");
+    ok(strstr(out, token) == NULL,
+       "the shortcode was replaced, not duplicated");
+    ok(strstr(out, "hi ") != NULL && strstr(out, " yo") != NULL,
+       "the text around the picture survived");
+
+    DestroyWindow(wnd);
+    OleUninitialize();
+}
+
 int main(void)
 {
     char exe_dir[A98_MAX_PATH];
@@ -381,6 +487,8 @@ int main(void)
     printf("\n-- dialog\n");
     exe_here(exe_dir, sizeof(exe_dir));
     test_dialog_probe(exe_dir, pack_dir);
+    printf("\n-- transcript pictures\n");
+    test_transcript_pictures(exe_dir);
 
     if (failures != 0) {
         printf("\n%d emoji test(s) failed\n", failures);

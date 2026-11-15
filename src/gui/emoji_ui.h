@@ -12,6 +12,7 @@
 #include <windows.h>
 
 #include "base.h"
+#include "emoji.h"
 
 /* Show the modal picker.  On OK, writes ":shortcode:" into out and returns
  * 1; returns 0 when cancelled.  The picker still works without artwork
@@ -27,5 +28,29 @@ int a98_emoji_pick(HINSTANCE hinst, HWND owner, const char *exe_dir,
  * (no window station, or a broken template) - check GetLastError then. */
 int a98_emoji_dialog_probe(HINSTANCE hinst, const char *exe_dir, int *images,
                            int *items, char *dir, size_t dir_cap);
+
+/* ------------------------------------------------------------------ */
+/* Inline pictures in the transcript                                   */
+/* ------------------------------------------------------------------ */
+
+/* RichEdit keeps an RTF picture only when the host can supply storage for
+ * the object it becomes; without IRichEditOleCallback it parses the \pict
+ * group and silently drops it.  Call this once on the transcript after
+ * creating it (needs OleInitialize on the thread).  Returns 1 when the
+ * control accepted the callback. */
+int a98_emoji_ole_attach(HWND edit);
+
+/* The RTF group that draws one pack entry: a bare (non-placeable) metafile
+ * recorded at A98_EMOJI_INLINE_PX, so the icon sits inside the 9pt
+ * transcript line.  Returns a malloc'ed string (a98_free) or NULL when the
+ * pack or the BMP is missing. */
+char *a98_emoji_picture_rtf(const char *exe_dir, const A98EmojiEntry *e);
+
+/* Replace the control's current selection with that picture.  The caller
+ * selects the ":shortcode:" range (or a collapsed caret) first.  Returns 1
+ * on success, 0 when there is no artwork or RichEdit refused it - the
+ * caller then falls back to the shortcode text. */
+int a98_emoji_insert_picture(HWND edit, const char *exe_dir,
+                             const A98EmojiEntry *e);
 
 #endif /* A98_EMOJI_UI_H */

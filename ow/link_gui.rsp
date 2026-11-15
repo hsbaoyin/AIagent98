@@ -311,3 +311,4 @@ library gdi32.lib
 library comdlg32.lib
 library comctl32.lib
 library shell32.lib
+library ole32.lib

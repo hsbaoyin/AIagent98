@@ -16,11 +16,6 @@
 
 #include "emoji_table.h"
 
-/* Longest ":shortcode:" we accept while expanding; the pack's longest name
- * is well under this, and the bound keeps a stray colon from scanning the
- * rest of the message. */
-#define A98_EMOJI_MAX_TOKEN 72
-
 int a98_emoji_count(void)
 {
     return A98_EMOJI_PACK_COUNT;
