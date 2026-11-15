@@ -56,6 +56,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- Tool output that carried a CP_ACP path (`list_dir` echoes the resolved path
+  and the `FindFirstFileA` names) was put into the request body as raw GBK
+  bytes, so the API rejected the whole call with `HTTP 400 ... invalid unicode
+  code point`, and the transcript showed `????????` instead of the Chinese
+  folder name. Tool results are now repaired to valid UTF-8 before they reach
+  the transcript or the message list (`a98_utf8_sanitize`), and a session saved
+  before the fix is repaired again when it is loaded.
 - `rmdir_force` only refused the workspace root when `workspace=` was absolute
   and had no trailing separator. Both paths are normalised now, so a relative
   or trailing-slash workspace can no longer be deleted recursively.

@@ -15,6 +15,7 @@
 #include "core/config.h"
 #include "core/path.h"
 #include "core/str.h"
+#include "core/utf8.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -359,6 +360,72 @@ int main(void)
             } else {
                 printf("SKIP: 8.3 short-name escape (no short names here)\n");
             }
+        }
+    }
+
+    /* Everything the model receives has to be valid UTF-8: the API rejects
+     * the whole request body otherwise.  Tools hand back ACP paths (a CP936
+     * workspace name, FindFirstFileA results), so list_dir used to put GBK
+     * bytes into the body - "invalid unicode code point" - and the transcript
+     * showed "????????". */
+    {
+        static const char gbk_ws[] = "build\\host\\\xd0\xc2\xbd\xa8";
+        static const char utf8_ws[] = "\xe6\x96\xb0\xe5\xbb\xba";
+        char saved_ws[sizeof(a.workspace)];
+        char captured[2048];
+        char *fixed;
+        int rc;
+
+        strcpy(saved_ws, a.workspace);
+        a98_path_mkdirs(gbk_ws);
+        strcpy(a.workspace, gbk_ws);
+        rc = run_capture(&a, "list_dir", "{\"path\":\".\"}", captured,
+                         sizeof(captured));
+        strcpy(a.workspace, saved_ws);
+
+        if (rc != 0) {
+            printf("FAIL: list_dir on a CP_ACP workspace name failed\n");
+            failures++;
+        }
+        /* What the agent does before the message leaves the process. */
+        fixed = a98_utf8_sanitize(captured);
+        {
+            const char *text = fixed != NULL ? fixed : captured;
+
+            if (!a98_utf8_valid(text, strlen(text))) {
+                printf("FAIL: repaired tool output is still not UTF-8\n");
+                failures++;
+            } else if (strstr(text, utf8_ws) == NULL) {
+                printf("FAIL: the workspace name did not survive the repair\n");
+                failures++;
+            } else {
+                printf("PASS: ACP tool output is repaired to UTF-8\n");
+            }
+        }
+        a98_free(fixed);
+
+        /* Already valid text must come back untouched (NULL = nothing to do),
+         * so UTF-8 content next to ACP bytes is never double-converted. */
+        if (a98_utf8_sanitize("plain ascii \xe4\xb8\xad") != NULL) {
+            printf("FAIL: sanitize rewrote already valid UTF-8\n");
+            failures++;
+        } else {
+            printf("PASS: sanitize leaves valid UTF-8 alone\n");
+        }
+        {
+            /* One GBK character (D0 C2 = U+65B0) next to a real UTF-8 emoji:
+             * the ACP pair must not be mistaken for UTF-8 U+00BD. */
+            char *mixed = a98_utf8_sanitize("\xd0\xc2 ok \xf0\x9f\x98\x80");
+
+            if (mixed == NULL || !a98_utf8_valid(mixed, strlen(mixed)) ||
+                strstr(mixed, "\xe6\x96\xb0") == NULL ||
+                strstr(mixed, "\xf0\x9f\x98\x80") == NULL) {
+                printf("FAIL: mixed ACP/UTF-8 text was not repaired\n");
+                failures++;
+            } else {
+                printf("PASS: mixed ACP and UTF-8 text is repaired\n");
+            }
+            a98_free(mixed);
         }
     }
 

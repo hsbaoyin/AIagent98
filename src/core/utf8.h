@@ -28,6 +28,13 @@ char *a98_utf16_to_utf8(const unsigned short *w, size_t units);
 
 #ifdef _WIN32
 /* UTF-8 <-> local ANSI code page, for Win32 text APIs. */
+/* Repair text that is not valid UTF-8.  Every run of bytes that fails to
+ * decode is re-read as CP_ACP text and written back out as UTF-8; the rest of
+ * the string is copied through untouched, so already-UTF-8 content survives.
+ * Returns a malloc'ed string, or NULL when the input was already valid (there
+ * is nothing to fix). */
+char *a98_utf8_sanitize(const char *s);
+
 char *a98_utf8_to_acp(const char *s);
 char *a98_acp_to_utf8(const char *s);
 #endif

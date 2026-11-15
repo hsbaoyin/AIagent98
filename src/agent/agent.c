@@ -5,6 +5,7 @@
 
 #include "../core/log.h"
 #include "../core/path.h"
+#include "../core/utf8.h"
 #include "../../third_party/cjson/cJSON.h"
 
 #define MAX_TOOL_OUTPUT 16384
@@ -453,6 +454,20 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                     }
                 }
                 truncate_output(&out);
+                /* Tool text can carry local-code-page paths (list_dir echoes
+                 * the resolved ACP path and the FindFirstFileA names), and the
+                 * API rejects the whole request body when it is not valid
+                 * UTF-8: "invalid unicode code point".  Repair it once, before
+                 * it reaches the transcript or the message list. */
+                {
+                    char *fixed = a98_utf8_sanitize(str_cstr(&out));
+
+                    if (fixed != NULL) {
+                        str_clear(&out);
+                        str_append_cstr(&out, fixed);
+                        a98_free(fixed);
+                    }
+                }
                 emit(a, AGENT_EV_TOOL_RESULT, str_cstr(&out));
                 if (msglist_add_tool(&a->messages,
                                      c->id ? c->id : "",
@@ -638,6 +653,13 @@ int agent_load_session(Agent *a, const char *path, char *err, size_t errcap)
     cJSON_ArrayForEach(item, arr) {
         const char *role = json_string(item, "role");
         const char *content = json_string(item, "content");
+        /* A session saved before the tool output was repaired can still hold
+         * raw CP_ACP bytes; replaying it would fail the same way. */
+        char *content_fixed = a98_utf8_sanitize(content);
+
+        if (content_fixed != NULL) {
+            content = content_fixed;
+        }
         const char *tc_id = json_string(item, "tool_call_id");
         const char *name = json_string(item, "name");
         cJSON *tc = cJSON_GetObjectItemCaseSensitive(item, "tool_calls");
@@ -647,6 +669,7 @@ int agent_load_session(Agent *a, const char *path, char *err, size_t errcap)
             tc_text = cJSON_PrintUnformatted(tc);
         }
         if (role == NULL) {
+            a98_free(content_fixed);
             a98_free(tc_text);
             continue;
         }
@@ -660,6 +683,7 @@ int agent_load_session(Agent *a, const char *path, char *err, size_t errcap)
         } else if (strcmp(role, "system") == 0) {
             /* The system prompt lives in the config, not in history. */
         }
+        a98_free(content_fixed);
         a98_free(tc_text);
     }
     cJSON_Delete(root);

@@ -188,6 +188,68 @@ char *a98_utf16_to_utf8(const unsigned short *w, size_t units)
     return str_detach(&out);
 }
 
+char *a98_utf8_sanitize(const char *s)
+{
+    Str out;
+    size_t i;
+    size_t len;
+
+    if (s == NULL) {
+        return NULL;
+    }
+    len = strlen(s);
+    if (a98_utf8_valid(s, len)) {
+        return NULL;
+    }
+
+    str_init(&out);
+    i = 0;
+    while (i < len) {
+        int n = a98_utf8_decode(s + i, len - i, NULL);
+
+        if (n > 0) {
+            str_append(&out, s + i, (size_t)n);
+            i += (size_t)n;
+            continue;
+        }
+        /* Not UTF-8 here: Win32 handed us local-code-page text (a path from
+         * FindFirstFileA, a directory name typed in a 9x dialog).  Ask the
+         * code page how many bytes one of its characters takes rather than
+         * grouping failing bytes - a GBK pair's second byte can itself begin
+         * a valid UTF-8 sequence, so a byte-run scan splits the character
+         * apart. */
+        {
+            int nbytes = 1;
+            char *chunk;
+            char *utf8;
+
+#ifdef _WIN32
+            /* One character of the local code page: a DBCS lead byte takes
+             * its trail byte with it, everything else is a single byte.
+             * Bytes are grouped this way rather than by "what fails to decode
+             * as UTF-8", because a GBK pair's second byte can start a valid
+             * UTF-8 sequence (D0 C2 .. would split into '?' + U+00BD). */
+            if (i + 1 < len && IsDBCSLeadByteEx(CP_ACP, (BYTE)s[i])) {
+                nbytes = 2;
+            }
+#endif
+            chunk = a98_strndup(s + i, (size_t)nbytes);
+            utf8 = chunk != NULL ? a98_acp_to_utf8(chunk) : NULL;
+            if (utf8 != NULL && utf8[0] != '\0') {
+                str_append_cstr(&out, utf8);
+            } else {
+                /* Not even CP_ACP text: one placeholder keeps the rest of the
+                 * line aligned. */
+                str_append_char(&out, '?');
+            }
+            a98_free(utf8);
+            a98_free(chunk);
+            i += (size_t)nbytes;
+        }
+    }
+    return str_detach(&out);
+}
+
 #ifdef _WIN32
 char *a98_utf8_to_acp(const char *s)
 {
