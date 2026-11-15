@@ -1,5 +1,5 @@
 @echo off
-rem Build Agent98 with OpenWatcom for 32-bit Windows 9x/NT.
+rem Build AIagent98 with OpenWatcom for 32-bit Windows 9x/NT.
 setlocal
 cd /d "%~dp0"
 

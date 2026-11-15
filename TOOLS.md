@@ -1,4 +1,4 @@
-# Agent98 Tools Reference (31)
+# AIagent98 Tools Reference (31)
 
 ## Read / Search
 | Tool | Confirm | Notes |

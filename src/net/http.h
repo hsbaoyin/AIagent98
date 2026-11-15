@@ -1,5 +1,5 @@
 /*
- * Agent98 - minimal HTTP/1.1 client over NetConn.
+ * AIagent98 - minimal HTTP/1.1 client over NetConn.
  */
 #ifndef A98_HTTP_H
 #define A98_HTTP_H

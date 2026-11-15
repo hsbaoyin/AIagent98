@@ -1,5 +1,5 @@
 /*
- * Agent98 - minimal CLI for Windows 98 / modern Windows.
+ * AIagent98 - minimal CLI for Windows 98 / modern Windows.
  * Pure C, Win32 console.
  */
 
@@ -387,7 +387,7 @@ int main(int argc, char **argv)
     agent.cancel = &g_cancel;
 
     have_key = cfg.api_key[0] != '\0';
-    printf("Agent98 CLI\n");
+    printf("AIagent98 CLI\n");
     printf("Config: %s\n", ini_path);
     printf("Log: %s\n", log_path);
     printf("Workspace: %s\n", cfg.workspace);

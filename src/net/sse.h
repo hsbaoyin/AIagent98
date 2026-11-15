@@ -1,5 +1,5 @@
 /*
- * Agent98 - incremental Server-Sent Events parser.
+ * AIagent98 - incremental Server-Sent Events parser.
  */
 #ifndef A98_SSE_H
 #define A98_SSE_H

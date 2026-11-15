@@ -1,7 +1,7 @@
-Agent98 0.2.0 - Windows 9x 原生 AI 客户端
+AIagent98 0.2.0 - Windows 9x 原生 AI 客户端
 ==========================================
 
-Agent98 是一个运行在 Windows 95/98/Me 上的原生 32 位程序，直接通过
+AIagent98 是一个运行在 Windows 95/98/Me 上的原生 32 位程序，直接通过
 BearSSL 连接现代的 HTTPS LLM 服务（OpenAI、DeepSeek、Moonshot/Kimi、
 SiliconFlow、Ollama 等 OpenAI 兼容接口），不需要局域网中转机，也不需要
 第二台电脑。

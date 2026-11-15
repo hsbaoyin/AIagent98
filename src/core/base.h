@@ -1,5 +1,5 @@
 /*
- * Agent98 - base definitions and small helpers.
+ * AIagent98 - base definitions and small helpers.
  *
  * Target: Windows 95/98/ME (Win32), 32-bit, built with OpenWatcom.
  * Keep this header free of Windows types so it can be reused by host tools.
@@ -15,7 +15,7 @@
 #include <time.h>
 
 #define A98_VERSION "0.1.0"
-#define A98_NAME "Agent98"
+#define A98_NAME "AIagent98"
 
 /* Longest path we accept. Win9x MAX_PATH is 260. */
 #define A98_MAX_PATH 260

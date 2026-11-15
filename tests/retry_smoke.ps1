@@ -1,4 +1,4 @@
-# Retry smoke test for Agent98.
+# Retry smoke test for AIagent98.
 #
 # Starts tests\mock_openai.js and runs the CLI twice: once against a server
 # that answers HTTP 503 on the first request, once against a server that

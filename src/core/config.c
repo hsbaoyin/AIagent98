@@ -4,7 +4,7 @@
 #include <windows.h>
 
 #define DEFAULT_SYSTEM_PROMPT \
-    "You are Agent98, a helpful AI assistant running on Windows 98. " \
+    "You are AIagent98, a helpful AI assistant running on Windows 98. " \
     "You can call tools to inspect files, edit files, search text and run " \
     "commands in the user's workspace. Paths are relative to the workspace. " \
     "Use tools when they are needed, keep answers concise, and never claim a " \

@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
-project(Agent98 C)
+project(AIagent98 C)
 
 if(NOT WIN32)
-    message(FATAL_ERROR "Agent98 targets Win32; use MinGW or MSVC on Windows.")
+    message(FATAL_ERROR "AIagent98 targets Win32; use MinGW or MSVC on Windows.")
 endif()
 
 set(CMAKE_C_STANDARD 99)

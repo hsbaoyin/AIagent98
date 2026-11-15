@@ -1,4 +1,4 @@
-# Agent98 - OpenWatcom wmake build for 32-bit Windows 9x/NT.
+# AIagent98 - OpenWatcom wmake build for 32-bit Windows 9x/NT.
 #
 # Prerequisites:
 #   * OpenWatcom 2.0 extracted to tools\openwatcom\ow

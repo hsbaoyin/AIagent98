@@ -940,7 +940,7 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
 }
 
 
-/* Agent98 extended tools — included into tools.c */
+/* AIagent98 extended tools — included into tools.c */
 
 static int glob_match(const char *pat, const char *name)
 {

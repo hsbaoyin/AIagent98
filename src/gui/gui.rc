@@ -1,5 +1,5 @@
 /*
- * Agent98 - Win32 resources.
+ * AIagent98 - Win32 resources.
  *
  * Kept deliberately simple so that wrc (OpenWatcom) and windres (MinGW)
  * both accept the file.
@@ -32,7 +32,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About Agent98",           IDM_ABOUT
+        MENUITEM "&About AIagent98",           IDM_ABOUT
     END
 END
 
@@ -48,7 +48,7 @@ END
 
 IDD_SETTINGS DIALOG 0, 0, 360, 260
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Agent98 Settings"
+CAPTION "AIagent98 Settings"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Provider:", -1, 8, 12, 58, 8
@@ -83,7 +83,7 @@ END
 
 IDD_CONFIRM DIALOG 0, 0, 320, 210
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Agent98 - Confirm tool call"
+CAPTION "AIagent98 - Confirm tool call"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "The model wants to use this tool:", -1, 8, 8, 300, 8
@@ -95,10 +95,10 @@ END
 
 IDD_ABOUT DIALOG 0, 0, 240, 120
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About Agent98"
+CAPTION "About AIagent98"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Agent98 0.1.0", -1, 12, 12, 216, 10
+    LTEXT           "AIagent98 0.1.0", -1, 12, 12, 216, 10
     LTEXT           "An AI agent for Windows 98 / 95 / ME.", -1, 12, 30, 216, 10
     LTEXT           "Native Win32, BearSSL TLS 1.2.", -1, 12, 46, 216, 10
     DEFPUSHBUTTON   "OK", IDOK, 182, 96, 50, 14
@@ -106,7 +106,7 @@ END
 
 IDD_FIRSTRUN DIALOG 0, 0, 320, 176
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Welcome to Agent98"
+CAPTION "Welcome to AIagent98"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Connect to an OpenAI-compatible API. You can change all of this later in Tools > Settings.", -1, 8, 6, 300, 18
@@ -127,7 +127,7 @@ END
 
 IDD_INPUTLINE DIALOG 0, 0, 300, 64
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Agent98"
+CAPTION "AIagent98"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "", IDC_INPUTLINE_LABEL, 8, 8, 284, 8

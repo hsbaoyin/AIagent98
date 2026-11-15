@@ -1,5 +1,5 @@
 /*
- * Agent98 - growable string buffer.
+ * AIagent98 - growable string buffer.
  */
 #ifndef A98_STR_H
 #define A98_STR_H

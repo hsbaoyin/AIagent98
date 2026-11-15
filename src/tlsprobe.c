@@ -1,5 +1,5 @@
 /*
- * Agent98 - TLS probe.
+ * AIagent98 - TLS probe.
  *
  * Small standalone gate: performs a real HTTPS request with BearSSL and
  * reports the negotiated TLS version/cipher. Run this on the target Win9x
@@ -32,7 +32,7 @@ static int probe_sink(void *ctx, const char *data, size_t len)
 
 static void usage(void)
 {
-    printf("Agent98 TLS probe\n");
+    printf("AIagent98 TLS probe\n");
     printf("Usage: tlsprobe [url] [--insecure]\n");
     printf("  url        https://host[:port][/path] (default https://api.openai.com/v1/models)\n");
     printf("  --insecure skip certificate validation (diagnostics only)\n");
@@ -87,7 +87,7 @@ int main(int argc, char **argv)
         return 2;
     }
 
-    printf("Agent98 TLS probe\n");
+    printf("AIagent98 TLS probe\n");
     printf("Target: %s\n", target);
     printf("Verify: %s\n", verify ? "on (compiled-in Mozilla roots)" : "OFF");
 

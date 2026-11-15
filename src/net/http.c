@@ -226,7 +226,7 @@ static int build_request(Str *req, const char *method, const Url *url,
     if (!headers_contain(extra_headers, "Host")) {
         str_appendf(req, "Host: %s\r\n", host);
     }
-    str_appendf(req, "User-Agent: Agent98/%s\r\n", A98_VERSION);
+    str_appendf(req, "User-Agent: AIagent98/%s\r\n", A98_VERSION);
     if (!headers_contain(extra_headers, "Accept")) {
         str_appendf(req, "Accept: */*\r\n");
     }

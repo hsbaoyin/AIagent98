@@ -1,5 +1,5 @@
 /*
- * Agent98 - native Win32 GUI (Windows 95/98/ME compatible).
+ * AIagent98 - native Win32 GUI (Windows 95/98/ME compatible).
  *
  * The agent runs on a worker thread.  It reports streamed text and status
  * through PostMessage() to the UI thread; tool confirmations are handed to
@@ -89,7 +89,7 @@
 #define DM_SETDEFID (WM_USER + 1)
 #endif
 
-#define A98_CLASS_NAME "Agent98Window"
+#define A98_CLASS_NAME "AIagent98Window"
 
 #define RICH_CLASS20 "RichEdit20A"
 #define RICH_CLASS10 "RichEdit"
@@ -329,7 +329,7 @@ static void center_window(HWND hwnd)
 static int msgbox_utf8(HWND owner, const char *utf8, UINT flags)
 {
     char *acp = a98_utf8_to_acp(utf8 ? utf8 : "");
-    int rc = MessageBoxA(owner, acp != NULL ? acp : "", "Agent98", flags);
+    int rc = MessageBoxA(owner, acp != NULL ? acp : "", "AIagent98", flags);
 
     a98_free(acp);
     return rc;
@@ -599,8 +599,16 @@ static void transcript_line(App *app, const char *prefix, const char *text)
  * token split across two stream deltas is never half-rendered.       */
 /* ------------------------------------------------------------------ */
 
+/* Format of the most recent segment md_emit() painted; the line
+ * terminator inherits it so a fenced code band stays unbroken. */
+typedef struct {
+    COLORREF color;
+    int bold;
+    COLORREF back;
+} MdFmt;
+
 static void md_seg(App *app, const char *utf8, size_t from, size_t to,
-                   COLORREF color, int bold, COLORREF back)
+                   COLORREF color, int bold, COLORREF back, MdFmt *fmt)
 {
     Str s;
 
@@ -611,18 +619,29 @@ static void md_seg(App *app, const char *utf8, size_t from, size_t to,
     str_append(&s, utf8 + from, to - from);
     if (s.len > 0) {
         transcript_append_colored_bg(app, str_cstr(&s), color, bold, back);
+        if (fmt != NULL) {
+            fmt->color = color;
+            fmt->bold = bold;
+            fmt->back = back;
+        }
     }
     str_free(&s);
 }
 
-static void md_emit(App *app, const char *utf8)
+/* Paint one markdown line.  With newline != 0 a terminator is appended
+ * afterwards, formatted like the last segment. */
+static void md_emit(App *app, const char *utf8, int newline)
 {
     size_t i, seg;
     const char *p;
+    MdFmt fmt;
 
     if (app == NULL || utf8 == NULL) {
         return;
     }
+    fmt.color = COL_AI;
+    fmt.bold = 0;
+    fmt.back = 0;
     p = utf8;
     while (*p == ' ' || *p == '\t') {
         p++;
@@ -632,55 +651,60 @@ static void md_emit(App *app, const char *utf8)
         if (strncmp(p, "```", 3) == 0) {
             app->md_in_code = 0;
             transcript_append_colored(app, utf8, COL_ROUND, 0);
+            fmt.color = COL_ROUND;
         } else {
             transcript_append_colored_bg(app, utf8, COL_CODE_FG, 0,
                                          COL_CODE_BG);
+            fmt.color = COL_CODE_FG;
+            fmt.back = COL_CODE_BG;
         }
-        return;
-    }
-    if (strncmp(p, "```", 3) == 0) {
+    } else if (strncmp(p, "```", 3) == 0) {
         app->md_in_code = 1;
         transcript_append_colored(app, utf8, COL_ROUND, 0);
-        return;
-    }
-
-    seg = 0;
-    i = 0;
-    while (utf8[i] != '\0') {
-        if (utf8[i] == '`') {
-            size_t j = i + 1;
-            while (utf8[j] != '\0' && utf8[j] != '`') {
-                j++;
-            }
-            if (utf8[j] == '`' && j > i + 1) {
-                md_seg(app, utf8, seg, i, COL_AI, 0, 0);
-                md_seg(app, utf8, i + 1, j, COL_INLINE, 0, 0);
-                i = j + 1;
-                seg = i;
+        fmt.color = COL_ROUND;
+    } else {
+        seg = 0;
+        i = 0;
+        while (utf8[i] != '\0') {
+            if (utf8[i] == '`') {
+                size_t j = i + 1;
+                while (utf8[j] != '\0' && utf8[j] != '`') {
+                    j++;
+                }
+                if (utf8[j] == '`' && j > i + 1) {
+                    md_seg(app, utf8, seg, i, COL_AI, 0, 0, &fmt);
+                    md_seg(app, utf8, i + 1, j, COL_INLINE, 0, 0, &fmt);
+                    i = j + 1;
+                    seg = i;
+                    continue;
+                }
+                i = j;
                 continue;
             }
-            i = j;
-            continue;
-        }
-        if (utf8[i] == '*' && utf8[i + 1] == '*') {
-            size_t j = i + 2;
-            while (utf8[j] != '\0' &&
-                   !(utf8[j] == '*' && utf8[j + 1] == '*')) {
-                j++;
-            }
-            if (utf8[j] == '*' && j > i + 2) {
-                md_seg(app, utf8, seg, i, COL_AI, 0, 0);
-                md_seg(app, utf8, i + 2, j, COL_AI, 1, 0);
-                i = j + 2;
-                seg = i;
+            if (utf8[i] == '*' && utf8[i + 1] == '*') {
+                size_t j = i + 2;
+                while (utf8[j] != '\0' &&
+                       !(utf8[j] == '*' && utf8[j + 1] == '*')) {
+                    j++;
+                }
+                if (utf8[j] == '*' && j > i + 2) {
+                    md_seg(app, utf8, seg, i, COL_AI, 0, 0, &fmt);
+                    md_seg(app, utf8, i + 2, j, COL_AI, 1, 0, &fmt);
+                    i = j + 2;
+                    seg = i;
+                    continue;
+                }
+                i += 2;
                 continue;
             }
-            i += 2;
-            continue;
+            i++;
         }
-        i++;
+        md_seg(app, utf8, seg, strlen(utf8), COL_AI, 0, 0, &fmt);
     }
-    md_seg(app, utf8, seg, strlen(utf8), COL_AI, 0, 0);
+    if (newline) {
+        transcript_append_colored_bg(app, "\r\n", fmt.color, fmt.bold,
+                                     fmt.back);
+    }
 }
 
 static void transcript_md_append(App *app, const char *utf8)
@@ -713,7 +737,7 @@ static void transcript_md_append(App *app, const char *utf8)
                     str_append_char(&line, p[k]);
                 }
             }
-            md_emit(app, str_cstr(&line));
+            md_emit(app, str_cstr(&line), 1);
             str_free(&line);
         }
         start = i + 1;
@@ -724,15 +748,16 @@ static void transcript_md_append(App *app, const char *utf8)
     str_free(&all);
 }
 
-/* Show any half-received line (session end, save, export).  drop=1 throws
- * the buffered fragment away instead (new/load, where history is redrawn). */
+/* Show any half-received line (event boundary, end of reply, save,
+ * export).  drop=1 throws the buffered fragment away instead (new/load,
+ * where history is redrawn). */
 static void md_reset(App *app, int flush)
 {
     if (app == NULL) {
         return;
     }
     if (flush && app->md_pending.len > 0) {
-        md_emit(app, str_cstr(&app->md_pending));
+        md_emit(app, str_cstr(&app->md_pending), 0);
         str_clear(&app->md_pending);
     }
     app->md_in_code = 0;
@@ -779,10 +804,15 @@ static void transcript_trim(App *app)
 }
 
 /* Paint everything buffered so far: the coalesced stream deltas go through
- * the markdown renderer, then the transcript is trimmed.  A trailing line
- * without its newline stays buffered until the next delta completes it. */
-static void event_flush(App *app)
+ * the markdown renderer, then the transcript is trimmed.  The timer flush
+ * keeps a trailing line without its newline buffered, so a token split
+ * across two deltas is never painted as two lines.  finish_line = 1 ends
+ * the line: used at event boundaries (round/tool/info), at the end of a
+ * reply and before a modal dialog, where the stream state is known. */
+static void event_flush_ex(App *app, int finish_line)
 {
+    int painted = 0;
+
     if (app == NULL) {
         return;
     }
@@ -792,8 +822,20 @@ static void event_flush(App *app)
     if (app->ev_text_buf.len > 0) {
         transcript_md_append(app, str_cstr(&app->ev_text_buf));
         str_clear(&app->ev_text_buf);
+        painted = 1;
+    }
+    if (finish_line) {
+        md_reset(app, 1);
+        painted = 1;
+    }
+    if (painted) {
         transcript_trim(app);
     }
+}
+
+static void event_flush(App *app)
+{
+    event_flush_ex(app, 0);
 }
 
 static void transcript_set_default_format(App *app)
@@ -1016,7 +1058,7 @@ static void update_status(App *app)
     status_update(app);
 
     m = a98_utf8_to_acp(app->cfg.model);
-    snprintf(title, sizeof(title), "Agent98 - %s", m != NULL ? m : "");
+    snprintf(title, sizeof(title), "AIagent98 - %s", m != NULL ? m : "");
     a98_free(m);
     SetWindowTextA(app->hwnd, title);
 }
@@ -1611,7 +1653,7 @@ static int choose_session_file(App *app, int save, char *out, size_t cap)
     ofn.lStructSize = sizeof(ofn);
     ofn.hwndOwner = app->hwnd;
     ofn.lpstrFilter =
-        "Agent98 sessions (*.json)\0*.json\0All files (*.*)\0*.*\0";
+        "AIagent98 sessions (*.json)\0*.json\0All files (*.*)\0*.*\0";
     ofn.lpstrFile = file;
     ofn.nMaxFile = sizeof(file);
     ofn.lpstrTitle = save ? "Save session" : "Load session";
@@ -3079,7 +3121,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                 Str s;
                 char *acp;
                 str_init(&s);
-                str_appendf(&s, "Agent98 tools (%d):\r\n\r\n", count);
+                str_appendf(&s, "AIagent98 tools (%d):\r\n\r\n", count);
                 for (ti = 0; ti < count && ti < 40; ti++) {
                     str_appendf(&s, "%s%s\r\n  %s\r\n",
                                 all[ti].name,
@@ -3121,7 +3163,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                 SetTimer(hwnd, IDT_EVENT_FLUSH, A98_EVENT_FLUSH_MS, NULL);
                 break;
             case AGENT_EV_ROUND:
-                event_flush(app);   /* keep [round] after the text */
+                event_flush_ex(app, 1); /* end the text line, keep [round] */
                 app->round_no++;
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d)", app->round_no);
@@ -3130,7 +3172,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_ROUND, 0);
                 break;
             case AGENT_EV_TOOL_START:
-                event_flush(app);
+                event_flush_ex(app, 1);
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d, tool)", app->round_no);
                 status_update(app);
@@ -3138,7 +3180,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_TOOL, 0);
                 break;
             case AGENT_EV_TOOL_RESULT:
-                event_flush(app);
+                event_flush_ex(app, 1);
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d)", app->round_no);
                 status_update(app);
@@ -3146,12 +3188,12 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_RESULT, 0);
                 break;
             case AGENT_EV_INFO:
-                event_flush(app);
+                event_flush_ex(app, 1);
                 transcript_line_colored(app, "[info] ", COL_ROUND, 0,
                                         ev->text, COL_ROUND, 0);
                 break;
             default:
-                event_flush(app);
+                event_flush_ex(app, 1);
                 transcript_line(app, "", ev->text);
                 break;
             }
@@ -3165,7 +3207,8 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         char *err = (char *)lp;
         int ok = (int)wp;
 
-        event_flush(app);
+        /* The reply is complete: paint any buffered trailing fragment. */
+        event_flush_ex(app, 1);
         if (app->thread != NULL) {
             CloseHandle(app->thread);
             app->thread = NULL;
@@ -3197,7 +3240,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case A98_WM_CONFIRM: {
         ConfirmReq *req = (ConfirmReq *)lp;
         if (req != NULL) {
-            event_flush(app);
+            event_flush_ex(app, 1);
             if (app->cancel) {
                 /* Stop was pressed before the dialog appeared; deny without
                  * bothering the user. */
@@ -3224,7 +3267,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             if (MessageBoxA(hwnd,
                             "A request is still running.\n\n"
                             "Stop it and exit?",
-                            "Agent98",
+                            "AIagent98",
                             MB_YESNO | MB_ICONQUESTION) != IDYES) {
                 return 0;
             }
@@ -3411,7 +3454,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
 
     /* One instance at a time: two processes would race the INI writes and
      * the session auto-save.  A second launch just raises the first one. */
-    app->single_mutex = CreateMutexA(NULL, FALSE, "Agent98SingleInstance");
+    app->single_mutex = CreateMutexA(NULL, FALSE, "AIagent98SingleInstance");
     if (app->single_mutex == NULL ||
         GetLastError() == ERROR_ALREADY_EXISTS) {
         HWND prevwnd = FindWindowA(A98_CLASS_NAME, NULL);
@@ -3421,7 +3464,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
                                                   : SW_SHOWNORMAL);
             SetForegroundWindow(prevwnd);
         } else {
-            MessageBoxA(NULL, "Agent98 is already running.", "Agent98",
+            MessageBoxA(NULL, "AIagent98 is already running.", "AIagent98",
                         MB_OK | MB_ICONINFORMATION);
         }
         if (app->single_mutex != NULL) {
@@ -3442,7 +3485,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
      * during startup, this file is the only clue we get on Windows 9x. */
     a98_path_join(log_path, sizeof(log_path), app->exe_dir, "agent98.log");
     log_init(log_path, LOG_LEVEL_DEBUG);
-    log_info("Agent98 GUI starting (version %s)", A98_VERSION);
+    log_info("AIagent98 GUI starting (version %s)", A98_VERSION);
     log_info("Executable directory: %s", app->exe_dir);
 
     config_default_path(app->ini_path, sizeof(app->ini_path));
@@ -3509,7 +3552,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         return 1;
     }
 
-    app->hwnd = CreateWindowExA(0, A98_CLASS_NAME, "Agent98",
+    app->hwnd = CreateWindowExA(0, A98_CLASS_NAME, "AIagent98",
                                 WS_OVERLAPPEDWINDOW,
                                 win_x, win_y, win_w, win_h,
                                 NULL,
@@ -3564,13 +3607,13 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (!app->leaked_worker) {
         agent_free(&app->agent);
         net_cleanup();
-        log_info("Agent98 GUI stopped");
+        log_info("AIagent98 GUI stopped");
         log_shutdown();
     } else {
         /* The worker is still alive and may be touching the agent state,
          * sockets and log file: do not free/close any of it.  Deliberate
          * leak; the process exit reclaims everything. */
-        log_info("Agent98 GUI stopped with the worker abandoned");
+        log_info("AIagent98 GUI stopped with the worker abandoned");
     }
     if (app->shutdown_event != NULL) {
         CloseHandle(app->shutdown_event);

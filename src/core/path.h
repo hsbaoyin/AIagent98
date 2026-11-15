@@ -1,5 +1,5 @@
 /*
- * Agent98 - path helpers for Win32 (Win9x safe).
+ * AIagent98 - path helpers for Win32 (Win9x safe).
  */
 #ifndef A98_PATH_H
 #define A98_PATH_H

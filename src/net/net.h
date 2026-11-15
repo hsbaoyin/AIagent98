@@ -1,5 +1,5 @@
 /*
- * Agent98 - socket and TLS transport.
+ * AIagent98 - socket and TLS transport.
  *
  * The TLS backend is BearSSL with a fixed 16 KB record buffer and the
  * compiled-in Mozilla trust anchors. Only TLS 1.2 can be negotiated,

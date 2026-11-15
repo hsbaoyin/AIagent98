@@ -1,5 +1,5 @@
 /*
- * Minimal OpenAI-compatible mock server for Agent98 integration tests.
+ * Minimal OpenAI-compatible mock server for AIagent98 integration tests.
  *
  * Usage: node tests/mock_openai.js [port]
  *

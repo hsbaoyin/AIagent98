@@ -1,10 +1,10 @@
-# Agent98
+# AIagent98
 
 **English** | [简体中文](#简体中文)
 
 [![Platform: Windows 95/98/ME](https://img.shields.io/badge/platform-Windows%2095%20%7C%2098%20%7C%20ME-2b2b2b)](#)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/hsbaoyin/windows98-llm?label=download)](https://github.com/hsbaoyin/windows98-llm/releases/latest)
+[![Latest release](https://img.shields.io/github/v/release/hsbaoyin/AIagent98?label=download)](https://github.com/hsbaoyin/AIagent98/releases/latest)
 [![No relay](https://img.shields.io/badge/relay%20box-not%20required-brightgreen)](#)
 
 **ChatGPT on Windows 98 — with a filesystem.**
@@ -22,7 +22,7 @@ local models included. No relay PC, no proxy, no patched system libraries.
 直连任意 OpenAI 兼容端点（包括 Ollama 和本地模型）—— 不需要中转机、不需要
 代理、不改造系统库。
 
-> **[Download the latest release](https://github.com/hsbaoyin/windows98-llm/releases/latest)**
+> **[Download the latest release](https://github.com/hsbaoyin/AIagent98/releases/latest)**
 > — unzip into `C:\AGENT98`, edit `AGENT98.INI`, run `AGENT98.EXE`.
 
 ---
@@ -35,7 +35,7 @@ Most "AI on retro hardware" projects end the same way: a Raspberry Pi in the
 corner does the HTTPS and the old machine runs a terminal. That is not a
 Windows 98 app, it is a thin client with extra steps.
 
-Agent98 does the whole job on the 9x machine. DNS, TCP, a TLS 1.2 handshake
+AIagent98 does the whole job on the 9x machine. DNS, TCP, a TLS 1.2 handshake
 with ECDHE and AES-GCM, chunked HTTP, SSE streaming, JSON parsing and the
 agent loop all run inside one 32-bit process on top of Winsock 2 and BearSSL.
 Point it at any OpenAI-compatible endpoint and a Pentium II can hold a
@@ -194,13 +194,13 @@ skips it and the previous behaviour (a reminder when you send) applies.
 base=https://api.openai.com/v1
 key=sk-...
 model=gpt-4o-mini
-system_prompt=You are Agent98...
-extra_headers=X-Title: Agent98
+system_prompt=You are AIagent98...
+extra_headers=X-Title: AIagent98
 stream=1
 max_tokens=1024
 temperature=0.7
 [agent]
-workspace=C:\Agent98
+workspace=C:\AIagent98
 allow_shell=0
 ; 0 = no limit (stop with the GUI Stop button), otherwise 1..200
 max_steps=32
@@ -505,7 +505,7 @@ under `third_party/` keep their original licenses.
 几乎所有「复古硬件跑 AI」的项目最后都是一个套路：角落里的树莓派负责
 HTTPS，老机器只跑一个终端。那不是 Windows 98 应用，那是绕了一圈的瘦客户端。
 
-Agent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM 的 TLS 1.2
+AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM 的 TLS 1.2
 握手、chunked HTTP、SSE 流式、JSON 解析、agent 循环，全部跑在一个 32 位
 进程里，只依赖 Winsock 2 和 BearSSL。接上任意 OpenAI 兼容端点，Pentium II
 就能开始对话，并动手改它自己的文件。
@@ -652,13 +652,13 @@ GUI 会弹出一个简单的首运行向导，依次填写 Provider、API base�
 base=https://api.openai.com/v1
 key=sk-...
 model=gpt-4o-mini
-system_prompt=You are Agent98...
-extra_headers=X-Title: Agent98
+system_prompt=You are AIagent98...
+extra_headers=X-Title: AIagent98
 stream=1
 max_tokens=1024
 temperature=0.7
 [agent]
-workspace=C:\Agent98
+workspace=C:\AIagent98
 allow_shell=0
 ; 0 = 不限步数（用 GUI 的 Stop 按钮中断），否则为 1~200
 max_steps=32

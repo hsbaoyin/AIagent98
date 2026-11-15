@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Structural smoke test for Agent98 tools.c (no Win9x runtime required)."""
+"""Structural smoke test for AIagent98 tools.c (no Win9x runtime required)."""
 import re
 import sys
 from pathlib import Path

@@ -1,5 +1,5 @@
 /*
- * Agent98 - incremental HTTP body decoding (Content-Length, chunked, EOF).
+ * AIagent98 - incremental HTTP body decoding (Content-Length, chunked, EOF).
  */
 #ifndef A98_BODY_H
 #define A98_BODY_H

@@ -1,5 +1,5 @@
 /*
- * Agent98 - Win32 resource identifiers.
+ * AIagent98 - Win32 resource identifiers.
  */
 #ifndef A98_GUI_RESOURCE_H
 #define A98_GUI_RESOURCE_H

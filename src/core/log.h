@@ -1,5 +1,5 @@
 /*
- * Agent98 - logging to file and debugger (OutputDebugString on Win32).
+ * AIagent98 - logging to file and debugger (OutputDebugString on Win32).
  */
 #ifndef A98_LOG_H
 #define A98_LOG_H

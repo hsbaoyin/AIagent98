@@ -1,5 +1,5 @@
 /*
- * Agent98 - INI-backed configuration.
+ * AIagent98 - INI-backed configuration.
  */
 #ifndef A98_CONFIG_H
 #define A98_CONFIG_H

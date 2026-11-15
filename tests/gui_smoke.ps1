@@ -1,4 +1,4 @@
-# GUI smoke test for Agent98.
+# GUI smoke test for AIagent98.
 #
 # Expects a prepared directory (default: build\testrun) that contains
 # agent98.exe and agent98.ini pointing at tests\mock_openai.js.
@@ -118,7 +118,7 @@ try {
     $hwnd = [IntPtr]::Zero
     for ($i = 0; $i -lt 50 -and $hwnd -eq [IntPtr]::Zero; $i++) {
         Start-Sleep -Milliseconds 200
-        $hwnd = [A98Ui]::FindWindowA('Agent98Window', [NullString]::Value)
+        $hwnd = [A98Ui]::FindWindowA('AIagent98Window', [NullString]::Value)
     }
     if ($hwnd -eq [IntPtr]::Zero) {
         throw 'main window not found'
@@ -172,7 +172,7 @@ try {
     function Wait-ConfirmDialog {
         $deadline = (Get-Date).AddSeconds($TimeoutSec)
         while ((Get-Date) -lt $deadline) {
-            $dlg = [A98Ui]::FindWindowA('#32770', 'Agent98 - Confirm tool call')
+            $dlg = [A98Ui]::FindWindowA('#32770', 'AIagent98 - Confirm tool call')
             if ($dlg -ne [IntPtr]::Zero) {
                 return $dlg
             }

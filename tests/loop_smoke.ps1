@@ -1,4 +1,4 @@
-# Loop-control smoke test for Agent98.
+# Loop-control smoke test for AIagent98.
 #
 # Starts tests\mock_openai.js and runs the CLI three times:
 #   1. max_steps=0 with a task that needs 40 tool rounds (must not be cut

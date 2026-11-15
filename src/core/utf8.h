@@ -1,5 +1,5 @@
 /*
- * Agent98 - UTF-8 helpers.
+ * AIagent98 - UTF-8 helpers.
  *
  * Win9x has no Unicode Win32 API worth using, so we convert UTF-8 to the
  * local ANSI code page (ACP) for display and back to UTF-8 for input.

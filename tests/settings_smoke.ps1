@@ -1,4 +1,4 @@
-# Settings dialog smoke test for Agent98.
+# Settings dialog smoke test for AIagent98.
 #
 # Exercises provider presets, the new API fields and "Test connection"
 # against a private mock server on port 8788. The test INI is restored
@@ -107,7 +107,7 @@ try {
     $hwnd = [IntPtr]::Zero
     for ($i = 0; $i -lt 50 -and $hwnd -eq [IntPtr]::Zero; $i++) {
         Start-Sleep -Milliseconds 200
-        $hwnd = [A98SettingsUi]::FindWindowA('Agent98Window', [NullString]::Value)
+        $hwnd = [A98SettingsUi]::FindWindowA('AIagent98Window', [NullString]::Value)
     }
     if ($hwnd -eq [IntPtr]::Zero) {
         throw 'main window not found'
@@ -120,7 +120,7 @@ try {
     $dlg = [IntPtr]::Zero
     for ($i = 0; $i -lt 50 -and $dlg -eq [IntPtr]::Zero; $i++) {
         Start-Sleep -Milliseconds 100
-        $dlg = [A98SettingsUi]::FindWindowA('#32770', 'Agent98 Settings')
+        $dlg = [A98SettingsUi]::FindWindowA('#32770', 'AIagent98 Settings')
     }
     if ($dlg -eq [IntPtr]::Zero) {
         throw 'settings dialog not found'
