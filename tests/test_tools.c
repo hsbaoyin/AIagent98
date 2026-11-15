@@ -404,6 +404,19 @@ int main(void)
         }
         a98_free(fixed);
 
+        /* The other direction: the model sends UTF-8 while the directory was
+         * created in CP_ACP.  resolve_path has to bridge the two, otherwise
+         * any Chinese path argument misses. */
+        rc = run_capture(&a, "list_dir",
+                         "{\"path\":\"build/host/\xe6\x96\xb0\xe5\xbb\xba\"}",
+                         captured, sizeof(captured));
+        if (rc != 0) {
+            printf("FAIL: a UTF-8 path argument did not resolve\n");
+            failures++;
+        } else {
+            printf("PASS: a UTF-8 path argument resolves the CP_ACP directory\n");
+        }
+
         /* Already valid text must come back untouched (NULL = nothing to do),
          * so UTF-8 content next to ACP bytes is never double-converted. */
         if (a98_utf8_sanitize("plain ascii \xe4\xb8\xad") != NULL) {

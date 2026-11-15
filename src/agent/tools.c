@@ -35,6 +35,8 @@ static int resolve_path(Agent *a, const char *user, char *out, size_t cap,
 {
     char joined[A98_MAX_PATH * 2];
     char full[A98_MAX_PATH * 2];
+    char *local;
+    const char *fs;
     DWORD n;
     int rc;
 
@@ -45,36 +47,48 @@ static int resolve_path(Agent *a, const char *user, char *out, size_t cap,
         set_err(err, errcap, "agent is not initialised");
         return -1;
     }
+    /* The model speaks UTF-8 and Win32 takes CP_ACP, so a path argument that
+     * names a Chinese directory never matched the real one.  Text that is not
+     * valid UTF-8 is left alone: it is already CP_ACP (an old session, or a
+     * caller that resolved the path itself).  Error messages keep the UTF-8
+     * form, which is what the user and the model read back. */
+    if (a98_utf8_valid(user, strlen(user))) {
+        local = a98_utf8_to_acp(user);
+    }
+    fs = local != NULL ? local : user;
+
     if (!a->cfg->allow_outside) {
-        rc = a98_path_resolve_in_root(a->workspace, user, out, cap);
+        rc = a98_path_resolve_in_root(a->workspace, fs, out, cap);
         if (rc == 0) {
             set_err(err, errcap, "path escapes the workspace: %s", user);
-            return -1;
-        }
-        if (rc < 0) {
+        } else if (rc < 0) {
             set_err(err, errcap, "invalid path: %s", user);
-            return -1;
         }
-        return 0;
+        a98_free(local);
+        return rc > 0 ? 0 : -1;
     }
-    if (a98_path_is_absolute(user)) {
-        n = GetFullPathNameA(user, sizeof(full), full, NULL);
+    if (a98_path_is_absolute(fs)) {
+        n = GetFullPathNameA(fs, sizeof(full), full, NULL);
     } else {
-        if (a98_path_join(joined, sizeof(joined), a->workspace, user) != 0) {
+        if (a98_path_join(joined, sizeof(joined), a->workspace, fs) != 0) {
+            a98_free(local);
             set_err(err, errcap, "path is too long");
             return -1;
         }
         n = GetFullPathNameA(joined, sizeof(full), full, NULL);
     }
     if (n == 0 || n >= sizeof(full)) {
+        a98_free(local);
         set_err(err, errcap, "cannot resolve path: %s", user);
         return -1;
     }
     if (strlen(full) >= cap) {
+        a98_free(local);
         set_err(err, errcap, "path is too long");
         return -1;
     }
     strcpy(out, full);
+    a98_free(local);
     return 0;
 }
 
@@ -836,15 +850,24 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
     if (comspec == NULL || comspec[0] == '\0') {
         comspec = "command.com";
     }
-    if (snprintf(cmdline, sizeof(cmdline), "\"%s\" /c %s",
-                 comspec, command) >= (int)sizeof(cmdline)) {
-        CloseHandle(hout);
-        if (hnul != INVALID_HANDLE_VALUE) {
-            CloseHandle(hnul);
+    {
+        /* COMMAND.COM is an ANSI program: a UTF-8 command line would not
+         * match a Chinese path inside it either. */
+        char *cmd_local = utf8_to_local_lossless(command);
+        const char *cmd_text = cmd_local != NULL ? cmd_local : command;
+        int too_long = snprintf(cmdline, sizeof(cmdline), "\"%s\" /c %s",
+                                comspec, cmd_text) >= (int)sizeof(cmdline);
+
+        a98_free(cmd_local);
+        if (too_long) {
+            CloseHandle(hout);
+            if (hnul != INVALID_HANDLE_VALUE) {
+                CloseHandle(hnul);
+            }
+            DeleteFileA(temp_file);
+            set_err(err, errcap, "command line is too long");
+            return -1;
         }
-        DeleteFileA(temp_file);
-        set_err(err, errcap, "command line is too long");
-        return -1;
     }
 
     memset(&si, 0, sizeof(si));
@@ -1634,10 +1657,20 @@ static int tool_grep(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
         }
     }
     remaining = max_results;
-    if (include != NULL && include[0] != '\0') {
-        str_appendf(out, "include filter: %s\n", include);
+    {
+        /* The include filter is matched against names that FindFirstFileA
+         * returned in the local code page. */
+        char *include_local = include != NULL ? utf8_to_local_lossless(include)
+                                             : NULL;
+        const char *match = include_local != NULL ? include_local : include;
+
+        if (include != NULL && include[0] != '\0') {
+            str_appendf(out, "include filter: %s\n", include);
+        }
+        grep_walk(path, prefix, pattern, match, case_sensitive, &remaining,
+                  out, 0);
+        a98_free(include_local);
     }
-    grep_walk(path, prefix, pattern, include, case_sensitive, &remaining, out, 0);
     if (remaining == max_results) {
         str_append_cstr(out, "(no matches)\n");
     } else if (remaining == 0) {

@@ -63,6 +63,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   folder name. Tool results are now repaired to valid UTF-8 before they reach
   the transcript or the message list (`a98_utf8_sanitize`), and a session saved
   before the fix is repaired again when it is loaded.
+- A path argument from the model is UTF-8 while the Win32 layer takes CP_ACP,
+  so a tool call naming a Chinese file or directory (`list_dir` with
+  `"path":"新建文件夹"`) never matched the real one. `resolve_path` now converts
+  the argument (leaving text that is already CP_ACP alone), and `run_command`
+  hands COMMAND.COM its command line in the local code page, as does `grep`
+  with the `include` filter it matches against `FindFirstFileA` names.
 - `rmdir_force` only refused the workspace root when `workspace=` was absolute
   and had no trailing separator. Both paths are normalised now, so a relative
   or trailing-slash workspace can no longer be deleted recursively.
