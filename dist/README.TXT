@@ -124,3 +124,11 @@ A: 先确认程序是从硬盘运行的，然后把 AGENT98.LOG 的最后几十行发出来。
        Win98/Me 记事本与 COMMAND.COM 不再显示乱码。
        GUI：彩色等宽对话区、会话历史下拉框、自动保存、Alt+Up/Down
        提示历史、导出文本、状态栏和打开 workspace。
+
+
+Emoji
+-----
+The Emoji button and Tools > Insert emoji... (Ctrl+J) open a picker
+with the 1219 pictures in emoji\bmp\24. In the chat emoji appear as
+:shortcode: (Windows 9x has no color emoji font); a shortcode you pick or
+type is sent to the model as the real character.
