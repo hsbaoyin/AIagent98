@@ -1,19 +1,22 @@
 # Generates src/gui/emoji_table.h from the AIagent98 Emoji Pack mapping.
 #
-# The pack itself stays out of the repository (.gitignore): the generated
-# table is what the GUI needs, because Win9x has no color emoji font and the
-# transcript has to turn emoji it receives into text it can actually draw.
+# The mapping and the 24 px artwork are tracked under assets/emoji, so this
+# runs from any clone.  The rest of the optional pack (16/32 px BMP, 72 px PNG)
+# stays out of the repository (.gitignore); the GUI only needs 24 px.
 #
 # Run from the repository root:  powershell -File tools/gen_emoji_table.ps1
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
 Set-Location $root
 
-$pack = 'AIagent98-Emoji-Pack-v2.0'
-$csvPath = Join-Path $pack 'mapping\emoji.csv'
+$csvPath = 'assets\emoji\mapping\emoji.csv'
 $outPath = 'src\gui\emoji_table.h'
 if (-not (Test-Path $csvPath)) {
-    throw ("missing mapping file: {0} (pass the pack next to the repository)" -f $csvPath)
+    # Older checkouts only carry the pack beside the repository.
+    $csvPath = 'AIagent98-Emoji-Pack-v2.0\mapping\emoji.csv'
+}
+if (-not (Test-Path $csvPath)) {
+    throw ("missing mapping file: {0}" -f $csvPath)
 }
 
 $rows = Import-Csv -Path $csvPath -Encoding UTF8

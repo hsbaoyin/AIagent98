@@ -1,0 +1,4 @@
+Noto Color Emoji font is distributed under the SIL Open Font License, Version 1.1.
+Copyright 2013-2025 Google LLC.
+Full license text: https://openfontlicense.org/
+This package contains rasterized glyph outputs, not the font binary.

@@ -1,0 +1,1220 @@
+﻿id,unicode,codepoint,character,name_en,category,png,bmp16,bmp24,bmp32
+A98E0001,U+231A,231A,⌚,Watch,符号与其他,assets/png/72/A98E0001.png,assets/bmp/16/A98E0001.bmp,assets/bmp/24/A98E0001.bmp,assets/bmp/32/A98E0001.bmp
+A98E0002,U+231B,231B,⌛,Hourglass,符号与其他,assets/png/72/A98E0002.png,assets/bmp/16/A98E0002.bmp,assets/bmp/24/A98E0002.bmp,assets/bmp/32/A98E0002.bmp
+A98E0003,U+23E9,23E9,⏩,Black Right-Pointing Double Triangle,符号与其他,assets/png/72/A98E0003.png,assets/bmp/16/A98E0003.bmp,assets/bmp/24/A98E0003.bmp,assets/bmp/32/A98E0003.bmp
+A98E0004,U+23EA,23EA,⏪,Black Left-Pointing Double Triangle,符号与其他,assets/png/72/A98E0004.png,assets/bmp/16/A98E0004.bmp,assets/bmp/24/A98E0004.bmp,assets/bmp/32/A98E0004.bmp
+A98E0005,U+23EB,23EB,⏫,Black Up-Pointing Double Triangle,符号与其他,assets/png/72/A98E0005.png,assets/bmp/16/A98E0005.bmp,assets/bmp/24/A98E0005.bmp,assets/bmp/32/A98E0005.bmp
+A98E0006,U+23EC,23EC,⏬,Black Down-Pointing Double Triangle,符号与其他,assets/png/72/A98E0006.png,assets/bmp/16/A98E0006.bmp,assets/bmp/24/A98E0006.bmp,assets/bmp/32/A98E0006.bmp
+A98E0007,U+23F0,23F0,⏰,Alarm Clock,符号与其他,assets/png/72/A98E0007.png,assets/bmp/16/A98E0007.bmp,assets/bmp/24/A98E0007.bmp,assets/bmp/32/A98E0007.bmp
+A98E0008,U+23F3,23F3,⏳,Hourglass With Flowing Sand,符号与其他,assets/png/72/A98E0008.png,assets/bmp/16/A98E0008.bmp,assets/bmp/24/A98E0008.bmp,assets/bmp/32/A98E0008.bmp
+A98E0009,U+25FD,25FD,◽,White Medium Small Square,符号与其他,assets/png/72/A98E0009.png,assets/bmp/16/A98E0009.bmp,assets/bmp/24/A98E0009.bmp,assets/bmp/32/A98E0009.bmp
+A98E0010,U+25FE,25FE,◾,Black Medium Small Square,符号与其他,assets/png/72/A98E0010.png,assets/bmp/16/A98E0010.bmp,assets/bmp/24/A98E0010.bmp,assets/bmp/32/A98E0010.bmp
+A98E0011,U+2614,2614,☔,Umbrella With Rain Drops,符号与天气,assets/png/72/A98E0011.png,assets/bmp/16/A98E0011.bmp,assets/bmp/24/A98E0011.bmp,assets/bmp/32/A98E0011.bmp
+A98E0012,U+2615,2615,☕,Hot Beverage,符号与天气,assets/png/72/A98E0012.png,assets/bmp/16/A98E0012.bmp,assets/bmp/24/A98E0012.bmp,assets/bmp/32/A98E0012.bmp
+A98E0013,U+2648,2648,♈,Aries,符号与天气,assets/png/72/A98E0013.png,assets/bmp/16/A98E0013.bmp,assets/bmp/24/A98E0013.bmp,assets/bmp/32/A98E0013.bmp
+A98E0014,U+2649,2649,♉,Taurus,符号与天气,assets/png/72/A98E0014.png,assets/bmp/16/A98E0014.bmp,assets/bmp/24/A98E0014.bmp,assets/bmp/32/A98E0014.bmp
+A98E0015,U+264A,264A,♊,Gemini,符号与天气,assets/png/72/A98E0015.png,assets/bmp/16/A98E0015.bmp,assets/bmp/24/A98E0015.bmp,assets/bmp/32/A98E0015.bmp
+A98E0016,U+264B,264B,♋,Cancer,符号与天气,assets/png/72/A98E0016.png,assets/bmp/16/A98E0016.bmp,assets/bmp/24/A98E0016.bmp,assets/bmp/32/A98E0016.bmp
+A98E0017,U+264C,264C,♌,Leo,符号与天气,assets/png/72/A98E0017.png,assets/bmp/16/A98E0017.bmp,assets/bmp/24/A98E0017.bmp,assets/bmp/32/A98E0017.bmp
+A98E0018,U+264D,264D,♍,Virgo,符号与天气,assets/png/72/A98E0018.png,assets/bmp/16/A98E0018.bmp,assets/bmp/24/A98E0018.bmp,assets/bmp/32/A98E0018.bmp
+A98E0019,U+264E,264E,♎,Libra,符号与天气,assets/png/72/A98E0019.png,assets/bmp/16/A98E0019.bmp,assets/bmp/24/A98E0019.bmp,assets/bmp/32/A98E0019.bmp
+A98E0020,U+264F,264F,♏,Scorpius,符号与天气,assets/png/72/A98E0020.png,assets/bmp/16/A98E0020.bmp,assets/bmp/24/A98E0020.bmp,assets/bmp/32/A98E0020.bmp
+A98E0021,U+2650,2650,♐,Sagittarius,符号与天气,assets/png/72/A98E0021.png,assets/bmp/16/A98E0021.bmp,assets/bmp/24/A98E0021.bmp,assets/bmp/32/A98E0021.bmp
+A98E0022,U+2651,2651,♑,Capricorn,符号与天气,assets/png/72/A98E0022.png,assets/bmp/16/A98E0022.bmp,assets/bmp/24/A98E0022.bmp,assets/bmp/32/A98E0022.bmp
+A98E0023,U+2652,2652,♒,Aquarius,符号与天气,assets/png/72/A98E0023.png,assets/bmp/16/A98E0023.bmp,assets/bmp/24/A98E0023.bmp,assets/bmp/32/A98E0023.bmp
+A98E0024,U+2653,2653,♓,Pisces,符号与天气,assets/png/72/A98E0024.png,assets/bmp/16/A98E0024.bmp,assets/bmp/24/A98E0024.bmp,assets/bmp/32/A98E0024.bmp
+A98E0025,U+267F,267F,♿,Wheelchair Symbol,符号与天气,assets/png/72/A98E0025.png,assets/bmp/16/A98E0025.bmp,assets/bmp/24/A98E0025.bmp,assets/bmp/32/A98E0025.bmp
+A98E0026,U+2693,2693,⚓,Anchor,符号与天气,assets/png/72/A98E0026.png,assets/bmp/16/A98E0026.bmp,assets/bmp/24/A98E0026.bmp,assets/bmp/32/A98E0026.bmp
+A98E0027,U+26A1,26A1,⚡,High Voltage Sign,符号与天气,assets/png/72/A98E0027.png,assets/bmp/16/A98E0027.bmp,assets/bmp/24/A98E0027.bmp,assets/bmp/32/A98E0027.bmp
+A98E0028,U+26AA,26AA,⚪,Medium White Circle,符号与天气,assets/png/72/A98E0028.png,assets/bmp/16/A98E0028.bmp,assets/bmp/24/A98E0028.bmp,assets/bmp/32/A98E0028.bmp
+A98E0029,U+26AB,26AB,⚫,Medium Black Circle,符号与天气,assets/png/72/A98E0029.png,assets/bmp/16/A98E0029.bmp,assets/bmp/24/A98E0029.bmp,assets/bmp/32/A98E0029.bmp
+A98E0030,U+26BD,26BD,⚽,Soccer Ball,符号与天气,assets/png/72/A98E0030.png,assets/bmp/16/A98E0030.bmp,assets/bmp/24/A98E0030.bmp,assets/bmp/32/A98E0030.bmp
+A98E0031,U+26BE,26BE,⚾,Baseball,符号与天气,assets/png/72/A98E0031.png,assets/bmp/16/A98E0031.bmp,assets/bmp/24/A98E0031.bmp,assets/bmp/32/A98E0031.bmp
+A98E0032,U+26C4,26C4,⛄,Snowman Without Snow,符号与天气,assets/png/72/A98E0032.png,assets/bmp/16/A98E0032.bmp,assets/bmp/24/A98E0032.bmp,assets/bmp/32/A98E0032.bmp
+A98E0033,U+26C5,26C5,⛅,Sun Behind Cloud,符号与天气,assets/png/72/A98E0033.png,assets/bmp/16/A98E0033.bmp,assets/bmp/24/A98E0033.bmp,assets/bmp/32/A98E0033.bmp
+A98E0034,U+26CE,26CE,⛎,Ophiuchus,符号与天气,assets/png/72/A98E0034.png,assets/bmp/16/A98E0034.bmp,assets/bmp/24/A98E0034.bmp,assets/bmp/32/A98E0034.bmp
+A98E0035,U+26D4,26D4,⛔,No Entry,符号与天气,assets/png/72/A98E0035.png,assets/bmp/16/A98E0035.bmp,assets/bmp/24/A98E0035.bmp,assets/bmp/32/A98E0035.bmp
+A98E0036,U+26EA,26EA,⛪,Church,符号与天气,assets/png/72/A98E0036.png,assets/bmp/16/A98E0036.bmp,assets/bmp/24/A98E0036.bmp,assets/bmp/32/A98E0036.bmp
+A98E0037,U+26F2,26F2,⛲,Fountain,符号与天气,assets/png/72/A98E0037.png,assets/bmp/16/A98E0037.bmp,assets/bmp/24/A98E0037.bmp,assets/bmp/32/A98E0037.bmp
+A98E0038,U+26F3,26F3,⛳,Flag In Hole,符号与天气,assets/png/72/A98E0038.png,assets/bmp/16/A98E0038.bmp,assets/bmp/24/A98E0038.bmp,assets/bmp/32/A98E0038.bmp
+A98E0039,U+26F5,26F5,⛵,Sailboat,符号与天气,assets/png/72/A98E0039.png,assets/bmp/16/A98E0039.bmp,assets/bmp/24/A98E0039.bmp,assets/bmp/32/A98E0039.bmp
+A98E0040,U+26FA,26FA,⛺,Tent,符号与天气,assets/png/72/A98E0040.png,assets/bmp/16/A98E0040.bmp,assets/bmp/24/A98E0040.bmp,assets/bmp/32/A98E0040.bmp
+A98E0041,U+26FD,26FD,⛽,Fuel Pump,符号与天气,assets/png/72/A98E0041.png,assets/bmp/16/A98E0041.bmp,assets/bmp/24/A98E0041.bmp,assets/bmp/32/A98E0041.bmp
+A98E0042,U+2705,2705,✅,White Heavy Check Mark,符号与天气,assets/png/72/A98E0042.png,assets/bmp/16/A98E0042.bmp,assets/bmp/24/A98E0042.bmp,assets/bmp/32/A98E0042.bmp
+A98E0043,U+270A,270A,✊,Raised Fist,符号与天气,assets/png/72/A98E0043.png,assets/bmp/16/A98E0043.bmp,assets/bmp/24/A98E0043.bmp,assets/bmp/32/A98E0043.bmp
+A98E0044,U+270B,270B,✋,Raised Hand,符号与天气,assets/png/72/A98E0044.png,assets/bmp/16/A98E0044.bmp,assets/bmp/24/A98E0044.bmp,assets/bmp/32/A98E0044.bmp
+A98E0045,U+2728,2728,✨,Sparkles,符号与天气,assets/png/72/A98E0045.png,assets/bmp/16/A98E0045.bmp,assets/bmp/24/A98E0045.bmp,assets/bmp/32/A98E0045.bmp
+A98E0046,U+274C,274C,❌,Cross Mark,符号与天气,assets/png/72/A98E0046.png,assets/bmp/16/A98E0046.bmp,assets/bmp/24/A98E0046.bmp,assets/bmp/32/A98E0046.bmp
+A98E0047,U+274E,274E,❎,Negative Squared Cross Mark,符号与天气,assets/png/72/A98E0047.png,assets/bmp/16/A98E0047.bmp,assets/bmp/24/A98E0047.bmp,assets/bmp/32/A98E0047.bmp
+A98E0048,U+2753,2753,❓,Black Question Mark Ornament,符号与天气,assets/png/72/A98E0048.png,assets/bmp/16/A98E0048.bmp,assets/bmp/24/A98E0048.bmp,assets/bmp/32/A98E0048.bmp
+A98E0049,U+2754,2754,❔,White Question Mark Ornament,符号与天气,assets/png/72/A98E0049.png,assets/bmp/16/A98E0049.bmp,assets/bmp/24/A98E0049.bmp,assets/bmp/32/A98E0049.bmp
+A98E0050,U+2755,2755,❕,White Exclamation Mark Ornament,符号与天气,assets/png/72/A98E0050.png,assets/bmp/16/A98E0050.bmp,assets/bmp/24/A98E0050.bmp,assets/bmp/32/A98E0050.bmp
+A98E0051,U+2757,2757,❗,Heavy Exclamation Mark Symbol,符号与天气,assets/png/72/A98E0051.png,assets/bmp/16/A98E0051.bmp,assets/bmp/24/A98E0051.bmp,assets/bmp/32/A98E0051.bmp
+A98E0052,U+2795,2795,➕,Heavy Plus Sign,符号与天气,assets/png/72/A98E0052.png,assets/bmp/16/A98E0052.bmp,assets/bmp/24/A98E0052.bmp,assets/bmp/32/A98E0052.bmp
+A98E0053,U+2796,2796,➖,Heavy Minus Sign,符号与天气,assets/png/72/A98E0053.png,assets/bmp/16/A98E0053.bmp,assets/bmp/24/A98E0053.bmp,assets/bmp/32/A98E0053.bmp
+A98E0054,U+2797,2797,➗,Heavy Division Sign,符号与天气,assets/png/72/A98E0054.png,assets/bmp/16/A98E0054.bmp,assets/bmp/24/A98E0054.bmp,assets/bmp/32/A98E0054.bmp
+A98E0055,U+27B0,27B0,➰,Curly Loop,符号与天气,assets/png/72/A98E0055.png,assets/bmp/16/A98E0055.bmp,assets/bmp/24/A98E0055.bmp,assets/bmp/32/A98E0055.bmp
+A98E0056,U+27BF,27BF,➿,Double Curly Loop,符号与天气,assets/png/72/A98E0056.png,assets/bmp/16/A98E0056.bmp,assets/bmp/24/A98E0056.bmp,assets/bmp/32/A98E0056.bmp
+A98E0057,U+2B1B,2B1B,⬛,Black Large Square,符号与其他,assets/png/72/A98E0057.png,assets/bmp/16/A98E0057.bmp,assets/bmp/24/A98E0057.bmp,assets/bmp/32/A98E0057.bmp
+A98E0058,U+2B1C,2B1C,⬜,White Large Square,符号与其他,assets/png/72/A98E0058.png,assets/bmp/16/A98E0058.bmp,assets/bmp/24/A98E0058.bmp,assets/bmp/32/A98E0058.bmp
+A98E0059,U+2B50,2B50,⭐,White Medium Star,符号与其他,assets/png/72/A98E0059.png,assets/bmp/16/A98E0059.bmp,assets/bmp/24/A98E0059.bmp,assets/bmp/32/A98E0059.bmp
+A98E0060,U+2B55,2B55,⭕,Heavy Large Circle,符号与其他,assets/png/72/A98E0060.png,assets/bmp/16/A98E0060.bmp,assets/bmp/24/A98E0060.bmp,assets/bmp/32/A98E0060.bmp
+A98E0061,U+1F004,1F004,🀄,Mahjong Tile Red Dragon,符号与其他,assets/png/72/A98E0061.png,assets/bmp/16/A98E0061.bmp,assets/bmp/24/A98E0061.bmp,assets/bmp/32/A98E0061.bmp
+A98E0062,U+1F0CF,1F0CF,🃏,Playing Card Black Joker,符号与其他,assets/png/72/A98E0062.png,assets/bmp/16/A98E0062.bmp,assets/bmp/24/A98E0062.bmp,assets/bmp/32/A98E0062.bmp
+A98E0063,U+1F18E,1F18E,🆎,Negative Squared Ab,符号与其他,assets/png/72/A98E0063.png,assets/bmp/16/A98E0063.bmp,assets/bmp/24/A98E0063.bmp,assets/bmp/32/A98E0063.bmp
+A98E0064,U+1F191,1F191,🆑,Squared Cl,符号与其他,assets/png/72/A98E0064.png,assets/bmp/16/A98E0064.bmp,assets/bmp/24/A98E0064.bmp,assets/bmp/32/A98E0064.bmp
+A98E0065,U+1F192,1F192,🆒,Squared Cool,符号与其他,assets/png/72/A98E0065.png,assets/bmp/16/A98E0065.bmp,assets/bmp/24/A98E0065.bmp,assets/bmp/32/A98E0065.bmp
+A98E0066,U+1F193,1F193,🆓,Squared Free,符号与其他,assets/png/72/A98E0066.png,assets/bmp/16/A98E0066.bmp,assets/bmp/24/A98E0066.bmp,assets/bmp/32/A98E0066.bmp
+A98E0067,U+1F194,1F194,🆔,Squared Id,符号与其他,assets/png/72/A98E0067.png,assets/bmp/16/A98E0067.bmp,assets/bmp/24/A98E0067.bmp,assets/bmp/32/A98E0067.bmp
+A98E0068,U+1F195,1F195,🆕,Squared New,符号与其他,assets/png/72/A98E0068.png,assets/bmp/16/A98E0068.bmp,assets/bmp/24/A98E0068.bmp,assets/bmp/32/A98E0068.bmp
+A98E0069,U+1F196,1F196,🆖,Squared Ng,符号与其他,assets/png/72/A98E0069.png,assets/bmp/16/A98E0069.bmp,assets/bmp/24/A98E0069.bmp,assets/bmp/32/A98E0069.bmp
+A98E0070,U+1F197,1F197,🆗,Squared Ok,符号与其他,assets/png/72/A98E0070.png,assets/bmp/16/A98E0070.bmp,assets/bmp/24/A98E0070.bmp,assets/bmp/32/A98E0070.bmp
+A98E0071,U+1F198,1F198,🆘,Squared Sos,符号与其他,assets/png/72/A98E0071.png,assets/bmp/16/A98E0071.bmp,assets/bmp/24/A98E0071.bmp,assets/bmp/32/A98E0071.bmp
+A98E0072,U+1F199,1F199,🆙,Squared Up With Exclamation Mark,符号与其他,assets/png/72/A98E0072.png,assets/bmp/16/A98E0072.bmp,assets/bmp/24/A98E0072.bmp,assets/bmp/32/A98E0072.bmp
+A98E0073,U+1F19A,1F19A,🆚,Squared Vs,符号与其他,assets/png/72/A98E0073.png,assets/bmp/16/A98E0073.bmp,assets/bmp/24/A98E0073.bmp,assets/bmp/32/A98E0073.bmp
+A98E0074,U+1F1E6,1F1E6,🇦,Regional Indicator Symbol Letter A,区域指示符,assets/png/72/A98E0074.png,assets/bmp/16/A98E0074.bmp,assets/bmp/24/A98E0074.bmp,assets/bmp/32/A98E0074.bmp
+A98E0075,U+1F1E7,1F1E7,🇧,Regional Indicator Symbol Letter B,区域指示符,assets/png/72/A98E0075.png,assets/bmp/16/A98E0075.bmp,assets/bmp/24/A98E0075.bmp,assets/bmp/32/A98E0075.bmp
+A98E0076,U+1F1E8,1F1E8,🇨,Regional Indicator Symbol Letter C,区域指示符,assets/png/72/A98E0076.png,assets/bmp/16/A98E0076.bmp,assets/bmp/24/A98E0076.bmp,assets/bmp/32/A98E0076.bmp
+A98E0077,U+1F1E9,1F1E9,🇩,Regional Indicator Symbol Letter D,区域指示符,assets/png/72/A98E0077.png,assets/bmp/16/A98E0077.bmp,assets/bmp/24/A98E0077.bmp,assets/bmp/32/A98E0077.bmp
+A98E0078,U+1F1EA,1F1EA,🇪,Regional Indicator Symbol Letter E,区域指示符,assets/png/72/A98E0078.png,assets/bmp/16/A98E0078.bmp,assets/bmp/24/A98E0078.bmp,assets/bmp/32/A98E0078.bmp
+A98E0079,U+1F1EB,1F1EB,🇫,Regional Indicator Symbol Letter F,区域指示符,assets/png/72/A98E0079.png,assets/bmp/16/A98E0079.bmp,assets/bmp/24/A98E0079.bmp,assets/bmp/32/A98E0079.bmp
+A98E0080,U+1F1EC,1F1EC,🇬,Regional Indicator Symbol Letter G,区域指示符,assets/png/72/A98E0080.png,assets/bmp/16/A98E0080.bmp,assets/bmp/24/A98E0080.bmp,assets/bmp/32/A98E0080.bmp
+A98E0081,U+1F1ED,1F1ED,🇭,Regional Indicator Symbol Letter H,区域指示符,assets/png/72/A98E0081.png,assets/bmp/16/A98E0081.bmp,assets/bmp/24/A98E0081.bmp,assets/bmp/32/A98E0081.bmp
+A98E0082,U+1F1EE,1F1EE,🇮,Regional Indicator Symbol Letter I,区域指示符,assets/png/72/A98E0082.png,assets/bmp/16/A98E0082.bmp,assets/bmp/24/A98E0082.bmp,assets/bmp/32/A98E0082.bmp
+A98E0083,U+1F1EF,1F1EF,🇯,Regional Indicator Symbol Letter J,区域指示符,assets/png/72/A98E0083.png,assets/bmp/16/A98E0083.bmp,assets/bmp/24/A98E0083.bmp,assets/bmp/32/A98E0083.bmp
+A98E0084,U+1F1F0,1F1F0,🇰,Regional Indicator Symbol Letter K,区域指示符,assets/png/72/A98E0084.png,assets/bmp/16/A98E0084.bmp,assets/bmp/24/A98E0084.bmp,assets/bmp/32/A98E0084.bmp
+A98E0085,U+1F1F1,1F1F1,🇱,Regional Indicator Symbol Letter L,区域指示符,assets/png/72/A98E0085.png,assets/bmp/16/A98E0085.bmp,assets/bmp/24/A98E0085.bmp,assets/bmp/32/A98E0085.bmp
+A98E0086,U+1F1F2,1F1F2,🇲,Regional Indicator Symbol Letter M,区域指示符,assets/png/72/A98E0086.png,assets/bmp/16/A98E0086.bmp,assets/bmp/24/A98E0086.bmp,assets/bmp/32/A98E0086.bmp
+A98E0087,U+1F1F3,1F1F3,🇳,Regional Indicator Symbol Letter N,区域指示符,assets/png/72/A98E0087.png,assets/bmp/16/A98E0087.bmp,assets/bmp/24/A98E0087.bmp,assets/bmp/32/A98E0087.bmp
+A98E0088,U+1F1F4,1F1F4,🇴,Regional Indicator Symbol Letter O,区域指示符,assets/png/72/A98E0088.png,assets/bmp/16/A98E0088.bmp,assets/bmp/24/A98E0088.bmp,assets/bmp/32/A98E0088.bmp
+A98E0089,U+1F1F5,1F1F5,🇵,Regional Indicator Symbol Letter P,区域指示符,assets/png/72/A98E0089.png,assets/bmp/16/A98E0089.bmp,assets/bmp/24/A98E0089.bmp,assets/bmp/32/A98E0089.bmp
+A98E0090,U+1F1F6,1F1F6,🇶,Regional Indicator Symbol Letter Q,区域指示符,assets/png/72/A98E0090.png,assets/bmp/16/A98E0090.bmp,assets/bmp/24/A98E0090.bmp,assets/bmp/32/A98E0090.bmp
+A98E0091,U+1F1F7,1F1F7,🇷,Regional Indicator Symbol Letter R,区域指示符,assets/png/72/A98E0091.png,assets/bmp/16/A98E0091.bmp,assets/bmp/24/A98E0091.bmp,assets/bmp/32/A98E0091.bmp
+A98E0092,U+1F1F8,1F1F8,🇸,Regional Indicator Symbol Letter S,区域指示符,assets/png/72/A98E0092.png,assets/bmp/16/A98E0092.bmp,assets/bmp/24/A98E0092.bmp,assets/bmp/32/A98E0092.bmp
+A98E0093,U+1F1F9,1F1F9,🇹,Regional Indicator Symbol Letter T,区域指示符,assets/png/72/A98E0093.png,assets/bmp/16/A98E0093.bmp,assets/bmp/24/A98E0093.bmp,assets/bmp/32/A98E0093.bmp
+A98E0094,U+1F1FA,1F1FA,🇺,Regional Indicator Symbol Letter U,区域指示符,assets/png/72/A98E0094.png,assets/bmp/16/A98E0094.bmp,assets/bmp/24/A98E0094.bmp,assets/bmp/32/A98E0094.bmp
+A98E0095,U+1F1FB,1F1FB,🇻,Regional Indicator Symbol Letter V,区域指示符,assets/png/72/A98E0095.png,assets/bmp/16/A98E0095.bmp,assets/bmp/24/A98E0095.bmp,assets/bmp/32/A98E0095.bmp
+A98E0096,U+1F1FC,1F1FC,🇼,Regional Indicator Symbol Letter W,区域指示符,assets/png/72/A98E0096.png,assets/bmp/16/A98E0096.bmp,assets/bmp/24/A98E0096.bmp,assets/bmp/32/A98E0096.bmp
+A98E0097,U+1F1FD,1F1FD,🇽,Regional Indicator Symbol Letter X,区域指示符,assets/png/72/A98E0097.png,assets/bmp/16/A98E0097.bmp,assets/bmp/24/A98E0097.bmp,assets/bmp/32/A98E0097.bmp
+A98E0098,U+1F1FE,1F1FE,🇾,Regional Indicator Symbol Letter Y,区域指示符,assets/png/72/A98E0098.png,assets/bmp/16/A98E0098.bmp,assets/bmp/24/A98E0098.bmp,assets/bmp/32/A98E0098.bmp
+A98E0099,U+1F1FF,1F1FF,🇿,Regional Indicator Symbol Letter Z,区域指示符,assets/png/72/A98E0099.png,assets/bmp/16/A98E0099.bmp,assets/bmp/24/A98E0099.bmp,assets/bmp/32/A98E0099.bmp
+A98E0100,U+1F201,1F201,🈁,Squared Katakana Koko,符号与其他,assets/png/72/A98E0100.png,assets/bmp/16/A98E0100.bmp,assets/bmp/24/A98E0100.bmp,assets/bmp/32/A98E0100.bmp
+A98E0101,U+1F21A,1F21A,🈚,Squared Cjk Unified Ideograph-7121,符号与其他,assets/png/72/A98E0101.png,assets/bmp/16/A98E0101.bmp,assets/bmp/24/A98E0101.bmp,assets/bmp/32/A98E0101.bmp
+A98E0102,U+1F22F,1F22F,🈯,Squared Cjk Unified Ideograph-6307,符号与其他,assets/png/72/A98E0102.png,assets/bmp/16/A98E0102.bmp,assets/bmp/24/A98E0102.bmp,assets/bmp/32/A98E0102.bmp
+A98E0103,U+1F232,1F232,🈲,Squared Cjk Unified Ideograph-7981,符号与其他,assets/png/72/A98E0103.png,assets/bmp/16/A98E0103.bmp,assets/bmp/24/A98E0103.bmp,assets/bmp/32/A98E0103.bmp
+A98E0104,U+1F233,1F233,🈳,Squared Cjk Unified Ideograph-7A7A,符号与其他,assets/png/72/A98E0104.png,assets/bmp/16/A98E0104.bmp,assets/bmp/24/A98E0104.bmp,assets/bmp/32/A98E0104.bmp
+A98E0105,U+1F234,1F234,🈴,Squared Cjk Unified Ideograph-5408,符号与其他,assets/png/72/A98E0105.png,assets/bmp/16/A98E0105.bmp,assets/bmp/24/A98E0105.bmp,assets/bmp/32/A98E0105.bmp
+A98E0106,U+1F235,1F235,🈵,Squared Cjk Unified Ideograph-6E80,符号与其他,assets/png/72/A98E0106.png,assets/bmp/16/A98E0106.bmp,assets/bmp/24/A98E0106.bmp,assets/bmp/32/A98E0106.bmp
+A98E0107,U+1F236,1F236,🈶,Squared Cjk Unified Ideograph-6709,符号与其他,assets/png/72/A98E0107.png,assets/bmp/16/A98E0107.bmp,assets/bmp/24/A98E0107.bmp,assets/bmp/32/A98E0107.bmp
+A98E0108,U+1F238,1F238,🈸,Squared Cjk Unified Ideograph-7533,符号与其他,assets/png/72/A98E0108.png,assets/bmp/16/A98E0108.bmp,assets/bmp/24/A98E0108.bmp,assets/bmp/32/A98E0108.bmp
+A98E0109,U+1F239,1F239,🈹,Squared Cjk Unified Ideograph-5272,符号与其他,assets/png/72/A98E0109.png,assets/bmp/16/A98E0109.bmp,assets/bmp/24/A98E0109.bmp,assets/bmp/32/A98E0109.bmp
+A98E0110,U+1F23A,1F23A,🈺,Squared Cjk Unified Ideograph-55B6,符号与其他,assets/png/72/A98E0110.png,assets/bmp/16/A98E0110.bmp,assets/bmp/24/A98E0110.bmp,assets/bmp/32/A98E0110.bmp
+A98E0111,U+1F250,1F250,🉐,Circled Ideograph Advantage,符号与其他,assets/png/72/A98E0111.png,assets/bmp/16/A98E0111.bmp,assets/bmp/24/A98E0111.bmp,assets/bmp/32/A98E0111.bmp
+A98E0112,U+1F251,1F251,🉑,Circled Ideograph Accept,符号与其他,assets/png/72/A98E0112.png,assets/bmp/16/A98E0112.bmp,assets/bmp/24/A98E0112.bmp,assets/bmp/32/A98E0112.bmp
+A98E0113,U+1F300,1F300,🌀,Cyclone,物品与活动,assets/png/72/A98E0113.png,assets/bmp/16/A98E0113.bmp,assets/bmp/24/A98E0113.bmp,assets/bmp/32/A98E0113.bmp
+A98E0114,U+1F301,1F301,🌁,Foggy,物品与活动,assets/png/72/A98E0114.png,assets/bmp/16/A98E0114.bmp,assets/bmp/24/A98E0114.bmp,assets/bmp/32/A98E0114.bmp
+A98E0115,U+1F302,1F302,🌂,Closed Umbrella,物品与活动,assets/png/72/A98E0115.png,assets/bmp/16/A98E0115.bmp,assets/bmp/24/A98E0115.bmp,assets/bmp/32/A98E0115.bmp
+A98E0116,U+1F303,1F303,🌃,Night With Stars,物品与活动,assets/png/72/A98E0116.png,assets/bmp/16/A98E0116.bmp,assets/bmp/24/A98E0116.bmp,assets/bmp/32/A98E0116.bmp
+A98E0117,U+1F304,1F304,🌄,Sunrise Over Mountains,物品与活动,assets/png/72/A98E0117.png,assets/bmp/16/A98E0117.bmp,assets/bmp/24/A98E0117.bmp,assets/bmp/32/A98E0117.bmp
+A98E0118,U+1F305,1F305,🌅,Sunrise,物品与活动,assets/png/72/A98E0118.png,assets/bmp/16/A98E0118.bmp,assets/bmp/24/A98E0118.bmp,assets/bmp/32/A98E0118.bmp
+A98E0119,U+1F306,1F306,🌆,Cityscape At Dusk,物品与活动,assets/png/72/A98E0119.png,assets/bmp/16/A98E0119.bmp,assets/bmp/24/A98E0119.bmp,assets/bmp/32/A98E0119.bmp
+A98E0120,U+1F307,1F307,🌇,Sunset Over Buildings,物品与活动,assets/png/72/A98E0120.png,assets/bmp/16/A98E0120.bmp,assets/bmp/24/A98E0120.bmp,assets/bmp/32/A98E0120.bmp
+A98E0121,U+1F308,1F308,🌈,Rainbow,物品与活动,assets/png/72/A98E0121.png,assets/bmp/16/A98E0121.bmp,assets/bmp/24/A98E0121.bmp,assets/bmp/32/A98E0121.bmp
+A98E0122,U+1F309,1F309,🌉,Bridge At Night,物品与活动,assets/png/72/A98E0122.png,assets/bmp/16/A98E0122.bmp,assets/bmp/24/A98E0122.bmp,assets/bmp/32/A98E0122.bmp
+A98E0123,U+1F30A,1F30A,🌊,Water Wave,物品与活动,assets/png/72/A98E0123.png,assets/bmp/16/A98E0123.bmp,assets/bmp/24/A98E0123.bmp,assets/bmp/32/A98E0123.bmp
+A98E0124,U+1F30B,1F30B,🌋,Volcano,物品与活动,assets/png/72/A98E0124.png,assets/bmp/16/A98E0124.bmp,assets/bmp/24/A98E0124.bmp,assets/bmp/32/A98E0124.bmp
+A98E0125,U+1F30C,1F30C,🌌,Milky Way,物品与活动,assets/png/72/A98E0125.png,assets/bmp/16/A98E0125.bmp,assets/bmp/24/A98E0125.bmp,assets/bmp/32/A98E0125.bmp
+A98E0126,U+1F30D,1F30D,🌍,Earth Globe Europe-Africa,物品与活动,assets/png/72/A98E0126.png,assets/bmp/16/A98E0126.bmp,assets/bmp/24/A98E0126.bmp,assets/bmp/32/A98E0126.bmp
+A98E0127,U+1F30E,1F30E,🌎,Earth Globe Americas,物品与活动,assets/png/72/A98E0127.png,assets/bmp/16/A98E0127.bmp,assets/bmp/24/A98E0127.bmp,assets/bmp/32/A98E0127.bmp
+A98E0128,U+1F30F,1F30F,🌏,Earth Globe Asia-Australia,物品与活动,assets/png/72/A98E0128.png,assets/bmp/16/A98E0128.bmp,assets/bmp/24/A98E0128.bmp,assets/bmp/32/A98E0128.bmp
+A98E0129,U+1F310,1F310,🌐,Globe With Meridians,物品与活动,assets/png/72/A98E0129.png,assets/bmp/16/A98E0129.bmp,assets/bmp/24/A98E0129.bmp,assets/bmp/32/A98E0129.bmp
+A98E0130,U+1F311,1F311,🌑,New Moon Symbol,物品与活动,assets/png/72/A98E0130.png,assets/bmp/16/A98E0130.bmp,assets/bmp/24/A98E0130.bmp,assets/bmp/32/A98E0130.bmp
+A98E0131,U+1F312,1F312,🌒,Waxing Crescent Moon Symbol,物品与活动,assets/png/72/A98E0131.png,assets/bmp/16/A98E0131.bmp,assets/bmp/24/A98E0131.bmp,assets/bmp/32/A98E0131.bmp
+A98E0132,U+1F313,1F313,🌓,First Quarter Moon Symbol,物品与活动,assets/png/72/A98E0132.png,assets/bmp/16/A98E0132.bmp,assets/bmp/24/A98E0132.bmp,assets/bmp/32/A98E0132.bmp
+A98E0133,U+1F314,1F314,🌔,Waxing Gibbous Moon Symbol,物品与活动,assets/png/72/A98E0133.png,assets/bmp/16/A98E0133.bmp,assets/bmp/24/A98E0133.bmp,assets/bmp/32/A98E0133.bmp
+A98E0134,U+1F315,1F315,🌕,Full Moon Symbol,物品与活动,assets/png/72/A98E0134.png,assets/bmp/16/A98E0134.bmp,assets/bmp/24/A98E0134.bmp,assets/bmp/32/A98E0134.bmp
+A98E0135,U+1F316,1F316,🌖,Waning Gibbous Moon Symbol,物品与活动,assets/png/72/A98E0135.png,assets/bmp/16/A98E0135.bmp,assets/bmp/24/A98E0135.bmp,assets/bmp/32/A98E0135.bmp
+A98E0136,U+1F317,1F317,🌗,Last Quarter Moon Symbol,物品与活动,assets/png/72/A98E0136.png,assets/bmp/16/A98E0136.bmp,assets/bmp/24/A98E0136.bmp,assets/bmp/32/A98E0136.bmp
+A98E0137,U+1F318,1F318,🌘,Waning Crescent Moon Symbol,物品与活动,assets/png/72/A98E0137.png,assets/bmp/16/A98E0137.bmp,assets/bmp/24/A98E0137.bmp,assets/bmp/32/A98E0137.bmp
+A98E0138,U+1F319,1F319,🌙,Crescent Moon,物品与活动,assets/png/72/A98E0138.png,assets/bmp/16/A98E0138.bmp,assets/bmp/24/A98E0138.bmp,assets/bmp/32/A98E0138.bmp
+A98E0139,U+1F31A,1F31A,🌚,New Moon With Face,物品与活动,assets/png/72/A98E0139.png,assets/bmp/16/A98E0139.bmp,assets/bmp/24/A98E0139.bmp,assets/bmp/32/A98E0139.bmp
+A98E0140,U+1F31B,1F31B,🌛,First Quarter Moon With Face,物品与活动,assets/png/72/A98E0140.png,assets/bmp/16/A98E0140.bmp,assets/bmp/24/A98E0140.bmp,assets/bmp/32/A98E0140.bmp
+A98E0141,U+1F31C,1F31C,🌜,Last Quarter Moon With Face,物品与活动,assets/png/72/A98E0141.png,assets/bmp/16/A98E0141.bmp,assets/bmp/24/A98E0141.bmp,assets/bmp/32/A98E0141.bmp
+A98E0142,U+1F31D,1F31D,🌝,Full Moon With Face,物品与活动,assets/png/72/A98E0142.png,assets/bmp/16/A98E0142.bmp,assets/bmp/24/A98E0142.bmp,assets/bmp/32/A98E0142.bmp
+A98E0143,U+1F31E,1F31E,🌞,Sun With Face,物品与活动,assets/png/72/A98E0143.png,assets/bmp/16/A98E0143.bmp,assets/bmp/24/A98E0143.bmp,assets/bmp/32/A98E0143.bmp
+A98E0144,U+1F31F,1F31F,🌟,Glowing Star,物品与活动,assets/png/72/A98E0144.png,assets/bmp/16/A98E0144.bmp,assets/bmp/24/A98E0144.bmp,assets/bmp/32/A98E0144.bmp
+A98E0145,U+1F320,1F320,🌠,Shooting Star,物品与活动,assets/png/72/A98E0145.png,assets/bmp/16/A98E0145.bmp,assets/bmp/24/A98E0145.bmp,assets/bmp/32/A98E0145.bmp
+A98E0146,U+1F32D,1F32D,🌭,Hot Dog,物品与活动,assets/png/72/A98E0146.png,assets/bmp/16/A98E0146.bmp,assets/bmp/24/A98E0146.bmp,assets/bmp/32/A98E0146.bmp
+A98E0147,U+1F32E,1F32E,🌮,Taco,物品与活动,assets/png/72/A98E0147.png,assets/bmp/16/A98E0147.bmp,assets/bmp/24/A98E0147.bmp,assets/bmp/32/A98E0147.bmp
+A98E0148,U+1F32F,1F32F,🌯,Burrito,物品与活动,assets/png/72/A98E0148.png,assets/bmp/16/A98E0148.bmp,assets/bmp/24/A98E0148.bmp,assets/bmp/32/A98E0148.bmp
+A98E0149,U+1F330,1F330,🌰,Chestnut,物品与活动,assets/png/72/A98E0149.png,assets/bmp/16/A98E0149.bmp,assets/bmp/24/A98E0149.bmp,assets/bmp/32/A98E0149.bmp
+A98E0150,U+1F331,1F331,🌱,Seedling,物品与活动,assets/png/72/A98E0150.png,assets/bmp/16/A98E0150.bmp,assets/bmp/24/A98E0150.bmp,assets/bmp/32/A98E0150.bmp
+A98E0151,U+1F332,1F332,🌲,Evergreen Tree,物品与活动,assets/png/72/A98E0151.png,assets/bmp/16/A98E0151.bmp,assets/bmp/24/A98E0151.bmp,assets/bmp/32/A98E0151.bmp
+A98E0152,U+1F333,1F333,🌳,Deciduous Tree,物品与活动,assets/png/72/A98E0152.png,assets/bmp/16/A98E0152.bmp,assets/bmp/24/A98E0152.bmp,assets/bmp/32/A98E0152.bmp
+A98E0153,U+1F334,1F334,🌴,Palm Tree,物品与活动,assets/png/72/A98E0153.png,assets/bmp/16/A98E0153.bmp,assets/bmp/24/A98E0153.bmp,assets/bmp/32/A98E0153.bmp
+A98E0154,U+1F335,1F335,🌵,Cactus,物品与活动,assets/png/72/A98E0154.png,assets/bmp/16/A98E0154.bmp,assets/bmp/24/A98E0154.bmp,assets/bmp/32/A98E0154.bmp
+A98E0155,U+1F337,1F337,🌷,Tulip,物品与活动,assets/png/72/A98E0155.png,assets/bmp/16/A98E0155.bmp,assets/bmp/24/A98E0155.bmp,assets/bmp/32/A98E0155.bmp
+A98E0156,U+1F338,1F338,🌸,Cherry Blossom,物品与活动,assets/png/72/A98E0156.png,assets/bmp/16/A98E0156.bmp,assets/bmp/24/A98E0156.bmp,assets/bmp/32/A98E0156.bmp
+A98E0157,U+1F339,1F339,🌹,Rose,物品与活动,assets/png/72/A98E0157.png,assets/bmp/16/A98E0157.bmp,assets/bmp/24/A98E0157.bmp,assets/bmp/32/A98E0157.bmp
+A98E0158,U+1F33A,1F33A,🌺,Hibiscus,物品与活动,assets/png/72/A98E0158.png,assets/bmp/16/A98E0158.bmp,assets/bmp/24/A98E0158.bmp,assets/bmp/32/A98E0158.bmp
+A98E0159,U+1F33B,1F33B,🌻,Sunflower,物品与活动,assets/png/72/A98E0159.png,assets/bmp/16/A98E0159.bmp,assets/bmp/24/A98E0159.bmp,assets/bmp/32/A98E0159.bmp
+A98E0160,U+1F33C,1F33C,🌼,Blossom,物品与活动,assets/png/72/A98E0160.png,assets/bmp/16/A98E0160.bmp,assets/bmp/24/A98E0160.bmp,assets/bmp/32/A98E0160.bmp
+A98E0161,U+1F33D,1F33D,🌽,Ear Of Maize,物品与活动,assets/png/72/A98E0161.png,assets/bmp/16/A98E0161.bmp,assets/bmp/24/A98E0161.bmp,assets/bmp/32/A98E0161.bmp
+A98E0162,U+1F33E,1F33E,🌾,Ear Of Rice,物品与活动,assets/png/72/A98E0162.png,assets/bmp/16/A98E0162.bmp,assets/bmp/24/A98E0162.bmp,assets/bmp/32/A98E0162.bmp
+A98E0163,U+1F33F,1F33F,🌿,Herb,物品与活动,assets/png/72/A98E0163.png,assets/bmp/16/A98E0163.bmp,assets/bmp/24/A98E0163.bmp,assets/bmp/32/A98E0163.bmp
+A98E0164,U+1F340,1F340,🍀,Four Leaf Clover,物品与活动,assets/png/72/A98E0164.png,assets/bmp/16/A98E0164.bmp,assets/bmp/24/A98E0164.bmp,assets/bmp/32/A98E0164.bmp
+A98E0165,U+1F341,1F341,🍁,Maple Leaf,物品与活动,assets/png/72/A98E0165.png,assets/bmp/16/A98E0165.bmp,assets/bmp/24/A98E0165.bmp,assets/bmp/32/A98E0165.bmp
+A98E0166,U+1F342,1F342,🍂,Fallen Leaf,物品与活动,assets/png/72/A98E0166.png,assets/bmp/16/A98E0166.bmp,assets/bmp/24/A98E0166.bmp,assets/bmp/32/A98E0166.bmp
+A98E0167,U+1F343,1F343,🍃,Leaf Fluttering In Wind,物品与活动,assets/png/72/A98E0167.png,assets/bmp/16/A98E0167.bmp,assets/bmp/24/A98E0167.bmp,assets/bmp/32/A98E0167.bmp
+A98E0168,U+1F344,1F344,🍄,Mushroom,物品与活动,assets/png/72/A98E0168.png,assets/bmp/16/A98E0168.bmp,assets/bmp/24/A98E0168.bmp,assets/bmp/32/A98E0168.bmp
+A98E0169,U+1F345,1F345,🍅,Tomato,物品与活动,assets/png/72/A98E0169.png,assets/bmp/16/A98E0169.bmp,assets/bmp/24/A98E0169.bmp,assets/bmp/32/A98E0169.bmp
+A98E0170,U+1F346,1F346,🍆,Aubergine,物品与活动,assets/png/72/A98E0170.png,assets/bmp/16/A98E0170.bmp,assets/bmp/24/A98E0170.bmp,assets/bmp/32/A98E0170.bmp
+A98E0171,U+1F347,1F347,🍇,Grapes,物品与活动,assets/png/72/A98E0171.png,assets/bmp/16/A98E0171.bmp,assets/bmp/24/A98E0171.bmp,assets/bmp/32/A98E0171.bmp
+A98E0172,U+1F348,1F348,🍈,Melon,物品与活动,assets/png/72/A98E0172.png,assets/bmp/16/A98E0172.bmp,assets/bmp/24/A98E0172.bmp,assets/bmp/32/A98E0172.bmp
+A98E0173,U+1F349,1F349,🍉,Watermelon,物品与活动,assets/png/72/A98E0173.png,assets/bmp/16/A98E0173.bmp,assets/bmp/24/A98E0173.bmp,assets/bmp/32/A98E0173.bmp
+A98E0174,U+1F34A,1F34A,🍊,Tangerine,物品与活动,assets/png/72/A98E0174.png,assets/bmp/16/A98E0174.bmp,assets/bmp/24/A98E0174.bmp,assets/bmp/32/A98E0174.bmp
+A98E0175,U+1F34B,1F34B,🍋,Lemon,物品与活动,assets/png/72/A98E0175.png,assets/bmp/16/A98E0175.bmp,assets/bmp/24/A98E0175.bmp,assets/bmp/32/A98E0175.bmp
+A98E0176,U+1F34C,1F34C,🍌,Banana,物品与活动,assets/png/72/A98E0176.png,assets/bmp/16/A98E0176.bmp,assets/bmp/24/A98E0176.bmp,assets/bmp/32/A98E0176.bmp
+A98E0177,U+1F34D,1F34D,🍍,Pineapple,物品与活动,assets/png/72/A98E0177.png,assets/bmp/16/A98E0177.bmp,assets/bmp/24/A98E0177.bmp,assets/bmp/32/A98E0177.bmp
+A98E0178,U+1F34E,1F34E,🍎,Red Apple,物品与活动,assets/png/72/A98E0178.png,assets/bmp/16/A98E0178.bmp,assets/bmp/24/A98E0178.bmp,assets/bmp/32/A98E0178.bmp
+A98E0179,U+1F34F,1F34F,🍏,Green Apple,物品与活动,assets/png/72/A98E0179.png,assets/bmp/16/A98E0179.bmp,assets/bmp/24/A98E0179.bmp,assets/bmp/32/A98E0179.bmp
+A98E0180,U+1F350,1F350,🍐,Pear,物品与活动,assets/png/72/A98E0180.png,assets/bmp/16/A98E0180.bmp,assets/bmp/24/A98E0180.bmp,assets/bmp/32/A98E0180.bmp
+A98E0181,U+1F351,1F351,🍑,Peach,物品与活动,assets/png/72/A98E0181.png,assets/bmp/16/A98E0181.bmp,assets/bmp/24/A98E0181.bmp,assets/bmp/32/A98E0181.bmp
+A98E0182,U+1F352,1F352,🍒,Cherries,物品与活动,assets/png/72/A98E0182.png,assets/bmp/16/A98E0182.bmp,assets/bmp/24/A98E0182.bmp,assets/bmp/32/A98E0182.bmp
+A98E0183,U+1F353,1F353,🍓,Strawberry,物品与活动,assets/png/72/A98E0183.png,assets/bmp/16/A98E0183.bmp,assets/bmp/24/A98E0183.bmp,assets/bmp/32/A98E0183.bmp
+A98E0184,U+1F354,1F354,🍔,Hamburger,物品与活动,assets/png/72/A98E0184.png,assets/bmp/16/A98E0184.bmp,assets/bmp/24/A98E0184.bmp,assets/bmp/32/A98E0184.bmp
+A98E0185,U+1F355,1F355,🍕,Slice Of Pizza,物品与活动,assets/png/72/A98E0185.png,assets/bmp/16/A98E0185.bmp,assets/bmp/24/A98E0185.bmp,assets/bmp/32/A98E0185.bmp
+A98E0186,U+1F356,1F356,🍖,Meat On Bone,物品与活动,assets/png/72/A98E0186.png,assets/bmp/16/A98E0186.bmp,assets/bmp/24/A98E0186.bmp,assets/bmp/32/A98E0186.bmp
+A98E0187,U+1F357,1F357,🍗,Poultry Leg,物品与活动,assets/png/72/A98E0187.png,assets/bmp/16/A98E0187.bmp,assets/bmp/24/A98E0187.bmp,assets/bmp/32/A98E0187.bmp
+A98E0188,U+1F358,1F358,🍘,Rice Cracker,物品与活动,assets/png/72/A98E0188.png,assets/bmp/16/A98E0188.bmp,assets/bmp/24/A98E0188.bmp,assets/bmp/32/A98E0188.bmp
+A98E0189,U+1F359,1F359,🍙,Rice Ball,物品与活动,assets/png/72/A98E0189.png,assets/bmp/16/A98E0189.bmp,assets/bmp/24/A98E0189.bmp,assets/bmp/32/A98E0189.bmp
+A98E0190,U+1F35A,1F35A,🍚,Cooked Rice,物品与活动,assets/png/72/A98E0190.png,assets/bmp/16/A98E0190.bmp,assets/bmp/24/A98E0190.bmp,assets/bmp/32/A98E0190.bmp
+A98E0191,U+1F35B,1F35B,🍛,Curry And Rice,物品与活动,assets/png/72/A98E0191.png,assets/bmp/16/A98E0191.bmp,assets/bmp/24/A98E0191.bmp,assets/bmp/32/A98E0191.bmp
+A98E0192,U+1F35C,1F35C,🍜,Steaming Bowl,物品与活动,assets/png/72/A98E0192.png,assets/bmp/16/A98E0192.bmp,assets/bmp/24/A98E0192.bmp,assets/bmp/32/A98E0192.bmp
+A98E0193,U+1F35D,1F35D,🍝,Spaghetti,物品与活动,assets/png/72/A98E0193.png,assets/bmp/16/A98E0193.bmp,assets/bmp/24/A98E0193.bmp,assets/bmp/32/A98E0193.bmp
+A98E0194,U+1F35E,1F35E,🍞,Bread,物品与活动,assets/png/72/A98E0194.png,assets/bmp/16/A98E0194.bmp,assets/bmp/24/A98E0194.bmp,assets/bmp/32/A98E0194.bmp
+A98E0195,U+1F35F,1F35F,🍟,French Fries,物品与活动,assets/png/72/A98E0195.png,assets/bmp/16/A98E0195.bmp,assets/bmp/24/A98E0195.bmp,assets/bmp/32/A98E0195.bmp
+A98E0196,U+1F360,1F360,🍠,Roasted Sweet Potato,物品与活动,assets/png/72/A98E0196.png,assets/bmp/16/A98E0196.bmp,assets/bmp/24/A98E0196.bmp,assets/bmp/32/A98E0196.bmp
+A98E0197,U+1F361,1F361,🍡,Dango,物品与活动,assets/png/72/A98E0197.png,assets/bmp/16/A98E0197.bmp,assets/bmp/24/A98E0197.bmp,assets/bmp/32/A98E0197.bmp
+A98E0198,U+1F362,1F362,🍢,Oden,物品与活动,assets/png/72/A98E0198.png,assets/bmp/16/A98E0198.bmp,assets/bmp/24/A98E0198.bmp,assets/bmp/32/A98E0198.bmp
+A98E0199,U+1F363,1F363,🍣,Sushi,物品与活动,assets/png/72/A98E0199.png,assets/bmp/16/A98E0199.bmp,assets/bmp/24/A98E0199.bmp,assets/bmp/32/A98E0199.bmp
+A98E0200,U+1F364,1F364,🍤,Fried Shrimp,物品与活动,assets/png/72/A98E0200.png,assets/bmp/16/A98E0200.bmp,assets/bmp/24/A98E0200.bmp,assets/bmp/32/A98E0200.bmp
+A98E0201,U+1F365,1F365,🍥,Fish Cake With Swirl Design,物品与活动,assets/png/72/A98E0201.png,assets/bmp/16/A98E0201.bmp,assets/bmp/24/A98E0201.bmp,assets/bmp/32/A98E0201.bmp
+A98E0202,U+1F366,1F366,🍦,Soft Ice Cream,物品与活动,assets/png/72/A98E0202.png,assets/bmp/16/A98E0202.bmp,assets/bmp/24/A98E0202.bmp,assets/bmp/32/A98E0202.bmp
+A98E0203,U+1F367,1F367,🍧,Shaved Ice,物品与活动,assets/png/72/A98E0203.png,assets/bmp/16/A98E0203.bmp,assets/bmp/24/A98E0203.bmp,assets/bmp/32/A98E0203.bmp
+A98E0204,U+1F368,1F368,🍨,Ice Cream,物品与活动,assets/png/72/A98E0204.png,assets/bmp/16/A98E0204.bmp,assets/bmp/24/A98E0204.bmp,assets/bmp/32/A98E0204.bmp
+A98E0205,U+1F369,1F369,🍩,Doughnut,物品与活动,assets/png/72/A98E0205.png,assets/bmp/16/A98E0205.bmp,assets/bmp/24/A98E0205.bmp,assets/bmp/32/A98E0205.bmp
+A98E0206,U+1F36A,1F36A,🍪,Cookie,物品与活动,assets/png/72/A98E0206.png,assets/bmp/16/A98E0206.bmp,assets/bmp/24/A98E0206.bmp,assets/bmp/32/A98E0206.bmp
+A98E0207,U+1F36B,1F36B,🍫,Chocolate Bar,物品与活动,assets/png/72/A98E0207.png,assets/bmp/16/A98E0207.bmp,assets/bmp/24/A98E0207.bmp,assets/bmp/32/A98E0207.bmp
+A98E0208,U+1F36C,1F36C,🍬,Candy,物品与活动,assets/png/72/A98E0208.png,assets/bmp/16/A98E0208.bmp,assets/bmp/24/A98E0208.bmp,assets/bmp/32/A98E0208.bmp
+A98E0209,U+1F36D,1F36D,🍭,Lollipop,物品与活动,assets/png/72/A98E0209.png,assets/bmp/16/A98E0209.bmp,assets/bmp/24/A98E0209.bmp,assets/bmp/32/A98E0209.bmp
+A98E0210,U+1F36E,1F36E,🍮,Custard,物品与活动,assets/png/72/A98E0210.png,assets/bmp/16/A98E0210.bmp,assets/bmp/24/A98E0210.bmp,assets/bmp/32/A98E0210.bmp
+A98E0211,U+1F36F,1F36F,🍯,Honey Pot,物品与活动,assets/png/72/A98E0211.png,assets/bmp/16/A98E0211.bmp,assets/bmp/24/A98E0211.bmp,assets/bmp/32/A98E0211.bmp
+A98E0212,U+1F370,1F370,🍰,Shortcake,物品与活动,assets/png/72/A98E0212.png,assets/bmp/16/A98E0212.bmp,assets/bmp/24/A98E0212.bmp,assets/bmp/32/A98E0212.bmp
+A98E0213,U+1F371,1F371,🍱,Bento Box,物品与活动,assets/png/72/A98E0213.png,assets/bmp/16/A98E0213.bmp,assets/bmp/24/A98E0213.bmp,assets/bmp/32/A98E0213.bmp
+A98E0214,U+1F372,1F372,🍲,Pot Of Food,物品与活动,assets/png/72/A98E0214.png,assets/bmp/16/A98E0214.bmp,assets/bmp/24/A98E0214.bmp,assets/bmp/32/A98E0214.bmp
+A98E0215,U+1F373,1F373,🍳,Cooking,物品与活动,assets/png/72/A98E0215.png,assets/bmp/16/A98E0215.bmp,assets/bmp/24/A98E0215.bmp,assets/bmp/32/A98E0215.bmp
+A98E0216,U+1F374,1F374,🍴,Fork And Knife,物品与活动,assets/png/72/A98E0216.png,assets/bmp/16/A98E0216.bmp,assets/bmp/24/A98E0216.bmp,assets/bmp/32/A98E0216.bmp
+A98E0217,U+1F375,1F375,🍵,Teacup Without Handle,物品与活动,assets/png/72/A98E0217.png,assets/bmp/16/A98E0217.bmp,assets/bmp/24/A98E0217.bmp,assets/bmp/32/A98E0217.bmp
+A98E0218,U+1F376,1F376,🍶,Sake Bottle And Cup,物品与活动,assets/png/72/A98E0218.png,assets/bmp/16/A98E0218.bmp,assets/bmp/24/A98E0218.bmp,assets/bmp/32/A98E0218.bmp
+A98E0219,U+1F377,1F377,🍷,Wine Glass,物品与活动,assets/png/72/A98E0219.png,assets/bmp/16/A98E0219.bmp,assets/bmp/24/A98E0219.bmp,assets/bmp/32/A98E0219.bmp
+A98E0220,U+1F378,1F378,🍸,Cocktail Glass,物品与活动,assets/png/72/A98E0220.png,assets/bmp/16/A98E0220.bmp,assets/bmp/24/A98E0220.bmp,assets/bmp/32/A98E0220.bmp
+A98E0221,U+1F379,1F379,🍹,Tropical Drink,物品与活动,assets/png/72/A98E0221.png,assets/bmp/16/A98E0221.bmp,assets/bmp/24/A98E0221.bmp,assets/bmp/32/A98E0221.bmp
+A98E0222,U+1F37A,1F37A,🍺,Beer Mug,物品与活动,assets/png/72/A98E0222.png,assets/bmp/16/A98E0222.bmp,assets/bmp/24/A98E0222.bmp,assets/bmp/32/A98E0222.bmp
+A98E0223,U+1F37B,1F37B,🍻,Clinking Beer Mugs,物品与活动,assets/png/72/A98E0223.png,assets/bmp/16/A98E0223.bmp,assets/bmp/24/A98E0223.bmp,assets/bmp/32/A98E0223.bmp
+A98E0224,U+1F37C,1F37C,🍼,Baby Bottle,物品与活动,assets/png/72/A98E0224.png,assets/bmp/16/A98E0224.bmp,assets/bmp/24/A98E0224.bmp,assets/bmp/32/A98E0224.bmp
+A98E0225,U+1F37E,1F37E,🍾,Bottle With Popping Cork,物品与活动,assets/png/72/A98E0225.png,assets/bmp/16/A98E0225.bmp,assets/bmp/24/A98E0225.bmp,assets/bmp/32/A98E0225.bmp
+A98E0226,U+1F37F,1F37F,🍿,Popcorn,物品与活动,assets/png/72/A98E0226.png,assets/bmp/16/A98E0226.bmp,assets/bmp/24/A98E0226.bmp,assets/bmp/32/A98E0226.bmp
+A98E0227,U+1F380,1F380,🎀,Ribbon,物品与活动,assets/png/72/A98E0227.png,assets/bmp/16/A98E0227.bmp,assets/bmp/24/A98E0227.bmp,assets/bmp/32/A98E0227.bmp
+A98E0228,U+1F381,1F381,🎁,Wrapped Present,物品与活动,assets/png/72/A98E0228.png,assets/bmp/16/A98E0228.bmp,assets/bmp/24/A98E0228.bmp,assets/bmp/32/A98E0228.bmp
+A98E0229,U+1F382,1F382,🎂,Birthday Cake,物品与活动,assets/png/72/A98E0229.png,assets/bmp/16/A98E0229.bmp,assets/bmp/24/A98E0229.bmp,assets/bmp/32/A98E0229.bmp
+A98E0230,U+1F383,1F383,🎃,Jack-O-Lantern,物品与活动,assets/png/72/A98E0230.png,assets/bmp/16/A98E0230.bmp,assets/bmp/24/A98E0230.bmp,assets/bmp/32/A98E0230.bmp
+A98E0231,U+1F384,1F384,🎄,Christmas Tree,物品与活动,assets/png/72/A98E0231.png,assets/bmp/16/A98E0231.bmp,assets/bmp/24/A98E0231.bmp,assets/bmp/32/A98E0231.bmp
+A98E0232,U+1F385,1F385,🎅,Father Christmas,物品与活动,assets/png/72/A98E0232.png,assets/bmp/16/A98E0232.bmp,assets/bmp/24/A98E0232.bmp,assets/bmp/32/A98E0232.bmp
+A98E0233,U+1F386,1F386,🎆,Fireworks,物品与活动,assets/png/72/A98E0233.png,assets/bmp/16/A98E0233.bmp,assets/bmp/24/A98E0233.bmp,assets/bmp/32/A98E0233.bmp
+A98E0234,U+1F387,1F387,🎇,Firework Sparkler,物品与活动,assets/png/72/A98E0234.png,assets/bmp/16/A98E0234.bmp,assets/bmp/24/A98E0234.bmp,assets/bmp/32/A98E0234.bmp
+A98E0235,U+1F388,1F388,🎈,Balloon,物品与活动,assets/png/72/A98E0235.png,assets/bmp/16/A98E0235.bmp,assets/bmp/24/A98E0235.bmp,assets/bmp/32/A98E0235.bmp
+A98E0236,U+1F389,1F389,🎉,Party Popper,物品与活动,assets/png/72/A98E0236.png,assets/bmp/16/A98E0236.bmp,assets/bmp/24/A98E0236.bmp,assets/bmp/32/A98E0236.bmp
+A98E0237,U+1F38A,1F38A,🎊,Confetti Ball,物品与活动,assets/png/72/A98E0237.png,assets/bmp/16/A98E0237.bmp,assets/bmp/24/A98E0237.bmp,assets/bmp/32/A98E0237.bmp
+A98E0238,U+1F38B,1F38B,🎋,Tanabata Tree,物品与活动,assets/png/72/A98E0238.png,assets/bmp/16/A98E0238.bmp,assets/bmp/24/A98E0238.bmp,assets/bmp/32/A98E0238.bmp
+A98E0239,U+1F38C,1F38C,🎌,Crossed Flags,物品与活动,assets/png/72/A98E0239.png,assets/bmp/16/A98E0239.bmp,assets/bmp/24/A98E0239.bmp,assets/bmp/32/A98E0239.bmp
+A98E0240,U+1F38D,1F38D,🎍,Pine Decoration,物品与活动,assets/png/72/A98E0240.png,assets/bmp/16/A98E0240.bmp,assets/bmp/24/A98E0240.bmp,assets/bmp/32/A98E0240.bmp
+A98E0241,U+1F38E,1F38E,🎎,Japanese Dolls,物品与活动,assets/png/72/A98E0241.png,assets/bmp/16/A98E0241.bmp,assets/bmp/24/A98E0241.bmp,assets/bmp/32/A98E0241.bmp
+A98E0242,U+1F38F,1F38F,🎏,Carp Streamer,物品与活动,assets/png/72/A98E0242.png,assets/bmp/16/A98E0242.bmp,assets/bmp/24/A98E0242.bmp,assets/bmp/32/A98E0242.bmp
+A98E0243,U+1F390,1F390,🎐,Wind Chime,物品与活动,assets/png/72/A98E0243.png,assets/bmp/16/A98E0243.bmp,assets/bmp/24/A98E0243.bmp,assets/bmp/32/A98E0243.bmp
+A98E0244,U+1F391,1F391,🎑,Moon Viewing Ceremony,物品与活动,assets/png/72/A98E0244.png,assets/bmp/16/A98E0244.bmp,assets/bmp/24/A98E0244.bmp,assets/bmp/32/A98E0244.bmp
+A98E0245,U+1F392,1F392,🎒,School Satchel,物品与活动,assets/png/72/A98E0245.png,assets/bmp/16/A98E0245.bmp,assets/bmp/24/A98E0245.bmp,assets/bmp/32/A98E0245.bmp
+A98E0246,U+1F393,1F393,🎓,Graduation Cap,物品与活动,assets/png/72/A98E0246.png,assets/bmp/16/A98E0246.bmp,assets/bmp/24/A98E0246.bmp,assets/bmp/32/A98E0246.bmp
+A98E0247,U+1F3A0,1F3A0,🎠,Carousel Horse,物品与活动,assets/png/72/A98E0247.png,assets/bmp/16/A98E0247.bmp,assets/bmp/24/A98E0247.bmp,assets/bmp/32/A98E0247.bmp
+A98E0248,U+1F3A1,1F3A1,🎡,Ferris Wheel,物品与活动,assets/png/72/A98E0248.png,assets/bmp/16/A98E0248.bmp,assets/bmp/24/A98E0248.bmp,assets/bmp/32/A98E0248.bmp
+A98E0249,U+1F3A2,1F3A2,🎢,Roller Coaster,物品与活动,assets/png/72/A98E0249.png,assets/bmp/16/A98E0249.bmp,assets/bmp/24/A98E0249.bmp,assets/bmp/32/A98E0249.bmp
+A98E0250,U+1F3A3,1F3A3,🎣,Fishing Pole And Fish,物品与活动,assets/png/72/A98E0250.png,assets/bmp/16/A98E0250.bmp,assets/bmp/24/A98E0250.bmp,assets/bmp/32/A98E0250.bmp
+A98E0251,U+1F3A4,1F3A4,🎤,Microphone,物品与活动,assets/png/72/A98E0251.png,assets/bmp/16/A98E0251.bmp,assets/bmp/24/A98E0251.bmp,assets/bmp/32/A98E0251.bmp
+A98E0252,U+1F3A5,1F3A5,🎥,Movie Camera,物品与活动,assets/png/72/A98E0252.png,assets/bmp/16/A98E0252.bmp,assets/bmp/24/A98E0252.bmp,assets/bmp/32/A98E0252.bmp
+A98E0253,U+1F3A6,1F3A6,🎦,Cinema,物品与活动,assets/png/72/A98E0253.png,assets/bmp/16/A98E0253.bmp,assets/bmp/24/A98E0253.bmp,assets/bmp/32/A98E0253.bmp
+A98E0254,U+1F3A7,1F3A7,🎧,Headphone,物品与活动,assets/png/72/A98E0254.png,assets/bmp/16/A98E0254.bmp,assets/bmp/24/A98E0254.bmp,assets/bmp/32/A98E0254.bmp
+A98E0255,U+1F3A8,1F3A8,🎨,Artist Palette,物品与活动,assets/png/72/A98E0255.png,assets/bmp/16/A98E0255.bmp,assets/bmp/24/A98E0255.bmp,assets/bmp/32/A98E0255.bmp
+A98E0256,U+1F3A9,1F3A9,🎩,Top Hat,物品与活动,assets/png/72/A98E0256.png,assets/bmp/16/A98E0256.bmp,assets/bmp/24/A98E0256.bmp,assets/bmp/32/A98E0256.bmp
+A98E0257,U+1F3AA,1F3AA,🎪,Circus Tent,物品与活动,assets/png/72/A98E0257.png,assets/bmp/16/A98E0257.bmp,assets/bmp/24/A98E0257.bmp,assets/bmp/32/A98E0257.bmp
+A98E0258,U+1F3AB,1F3AB,🎫,Ticket,物品与活动,assets/png/72/A98E0258.png,assets/bmp/16/A98E0258.bmp,assets/bmp/24/A98E0258.bmp,assets/bmp/32/A98E0258.bmp
+A98E0259,U+1F3AC,1F3AC,🎬,Clapper Board,物品与活动,assets/png/72/A98E0259.png,assets/bmp/16/A98E0259.bmp,assets/bmp/24/A98E0259.bmp,assets/bmp/32/A98E0259.bmp
+A98E0260,U+1F3AD,1F3AD,🎭,Performing Arts,物品与活动,assets/png/72/A98E0260.png,assets/bmp/16/A98E0260.bmp,assets/bmp/24/A98E0260.bmp,assets/bmp/32/A98E0260.bmp
+A98E0261,U+1F3AE,1F3AE,🎮,Video Game,物品与活动,assets/png/72/A98E0261.png,assets/bmp/16/A98E0261.bmp,assets/bmp/24/A98E0261.bmp,assets/bmp/32/A98E0261.bmp
+A98E0262,U+1F3AF,1F3AF,🎯,Direct Hit,物品与活动,assets/png/72/A98E0262.png,assets/bmp/16/A98E0262.bmp,assets/bmp/24/A98E0262.bmp,assets/bmp/32/A98E0262.bmp
+A98E0263,U+1F3B0,1F3B0,🎰,Slot Machine,物品与活动,assets/png/72/A98E0263.png,assets/bmp/16/A98E0263.bmp,assets/bmp/24/A98E0263.bmp,assets/bmp/32/A98E0263.bmp
+A98E0264,U+1F3B1,1F3B1,🎱,Billiards,物品与活动,assets/png/72/A98E0264.png,assets/bmp/16/A98E0264.bmp,assets/bmp/24/A98E0264.bmp,assets/bmp/32/A98E0264.bmp
+A98E0265,U+1F3B2,1F3B2,🎲,Game Die,物品与活动,assets/png/72/A98E0265.png,assets/bmp/16/A98E0265.bmp,assets/bmp/24/A98E0265.bmp,assets/bmp/32/A98E0265.bmp
+A98E0266,U+1F3B3,1F3B3,🎳,Bowling,物品与活动,assets/png/72/A98E0266.png,assets/bmp/16/A98E0266.bmp,assets/bmp/24/A98E0266.bmp,assets/bmp/32/A98E0266.bmp
+A98E0267,U+1F3B4,1F3B4,🎴,Flower Playing Cards,物品与活动,assets/png/72/A98E0267.png,assets/bmp/16/A98E0267.bmp,assets/bmp/24/A98E0267.bmp,assets/bmp/32/A98E0267.bmp
+A98E0268,U+1F3B5,1F3B5,🎵,Musical Note,物品与活动,assets/png/72/A98E0268.png,assets/bmp/16/A98E0268.bmp,assets/bmp/24/A98E0268.bmp,assets/bmp/32/A98E0268.bmp
+A98E0269,U+1F3B6,1F3B6,🎶,Multiple Musical Notes,物品与活动,assets/png/72/A98E0269.png,assets/bmp/16/A98E0269.bmp,assets/bmp/24/A98E0269.bmp,assets/bmp/32/A98E0269.bmp
+A98E0270,U+1F3B7,1F3B7,🎷,Saxophone,物品与活动,assets/png/72/A98E0270.png,assets/bmp/16/A98E0270.bmp,assets/bmp/24/A98E0270.bmp,assets/bmp/32/A98E0270.bmp
+A98E0271,U+1F3B8,1F3B8,🎸,Guitar,物品与活动,assets/png/72/A98E0271.png,assets/bmp/16/A98E0271.bmp,assets/bmp/24/A98E0271.bmp,assets/bmp/32/A98E0271.bmp
+A98E0272,U+1F3B9,1F3B9,🎹,Musical Keyboard,物品与活动,assets/png/72/A98E0272.png,assets/bmp/16/A98E0272.bmp,assets/bmp/24/A98E0272.bmp,assets/bmp/32/A98E0272.bmp
+A98E0273,U+1F3BA,1F3BA,🎺,Trumpet,物品与活动,assets/png/72/A98E0273.png,assets/bmp/16/A98E0273.bmp,assets/bmp/24/A98E0273.bmp,assets/bmp/32/A98E0273.bmp
+A98E0274,U+1F3BB,1F3BB,🎻,Violin,物品与活动,assets/png/72/A98E0274.png,assets/bmp/16/A98E0274.bmp,assets/bmp/24/A98E0274.bmp,assets/bmp/32/A98E0274.bmp
+A98E0275,U+1F3BC,1F3BC,🎼,Musical Score,物品与活动,assets/png/72/A98E0275.png,assets/bmp/16/A98E0275.bmp,assets/bmp/24/A98E0275.bmp,assets/bmp/32/A98E0275.bmp
+A98E0276,U+1F3BD,1F3BD,🎽,Running Shirt With Sash,物品与活动,assets/png/72/A98E0276.png,assets/bmp/16/A98E0276.bmp,assets/bmp/24/A98E0276.bmp,assets/bmp/32/A98E0276.bmp
+A98E0277,U+1F3BE,1F3BE,🎾,Tennis Racquet And Ball,物品与活动,assets/png/72/A98E0277.png,assets/bmp/16/A98E0277.bmp,assets/bmp/24/A98E0277.bmp,assets/bmp/32/A98E0277.bmp
+A98E0278,U+1F3BF,1F3BF,🎿,Ski And Ski Boot,物品与活动,assets/png/72/A98E0278.png,assets/bmp/16/A98E0278.bmp,assets/bmp/24/A98E0278.bmp,assets/bmp/32/A98E0278.bmp
+A98E0279,U+1F3C0,1F3C0,🏀,Basketball And Hoop,物品与活动,assets/png/72/A98E0279.png,assets/bmp/16/A98E0279.bmp,assets/bmp/24/A98E0279.bmp,assets/bmp/32/A98E0279.bmp
+A98E0280,U+1F3C1,1F3C1,🏁,Chequered Flag,物品与活动,assets/png/72/A98E0280.png,assets/bmp/16/A98E0280.bmp,assets/bmp/24/A98E0280.bmp,assets/bmp/32/A98E0280.bmp
+A98E0281,U+1F3C2,1F3C2,🏂,Snowboarder,物品与活动,assets/png/72/A98E0281.png,assets/bmp/16/A98E0281.bmp,assets/bmp/24/A98E0281.bmp,assets/bmp/32/A98E0281.bmp
+A98E0282,U+1F3C3,1F3C3,🏃,Runner,物品与活动,assets/png/72/A98E0282.png,assets/bmp/16/A98E0282.bmp,assets/bmp/24/A98E0282.bmp,assets/bmp/32/A98E0282.bmp
+A98E0283,U+1F3C4,1F3C4,🏄,Surfer,物品与活动,assets/png/72/A98E0283.png,assets/bmp/16/A98E0283.bmp,assets/bmp/24/A98E0283.bmp,assets/bmp/32/A98E0283.bmp
+A98E0284,U+1F3C5,1F3C5,🏅,Sports Medal,物品与活动,assets/png/72/A98E0284.png,assets/bmp/16/A98E0284.bmp,assets/bmp/24/A98E0284.bmp,assets/bmp/32/A98E0284.bmp
+A98E0285,U+1F3C6,1F3C6,🏆,Trophy,物品与活动,assets/png/72/A98E0285.png,assets/bmp/16/A98E0285.bmp,assets/bmp/24/A98E0285.bmp,assets/bmp/32/A98E0285.bmp
+A98E0286,U+1F3C7,1F3C7,🏇,Horse Racing,物品与活动,assets/png/72/A98E0286.png,assets/bmp/16/A98E0286.bmp,assets/bmp/24/A98E0286.bmp,assets/bmp/32/A98E0286.bmp
+A98E0287,U+1F3C8,1F3C8,🏈,American Football,物品与活动,assets/png/72/A98E0287.png,assets/bmp/16/A98E0287.bmp,assets/bmp/24/A98E0287.bmp,assets/bmp/32/A98E0287.bmp
+A98E0288,U+1F3C9,1F3C9,🏉,Rugby Football,物品与活动,assets/png/72/A98E0288.png,assets/bmp/16/A98E0288.bmp,assets/bmp/24/A98E0288.bmp,assets/bmp/32/A98E0288.bmp
+A98E0289,U+1F3CA,1F3CA,🏊,Swimmer,物品与活动,assets/png/72/A98E0289.png,assets/bmp/16/A98E0289.bmp,assets/bmp/24/A98E0289.bmp,assets/bmp/32/A98E0289.bmp
+A98E0290,U+1F3CF,1F3CF,🏏,Cricket Bat And Ball,物品与活动,assets/png/72/A98E0290.png,assets/bmp/16/A98E0290.bmp,assets/bmp/24/A98E0290.bmp,assets/bmp/32/A98E0290.bmp
+A98E0291,U+1F3D0,1F3D0,🏐,Volleyball,物品与活动,assets/png/72/A98E0291.png,assets/bmp/16/A98E0291.bmp,assets/bmp/24/A98E0291.bmp,assets/bmp/32/A98E0291.bmp
+A98E0292,U+1F3D1,1F3D1,🏑,Field Hockey Stick And Ball,物品与活动,assets/png/72/A98E0292.png,assets/bmp/16/A98E0292.bmp,assets/bmp/24/A98E0292.bmp,assets/bmp/32/A98E0292.bmp
+A98E0293,U+1F3D2,1F3D2,🏒,Ice Hockey Stick And Puck,物品与活动,assets/png/72/A98E0293.png,assets/bmp/16/A98E0293.bmp,assets/bmp/24/A98E0293.bmp,assets/bmp/32/A98E0293.bmp
+A98E0294,U+1F3D3,1F3D3,🏓,Table Tennis Paddle And Ball,物品与活动,assets/png/72/A98E0294.png,assets/bmp/16/A98E0294.bmp,assets/bmp/24/A98E0294.bmp,assets/bmp/32/A98E0294.bmp
+A98E0295,U+1F3E0,1F3E0,🏠,House Building,物品与活动,assets/png/72/A98E0295.png,assets/bmp/16/A98E0295.bmp,assets/bmp/24/A98E0295.bmp,assets/bmp/32/A98E0295.bmp
+A98E0296,U+1F3E1,1F3E1,🏡,House With Garden,物品与活动,assets/png/72/A98E0296.png,assets/bmp/16/A98E0296.bmp,assets/bmp/24/A98E0296.bmp,assets/bmp/32/A98E0296.bmp
+A98E0297,U+1F3E2,1F3E2,🏢,Office Building,物品与活动,assets/png/72/A98E0297.png,assets/bmp/16/A98E0297.bmp,assets/bmp/24/A98E0297.bmp,assets/bmp/32/A98E0297.bmp
+A98E0298,U+1F3E3,1F3E3,🏣,Japanese Post Office,物品与活动,assets/png/72/A98E0298.png,assets/bmp/16/A98E0298.bmp,assets/bmp/24/A98E0298.bmp,assets/bmp/32/A98E0298.bmp
+A98E0299,U+1F3E4,1F3E4,🏤,European Post Office,物品与活动,assets/png/72/A98E0299.png,assets/bmp/16/A98E0299.bmp,assets/bmp/24/A98E0299.bmp,assets/bmp/32/A98E0299.bmp
+A98E0300,U+1F3E5,1F3E5,🏥,Hospital,物品与活动,assets/png/72/A98E0300.png,assets/bmp/16/A98E0300.bmp,assets/bmp/24/A98E0300.bmp,assets/bmp/32/A98E0300.bmp
+A98E0301,U+1F3E6,1F3E6,🏦,Bank,物品与活动,assets/png/72/A98E0301.png,assets/bmp/16/A98E0301.bmp,assets/bmp/24/A98E0301.bmp,assets/bmp/32/A98E0301.bmp
+A98E0302,U+1F3E7,1F3E7,🏧,Automated Teller Machine,物品与活动,assets/png/72/A98E0302.png,assets/bmp/16/A98E0302.bmp,assets/bmp/24/A98E0302.bmp,assets/bmp/32/A98E0302.bmp
+A98E0303,U+1F3E8,1F3E8,🏨,Hotel,物品与活动,assets/png/72/A98E0303.png,assets/bmp/16/A98E0303.bmp,assets/bmp/24/A98E0303.bmp,assets/bmp/32/A98E0303.bmp
+A98E0304,U+1F3E9,1F3E9,🏩,Love Hotel,物品与活动,assets/png/72/A98E0304.png,assets/bmp/16/A98E0304.bmp,assets/bmp/24/A98E0304.bmp,assets/bmp/32/A98E0304.bmp
+A98E0305,U+1F3EA,1F3EA,🏪,Convenience Store,物品与活动,assets/png/72/A98E0305.png,assets/bmp/16/A98E0305.bmp,assets/bmp/24/A98E0305.bmp,assets/bmp/32/A98E0305.bmp
+A98E0306,U+1F3EB,1F3EB,🏫,School,物品与活动,assets/png/72/A98E0306.png,assets/bmp/16/A98E0306.bmp,assets/bmp/24/A98E0306.bmp,assets/bmp/32/A98E0306.bmp
+A98E0307,U+1F3EC,1F3EC,🏬,Department Store,物品与活动,assets/png/72/A98E0307.png,assets/bmp/16/A98E0307.bmp,assets/bmp/24/A98E0307.bmp,assets/bmp/32/A98E0307.bmp
+A98E0308,U+1F3ED,1F3ED,🏭,Factory,物品与活动,assets/png/72/A98E0308.png,assets/bmp/16/A98E0308.bmp,assets/bmp/24/A98E0308.bmp,assets/bmp/32/A98E0308.bmp
+A98E0309,U+1F3EE,1F3EE,🏮,Izakaya Lantern,物品与活动,assets/png/72/A98E0309.png,assets/bmp/16/A98E0309.bmp,assets/bmp/24/A98E0309.bmp,assets/bmp/32/A98E0309.bmp
+A98E0310,U+1F3EF,1F3EF,🏯,Japanese Castle,物品与活动,assets/png/72/A98E0310.png,assets/bmp/16/A98E0310.bmp,assets/bmp/24/A98E0310.bmp,assets/bmp/32/A98E0310.bmp
+A98E0311,U+1F3F0,1F3F0,🏰,European Castle,物品与活动,assets/png/72/A98E0311.png,assets/bmp/16/A98E0311.bmp,assets/bmp/24/A98E0311.bmp,assets/bmp/32/A98E0311.bmp
+A98E0312,U+1F3F4,1F3F4,🏴,Waving Black Flag,物品与活动,assets/png/72/A98E0312.png,assets/bmp/16/A98E0312.bmp,assets/bmp/24/A98E0312.bmp,assets/bmp/32/A98E0312.bmp
+A98E0313,U+1F3F8,1F3F8,🏸,Badminton Racquet And Shuttlecock,物品与活动,assets/png/72/A98E0313.png,assets/bmp/16/A98E0313.bmp,assets/bmp/24/A98E0313.bmp,assets/bmp/32/A98E0313.bmp
+A98E0314,U+1F3F9,1F3F9,🏹,Bow And Arrow,物品与活动,assets/png/72/A98E0314.png,assets/bmp/16/A98E0314.bmp,assets/bmp/24/A98E0314.bmp,assets/bmp/32/A98E0314.bmp
+A98E0315,U+1F3FA,1F3FA,🏺,Amphora,物品与活动,assets/png/72/A98E0315.png,assets/bmp/16/A98E0315.bmp,assets/bmp/24/A98E0315.bmp,assets/bmp/32/A98E0315.bmp
+A98E0316,U+1F3FB,1F3FB,🏻,Emoji Modifier Fitzpatrick Type-1-2,物品与活动,assets/png/72/A98E0316.png,assets/bmp/16/A98E0316.bmp,assets/bmp/24/A98E0316.bmp,assets/bmp/32/A98E0316.bmp
+A98E0317,U+1F3FC,1F3FC,🏼,Emoji Modifier Fitzpatrick Type-3,物品与活动,assets/png/72/A98E0317.png,assets/bmp/16/A98E0317.bmp,assets/bmp/24/A98E0317.bmp,assets/bmp/32/A98E0317.bmp
+A98E0318,U+1F3FD,1F3FD,🏽,Emoji Modifier Fitzpatrick Type-4,物品与活动,assets/png/72/A98E0318.png,assets/bmp/16/A98E0318.bmp,assets/bmp/24/A98E0318.bmp,assets/bmp/32/A98E0318.bmp
+A98E0319,U+1F3FE,1F3FE,🏾,Emoji Modifier Fitzpatrick Type-5,物品与活动,assets/png/72/A98E0319.png,assets/bmp/16/A98E0319.bmp,assets/bmp/24/A98E0319.bmp,assets/bmp/32/A98E0319.bmp
+A98E0320,U+1F3FF,1F3FF,🏿,Emoji Modifier Fitzpatrick Type-6,物品与活动,assets/png/72/A98E0320.png,assets/bmp/16/A98E0320.bmp,assets/bmp/24/A98E0320.bmp,assets/bmp/32/A98E0320.bmp
+A98E0321,U+1F400,1F400,🐀,Rat,动物与自然,assets/png/72/A98E0321.png,assets/bmp/16/A98E0321.bmp,assets/bmp/24/A98E0321.bmp,assets/bmp/32/A98E0321.bmp
+A98E0322,U+1F401,1F401,🐁,Mouse,动物与自然,assets/png/72/A98E0322.png,assets/bmp/16/A98E0322.bmp,assets/bmp/24/A98E0322.bmp,assets/bmp/32/A98E0322.bmp
+A98E0323,U+1F402,1F402,🐂,Ox,动物与自然,assets/png/72/A98E0323.png,assets/bmp/16/A98E0323.bmp,assets/bmp/24/A98E0323.bmp,assets/bmp/32/A98E0323.bmp
+A98E0324,U+1F403,1F403,🐃,Water Buffalo,动物与自然,assets/png/72/A98E0324.png,assets/bmp/16/A98E0324.bmp,assets/bmp/24/A98E0324.bmp,assets/bmp/32/A98E0324.bmp
+A98E0325,U+1F404,1F404,🐄,Cow,动物与自然,assets/png/72/A98E0325.png,assets/bmp/16/A98E0325.bmp,assets/bmp/24/A98E0325.bmp,assets/bmp/32/A98E0325.bmp
+A98E0326,U+1F405,1F405,🐅,Tiger,动物与自然,assets/png/72/A98E0326.png,assets/bmp/16/A98E0326.bmp,assets/bmp/24/A98E0326.bmp,assets/bmp/32/A98E0326.bmp
+A98E0327,U+1F406,1F406,🐆,Leopard,动物与自然,assets/png/72/A98E0327.png,assets/bmp/16/A98E0327.bmp,assets/bmp/24/A98E0327.bmp,assets/bmp/32/A98E0327.bmp
+A98E0328,U+1F407,1F407,🐇,Rabbit,动物与自然,assets/png/72/A98E0328.png,assets/bmp/16/A98E0328.bmp,assets/bmp/24/A98E0328.bmp,assets/bmp/32/A98E0328.bmp
+A98E0329,U+1F408,1F408,🐈,Cat,动物与自然,assets/png/72/A98E0329.png,assets/bmp/16/A98E0329.bmp,assets/bmp/24/A98E0329.bmp,assets/bmp/32/A98E0329.bmp
+A98E0330,U+1F409,1F409,🐉,Dragon,动物与自然,assets/png/72/A98E0330.png,assets/bmp/16/A98E0330.bmp,assets/bmp/24/A98E0330.bmp,assets/bmp/32/A98E0330.bmp
+A98E0331,U+1F40A,1F40A,🐊,Crocodile,动物与自然,assets/png/72/A98E0331.png,assets/bmp/16/A98E0331.bmp,assets/bmp/24/A98E0331.bmp,assets/bmp/32/A98E0331.bmp
+A98E0332,U+1F40B,1F40B,🐋,Whale,动物与自然,assets/png/72/A98E0332.png,assets/bmp/16/A98E0332.bmp,assets/bmp/24/A98E0332.bmp,assets/bmp/32/A98E0332.bmp
+A98E0333,U+1F40C,1F40C,🐌,Snail,动物与自然,assets/png/72/A98E0333.png,assets/bmp/16/A98E0333.bmp,assets/bmp/24/A98E0333.bmp,assets/bmp/32/A98E0333.bmp
+A98E0334,U+1F40D,1F40D,🐍,Snake,动物与自然,assets/png/72/A98E0334.png,assets/bmp/16/A98E0334.bmp,assets/bmp/24/A98E0334.bmp,assets/bmp/32/A98E0334.bmp
+A98E0335,U+1F40E,1F40E,🐎,Horse,动物与自然,assets/png/72/A98E0335.png,assets/bmp/16/A98E0335.bmp,assets/bmp/24/A98E0335.bmp,assets/bmp/32/A98E0335.bmp
+A98E0336,U+1F40F,1F40F,🐏,Ram,动物与自然,assets/png/72/A98E0336.png,assets/bmp/16/A98E0336.bmp,assets/bmp/24/A98E0336.bmp,assets/bmp/32/A98E0336.bmp
+A98E0337,U+1F410,1F410,🐐,Goat,动物与自然,assets/png/72/A98E0337.png,assets/bmp/16/A98E0337.bmp,assets/bmp/24/A98E0337.bmp,assets/bmp/32/A98E0337.bmp
+A98E0338,U+1F411,1F411,🐑,Sheep,动物与自然,assets/png/72/A98E0338.png,assets/bmp/16/A98E0338.bmp,assets/bmp/24/A98E0338.bmp,assets/bmp/32/A98E0338.bmp
+A98E0339,U+1F412,1F412,🐒,Monkey,动物与自然,assets/png/72/A98E0339.png,assets/bmp/16/A98E0339.bmp,assets/bmp/24/A98E0339.bmp,assets/bmp/32/A98E0339.bmp
+A98E0340,U+1F413,1F413,🐓,Rooster,动物与自然,assets/png/72/A98E0340.png,assets/bmp/16/A98E0340.bmp,assets/bmp/24/A98E0340.bmp,assets/bmp/32/A98E0340.bmp
+A98E0341,U+1F414,1F414,🐔,Chicken,动物与自然,assets/png/72/A98E0341.png,assets/bmp/16/A98E0341.bmp,assets/bmp/24/A98E0341.bmp,assets/bmp/32/A98E0341.bmp
+A98E0342,U+1F415,1F415,🐕,Dog,动物与自然,assets/png/72/A98E0342.png,assets/bmp/16/A98E0342.bmp,assets/bmp/24/A98E0342.bmp,assets/bmp/32/A98E0342.bmp
+A98E0343,U+1F416,1F416,🐖,Pig,动物与自然,assets/png/72/A98E0343.png,assets/bmp/16/A98E0343.bmp,assets/bmp/24/A98E0343.bmp,assets/bmp/32/A98E0343.bmp
+A98E0344,U+1F417,1F417,🐗,Boar,动物与自然,assets/png/72/A98E0344.png,assets/bmp/16/A98E0344.bmp,assets/bmp/24/A98E0344.bmp,assets/bmp/32/A98E0344.bmp
+A98E0345,U+1F418,1F418,🐘,Elephant,动物与自然,assets/png/72/A98E0345.png,assets/bmp/16/A98E0345.bmp,assets/bmp/24/A98E0345.bmp,assets/bmp/32/A98E0345.bmp
+A98E0346,U+1F419,1F419,🐙,Octopus,动物与自然,assets/png/72/A98E0346.png,assets/bmp/16/A98E0346.bmp,assets/bmp/24/A98E0346.bmp,assets/bmp/32/A98E0346.bmp
+A98E0347,U+1F41A,1F41A,🐚,Spiral Shell,动物与自然,assets/png/72/A98E0347.png,assets/bmp/16/A98E0347.bmp,assets/bmp/24/A98E0347.bmp,assets/bmp/32/A98E0347.bmp
+A98E0348,U+1F41B,1F41B,🐛,Bug,动物与自然,assets/png/72/A98E0348.png,assets/bmp/16/A98E0348.bmp,assets/bmp/24/A98E0348.bmp,assets/bmp/32/A98E0348.bmp
+A98E0349,U+1F41C,1F41C,🐜,Ant,动物与自然,assets/png/72/A98E0349.png,assets/bmp/16/A98E0349.bmp,assets/bmp/24/A98E0349.bmp,assets/bmp/32/A98E0349.bmp
+A98E0350,U+1F41D,1F41D,🐝,Honeybee,动物与自然,assets/png/72/A98E0350.png,assets/bmp/16/A98E0350.bmp,assets/bmp/24/A98E0350.bmp,assets/bmp/32/A98E0350.bmp
+A98E0351,U+1F41E,1F41E,🐞,Lady Beetle,动物与自然,assets/png/72/A98E0351.png,assets/bmp/16/A98E0351.bmp,assets/bmp/24/A98E0351.bmp,assets/bmp/32/A98E0351.bmp
+A98E0352,U+1F41F,1F41F,🐟,Fish,动物与自然,assets/png/72/A98E0352.png,assets/bmp/16/A98E0352.bmp,assets/bmp/24/A98E0352.bmp,assets/bmp/32/A98E0352.bmp
+A98E0353,U+1F420,1F420,🐠,Tropical Fish,动物与自然,assets/png/72/A98E0353.png,assets/bmp/16/A98E0353.bmp,assets/bmp/24/A98E0353.bmp,assets/bmp/32/A98E0353.bmp
+A98E0354,U+1F421,1F421,🐡,Blowfish,动物与自然,assets/png/72/A98E0354.png,assets/bmp/16/A98E0354.bmp,assets/bmp/24/A98E0354.bmp,assets/bmp/32/A98E0354.bmp
+A98E0355,U+1F422,1F422,🐢,Turtle,动物与自然,assets/png/72/A98E0355.png,assets/bmp/16/A98E0355.bmp,assets/bmp/24/A98E0355.bmp,assets/bmp/32/A98E0355.bmp
+A98E0356,U+1F423,1F423,🐣,Hatching Chick,动物与自然,assets/png/72/A98E0356.png,assets/bmp/16/A98E0356.bmp,assets/bmp/24/A98E0356.bmp,assets/bmp/32/A98E0356.bmp
+A98E0357,U+1F424,1F424,🐤,Baby Chick,动物与自然,assets/png/72/A98E0357.png,assets/bmp/16/A98E0357.bmp,assets/bmp/24/A98E0357.bmp,assets/bmp/32/A98E0357.bmp
+A98E0358,U+1F425,1F425,🐥,Front-Facing Baby Chick,动物与自然,assets/png/72/A98E0358.png,assets/bmp/16/A98E0358.bmp,assets/bmp/24/A98E0358.bmp,assets/bmp/32/A98E0358.bmp
+A98E0359,U+1F426,1F426,🐦,Bird,动物与自然,assets/png/72/A98E0359.png,assets/bmp/16/A98E0359.bmp,assets/bmp/24/A98E0359.bmp,assets/bmp/32/A98E0359.bmp
+A98E0360,U+1F427,1F427,🐧,Penguin,动物与自然,assets/png/72/A98E0360.png,assets/bmp/16/A98E0360.bmp,assets/bmp/24/A98E0360.bmp,assets/bmp/32/A98E0360.bmp
+A98E0361,U+1F428,1F428,🐨,Koala,动物与自然,assets/png/72/A98E0361.png,assets/bmp/16/A98E0361.bmp,assets/bmp/24/A98E0361.bmp,assets/bmp/32/A98E0361.bmp
+A98E0362,U+1F429,1F429,🐩,Poodle,动物与自然,assets/png/72/A98E0362.png,assets/bmp/16/A98E0362.bmp,assets/bmp/24/A98E0362.bmp,assets/bmp/32/A98E0362.bmp
+A98E0363,U+1F42A,1F42A,🐪,Dromedary Camel,动物与自然,assets/png/72/A98E0363.png,assets/bmp/16/A98E0363.bmp,assets/bmp/24/A98E0363.bmp,assets/bmp/32/A98E0363.bmp
+A98E0364,U+1F42B,1F42B,🐫,Bactrian Camel,动物与自然,assets/png/72/A98E0364.png,assets/bmp/16/A98E0364.bmp,assets/bmp/24/A98E0364.bmp,assets/bmp/32/A98E0364.bmp
+A98E0365,U+1F42C,1F42C,🐬,Dolphin,动物与自然,assets/png/72/A98E0365.png,assets/bmp/16/A98E0365.bmp,assets/bmp/24/A98E0365.bmp,assets/bmp/32/A98E0365.bmp
+A98E0366,U+1F42D,1F42D,🐭,Mouse Face,动物与自然,assets/png/72/A98E0366.png,assets/bmp/16/A98E0366.bmp,assets/bmp/24/A98E0366.bmp,assets/bmp/32/A98E0366.bmp
+A98E0367,U+1F42E,1F42E,🐮,Cow Face,动物与自然,assets/png/72/A98E0367.png,assets/bmp/16/A98E0367.bmp,assets/bmp/24/A98E0367.bmp,assets/bmp/32/A98E0367.bmp
+A98E0368,U+1F42F,1F42F,🐯,Tiger Face,动物与自然,assets/png/72/A98E0368.png,assets/bmp/16/A98E0368.bmp,assets/bmp/24/A98E0368.bmp,assets/bmp/32/A98E0368.bmp
+A98E0369,U+1F430,1F430,🐰,Rabbit Face,物品与活动,assets/png/72/A98E0369.png,assets/bmp/16/A98E0369.bmp,assets/bmp/24/A98E0369.bmp,assets/bmp/32/A98E0369.bmp
+A98E0370,U+1F431,1F431,🐱,Cat Face,物品与活动,assets/png/72/A98E0370.png,assets/bmp/16/A98E0370.bmp,assets/bmp/24/A98E0370.bmp,assets/bmp/32/A98E0370.bmp
+A98E0371,U+1F432,1F432,🐲,Dragon Face,物品与活动,assets/png/72/A98E0371.png,assets/bmp/16/A98E0371.bmp,assets/bmp/24/A98E0371.bmp,assets/bmp/32/A98E0371.bmp
+A98E0372,U+1F433,1F433,🐳,Spouting Whale,物品与活动,assets/png/72/A98E0372.png,assets/bmp/16/A98E0372.bmp,assets/bmp/24/A98E0372.bmp,assets/bmp/32/A98E0372.bmp
+A98E0373,U+1F434,1F434,🐴,Horse Face,物品与活动,assets/png/72/A98E0373.png,assets/bmp/16/A98E0373.bmp,assets/bmp/24/A98E0373.bmp,assets/bmp/32/A98E0373.bmp
+A98E0374,U+1F435,1F435,🐵,Monkey Face,物品与活动,assets/png/72/A98E0374.png,assets/bmp/16/A98E0374.bmp,assets/bmp/24/A98E0374.bmp,assets/bmp/32/A98E0374.bmp
+A98E0375,U+1F436,1F436,🐶,Dog Face,物品与活动,assets/png/72/A98E0375.png,assets/bmp/16/A98E0375.bmp,assets/bmp/24/A98E0375.bmp,assets/bmp/32/A98E0375.bmp
+A98E0376,U+1F437,1F437,🐷,Pig Face,物品与活动,assets/png/72/A98E0376.png,assets/bmp/16/A98E0376.bmp,assets/bmp/24/A98E0376.bmp,assets/bmp/32/A98E0376.bmp
+A98E0377,U+1F438,1F438,🐸,Frog Face,物品与活动,assets/png/72/A98E0377.png,assets/bmp/16/A98E0377.bmp,assets/bmp/24/A98E0377.bmp,assets/bmp/32/A98E0377.bmp
+A98E0378,U+1F439,1F439,🐹,Hamster Face,物品与活动,assets/png/72/A98E0378.png,assets/bmp/16/A98E0378.bmp,assets/bmp/24/A98E0378.bmp,assets/bmp/32/A98E0378.bmp
+A98E0379,U+1F43A,1F43A,🐺,Wolf Face,物品与活动,assets/png/72/A98E0379.png,assets/bmp/16/A98E0379.bmp,assets/bmp/24/A98E0379.bmp,assets/bmp/32/A98E0379.bmp
+A98E0380,U+1F43B,1F43B,🐻,Bear Face,物品与活动,assets/png/72/A98E0380.png,assets/bmp/16/A98E0380.bmp,assets/bmp/24/A98E0380.bmp,assets/bmp/32/A98E0380.bmp
+A98E0381,U+1F43C,1F43C,🐼,Panda Face,物品与活动,assets/png/72/A98E0381.png,assets/bmp/16/A98E0381.bmp,assets/bmp/24/A98E0381.bmp,assets/bmp/32/A98E0381.bmp
+A98E0382,U+1F43D,1F43D,🐽,Pig Nose,物品与活动,assets/png/72/A98E0382.png,assets/bmp/16/A98E0382.bmp,assets/bmp/24/A98E0382.bmp,assets/bmp/32/A98E0382.bmp
+A98E0383,U+1F43E,1F43E,🐾,Paw Prints,物品与活动,assets/png/72/A98E0383.png,assets/bmp/16/A98E0383.bmp,assets/bmp/24/A98E0383.bmp,assets/bmp/32/A98E0383.bmp
+A98E0384,U+1F440,1F440,👀,Eyes,物品与活动,assets/png/72/A98E0384.png,assets/bmp/16/A98E0384.bmp,assets/bmp/24/A98E0384.bmp,assets/bmp/32/A98E0384.bmp
+A98E0385,U+1F442,1F442,👂,Ear,物品与活动,assets/png/72/A98E0385.png,assets/bmp/16/A98E0385.bmp,assets/bmp/24/A98E0385.bmp,assets/bmp/32/A98E0385.bmp
+A98E0386,U+1F443,1F443,👃,Nose,物品与活动,assets/png/72/A98E0386.png,assets/bmp/16/A98E0386.bmp,assets/bmp/24/A98E0386.bmp,assets/bmp/32/A98E0386.bmp
+A98E0387,U+1F444,1F444,👄,Mouth,物品与活动,assets/png/72/A98E0387.png,assets/bmp/16/A98E0387.bmp,assets/bmp/24/A98E0387.bmp,assets/bmp/32/A98E0387.bmp
+A98E0388,U+1F445,1F445,👅,Tongue,物品与活动,assets/png/72/A98E0388.png,assets/bmp/16/A98E0388.bmp,assets/bmp/24/A98E0388.bmp,assets/bmp/32/A98E0388.bmp
+A98E0389,U+1F446,1F446,👆,White Up Pointing Backhand Index,物品与活动,assets/png/72/A98E0389.png,assets/bmp/16/A98E0389.bmp,assets/bmp/24/A98E0389.bmp,assets/bmp/32/A98E0389.bmp
+A98E0390,U+1F447,1F447,👇,White Down Pointing Backhand Index,物品与活动,assets/png/72/A98E0390.png,assets/bmp/16/A98E0390.bmp,assets/bmp/24/A98E0390.bmp,assets/bmp/32/A98E0390.bmp
+A98E0391,U+1F448,1F448,👈,White Left Pointing Backhand Index,物品与活动,assets/png/72/A98E0391.png,assets/bmp/16/A98E0391.bmp,assets/bmp/24/A98E0391.bmp,assets/bmp/32/A98E0391.bmp
+A98E0392,U+1F449,1F449,👉,White Right Pointing Backhand Index,物品与活动,assets/png/72/A98E0392.png,assets/bmp/16/A98E0392.bmp,assets/bmp/24/A98E0392.bmp,assets/bmp/32/A98E0392.bmp
+A98E0393,U+1F44A,1F44A,👊,Fisted Hand Sign,物品与活动,assets/png/72/A98E0393.png,assets/bmp/16/A98E0393.bmp,assets/bmp/24/A98E0393.bmp,assets/bmp/32/A98E0393.bmp
+A98E0394,U+1F44B,1F44B,👋,Waving Hand Sign,物品与活动,assets/png/72/A98E0394.png,assets/bmp/16/A98E0394.bmp,assets/bmp/24/A98E0394.bmp,assets/bmp/32/A98E0394.bmp
+A98E0395,U+1F44C,1F44C,👌,Ok Hand Sign,物品与活动,assets/png/72/A98E0395.png,assets/bmp/16/A98E0395.bmp,assets/bmp/24/A98E0395.bmp,assets/bmp/32/A98E0395.bmp
+A98E0396,U+1F44D,1F44D,👍,Thumbs Up Sign,物品与活动,assets/png/72/A98E0396.png,assets/bmp/16/A98E0396.bmp,assets/bmp/24/A98E0396.bmp,assets/bmp/32/A98E0396.bmp
+A98E0397,U+1F44E,1F44E,👎,Thumbs Down Sign,物品与活动,assets/png/72/A98E0397.png,assets/bmp/16/A98E0397.bmp,assets/bmp/24/A98E0397.bmp,assets/bmp/32/A98E0397.bmp
+A98E0398,U+1F44F,1F44F,👏,Clapping Hands Sign,物品与活动,assets/png/72/A98E0398.png,assets/bmp/16/A98E0398.bmp,assets/bmp/24/A98E0398.bmp,assets/bmp/32/A98E0398.bmp
+A98E0399,U+1F450,1F450,👐,Open Hands Sign,物品与活动,assets/png/72/A98E0399.png,assets/bmp/16/A98E0399.bmp,assets/bmp/24/A98E0399.bmp,assets/bmp/32/A98E0399.bmp
+A98E0400,U+1F451,1F451,👑,Crown,物品与活动,assets/png/72/A98E0400.png,assets/bmp/16/A98E0400.bmp,assets/bmp/24/A98E0400.bmp,assets/bmp/32/A98E0400.bmp
+A98E0401,U+1F452,1F452,👒,Womans Hat,物品与活动,assets/png/72/A98E0401.png,assets/bmp/16/A98E0401.bmp,assets/bmp/24/A98E0401.bmp,assets/bmp/32/A98E0401.bmp
+A98E0402,U+1F453,1F453,👓,Eyeglasses,物品与活动,assets/png/72/A98E0402.png,assets/bmp/16/A98E0402.bmp,assets/bmp/24/A98E0402.bmp,assets/bmp/32/A98E0402.bmp
+A98E0403,U+1F454,1F454,👔,Necktie,物品与活动,assets/png/72/A98E0403.png,assets/bmp/16/A98E0403.bmp,assets/bmp/24/A98E0403.bmp,assets/bmp/32/A98E0403.bmp
+A98E0404,U+1F455,1F455,👕,T-Shirt,物品与活动,assets/png/72/A98E0404.png,assets/bmp/16/A98E0404.bmp,assets/bmp/24/A98E0404.bmp,assets/bmp/32/A98E0404.bmp
+A98E0405,U+1F456,1F456,👖,Jeans,物品与活动,assets/png/72/A98E0405.png,assets/bmp/16/A98E0405.bmp,assets/bmp/24/A98E0405.bmp,assets/bmp/32/A98E0405.bmp
+A98E0406,U+1F457,1F457,👗,Dress,物品与活动,assets/png/72/A98E0406.png,assets/bmp/16/A98E0406.bmp,assets/bmp/24/A98E0406.bmp,assets/bmp/32/A98E0406.bmp
+A98E0407,U+1F458,1F458,👘,Kimono,物品与活动,assets/png/72/A98E0407.png,assets/bmp/16/A98E0407.bmp,assets/bmp/24/A98E0407.bmp,assets/bmp/32/A98E0407.bmp
+A98E0408,U+1F459,1F459,👙,Bikini,物品与活动,assets/png/72/A98E0408.png,assets/bmp/16/A98E0408.bmp,assets/bmp/24/A98E0408.bmp,assets/bmp/32/A98E0408.bmp
+A98E0409,U+1F45A,1F45A,👚,Womans Clothes,物品与活动,assets/png/72/A98E0409.png,assets/bmp/16/A98E0409.bmp,assets/bmp/24/A98E0409.bmp,assets/bmp/32/A98E0409.bmp
+A98E0410,U+1F45B,1F45B,👛,Purse,物品与活动,assets/png/72/A98E0410.png,assets/bmp/16/A98E0410.bmp,assets/bmp/24/A98E0410.bmp,assets/bmp/32/A98E0410.bmp
+A98E0411,U+1F45C,1F45C,👜,Handbag,物品与活动,assets/png/72/A98E0411.png,assets/bmp/16/A98E0411.bmp,assets/bmp/24/A98E0411.bmp,assets/bmp/32/A98E0411.bmp
+A98E0412,U+1F45D,1F45D,👝,Pouch,物品与活动,assets/png/72/A98E0412.png,assets/bmp/16/A98E0412.bmp,assets/bmp/24/A98E0412.bmp,assets/bmp/32/A98E0412.bmp
+A98E0413,U+1F45E,1F45E,👞,Mans Shoe,物品与活动,assets/png/72/A98E0413.png,assets/bmp/16/A98E0413.bmp,assets/bmp/24/A98E0413.bmp,assets/bmp/32/A98E0413.bmp
+A98E0414,U+1F45F,1F45F,👟,Athletic Shoe,物品与活动,assets/png/72/A98E0414.png,assets/bmp/16/A98E0414.bmp,assets/bmp/24/A98E0414.bmp,assets/bmp/32/A98E0414.bmp
+A98E0415,U+1F460,1F460,👠,High-Heeled Shoe,物品与活动,assets/png/72/A98E0415.png,assets/bmp/16/A98E0415.bmp,assets/bmp/24/A98E0415.bmp,assets/bmp/32/A98E0415.bmp
+A98E0416,U+1F461,1F461,👡,Womans Sandal,物品与活动,assets/png/72/A98E0416.png,assets/bmp/16/A98E0416.bmp,assets/bmp/24/A98E0416.bmp,assets/bmp/32/A98E0416.bmp
+A98E0417,U+1F462,1F462,👢,Womans Boots,物品与活动,assets/png/72/A98E0417.png,assets/bmp/16/A98E0417.bmp,assets/bmp/24/A98E0417.bmp,assets/bmp/32/A98E0417.bmp
+A98E0418,U+1F463,1F463,👣,Footprints,物品与活动,assets/png/72/A98E0418.png,assets/bmp/16/A98E0418.bmp,assets/bmp/24/A98E0418.bmp,assets/bmp/32/A98E0418.bmp
+A98E0419,U+1F464,1F464,👤,Bust In Silhouette,物品与活动,assets/png/72/A98E0419.png,assets/bmp/16/A98E0419.bmp,assets/bmp/24/A98E0419.bmp,assets/bmp/32/A98E0419.bmp
+A98E0420,U+1F465,1F465,👥,Busts In Silhouette,物品与活动,assets/png/72/A98E0420.png,assets/bmp/16/A98E0420.bmp,assets/bmp/24/A98E0420.bmp,assets/bmp/32/A98E0420.bmp
+A98E0421,U+1F466,1F466,👦,Boy,物品与活动,assets/png/72/A98E0421.png,assets/bmp/16/A98E0421.bmp,assets/bmp/24/A98E0421.bmp,assets/bmp/32/A98E0421.bmp
+A98E0422,U+1F467,1F467,👧,Girl,物品与活动,assets/png/72/A98E0422.png,assets/bmp/16/A98E0422.bmp,assets/bmp/24/A98E0422.bmp,assets/bmp/32/A98E0422.bmp
+A98E0423,U+1F468,1F468,👨,Man,物品与活动,assets/png/72/A98E0423.png,assets/bmp/16/A98E0423.bmp,assets/bmp/24/A98E0423.bmp,assets/bmp/32/A98E0423.bmp
+A98E0424,U+1F469,1F469,👩,Woman,物品与活动,assets/png/72/A98E0424.png,assets/bmp/16/A98E0424.bmp,assets/bmp/24/A98E0424.bmp,assets/bmp/32/A98E0424.bmp
+A98E0425,U+1F46A,1F46A,👪,Family,物品与活动,assets/png/72/A98E0425.png,assets/bmp/16/A98E0425.bmp,assets/bmp/24/A98E0425.bmp,assets/bmp/32/A98E0425.bmp
+A98E0426,U+1F46B,1F46B,👫,Man And Woman Holding Hands,物品与活动,assets/png/72/A98E0426.png,assets/bmp/16/A98E0426.bmp,assets/bmp/24/A98E0426.bmp,assets/bmp/32/A98E0426.bmp
+A98E0427,U+1F46C,1F46C,👬,Two Men Holding Hands,物品与活动,assets/png/72/A98E0427.png,assets/bmp/16/A98E0427.bmp,assets/bmp/24/A98E0427.bmp,assets/bmp/32/A98E0427.bmp
+A98E0428,U+1F46D,1F46D,👭,Two Women Holding Hands,物品与活动,assets/png/72/A98E0428.png,assets/bmp/16/A98E0428.bmp,assets/bmp/24/A98E0428.bmp,assets/bmp/32/A98E0428.bmp
+A98E0429,U+1F46E,1F46E,👮,Police Officer,物品与活动,assets/png/72/A98E0429.png,assets/bmp/16/A98E0429.bmp,assets/bmp/24/A98E0429.bmp,assets/bmp/32/A98E0429.bmp
+A98E0430,U+1F46F,1F46F,👯,Woman With Bunny Ears,物品与活动,assets/png/72/A98E0430.png,assets/bmp/16/A98E0430.bmp,assets/bmp/24/A98E0430.bmp,assets/bmp/32/A98E0430.bmp
+A98E0431,U+1F470,1F470,👰,Bride With Veil,物品与活动,assets/png/72/A98E0431.png,assets/bmp/16/A98E0431.bmp,assets/bmp/24/A98E0431.bmp,assets/bmp/32/A98E0431.bmp
+A98E0432,U+1F471,1F471,👱,Person With Blond Hair,物品与活动,assets/png/72/A98E0432.png,assets/bmp/16/A98E0432.bmp,assets/bmp/24/A98E0432.bmp,assets/bmp/32/A98E0432.bmp
+A98E0433,U+1F472,1F472,👲,Man With Gua Pi Mao,物品与活动,assets/png/72/A98E0433.png,assets/bmp/16/A98E0433.bmp,assets/bmp/24/A98E0433.bmp,assets/bmp/32/A98E0433.bmp
+A98E0434,U+1F473,1F473,👳,Man With Turban,物品与活动,assets/png/72/A98E0434.png,assets/bmp/16/A98E0434.bmp,assets/bmp/24/A98E0434.bmp,assets/bmp/32/A98E0434.bmp
+A98E0435,U+1F474,1F474,👴,Older Man,物品与活动,assets/png/72/A98E0435.png,assets/bmp/16/A98E0435.bmp,assets/bmp/24/A98E0435.bmp,assets/bmp/32/A98E0435.bmp
+A98E0436,U+1F475,1F475,👵,Older Woman,物品与活动,assets/png/72/A98E0436.png,assets/bmp/16/A98E0436.bmp,assets/bmp/24/A98E0436.bmp,assets/bmp/32/A98E0436.bmp
+A98E0437,U+1F476,1F476,👶,Baby,物品与活动,assets/png/72/A98E0437.png,assets/bmp/16/A98E0437.bmp,assets/bmp/24/A98E0437.bmp,assets/bmp/32/A98E0437.bmp
+A98E0438,U+1F477,1F477,👷,Construction Worker,物品与活动,assets/png/72/A98E0438.png,assets/bmp/16/A98E0438.bmp,assets/bmp/24/A98E0438.bmp,assets/bmp/32/A98E0438.bmp
+A98E0439,U+1F478,1F478,👸,Princess,物品与活动,assets/png/72/A98E0439.png,assets/bmp/16/A98E0439.bmp,assets/bmp/24/A98E0439.bmp,assets/bmp/32/A98E0439.bmp
+A98E0440,U+1F479,1F479,👹,Japanese Ogre,物品与活动,assets/png/72/A98E0440.png,assets/bmp/16/A98E0440.bmp,assets/bmp/24/A98E0440.bmp,assets/bmp/32/A98E0440.bmp
+A98E0441,U+1F47A,1F47A,👺,Japanese Goblin,物品与活动,assets/png/72/A98E0441.png,assets/bmp/16/A98E0441.bmp,assets/bmp/24/A98E0441.bmp,assets/bmp/32/A98E0441.bmp
+A98E0442,U+1F47B,1F47B,👻,Ghost,物品与活动,assets/png/72/A98E0442.png,assets/bmp/16/A98E0442.bmp,assets/bmp/24/A98E0442.bmp,assets/bmp/32/A98E0442.bmp
+A98E0443,U+1F47C,1F47C,👼,Baby Angel,物品与活动,assets/png/72/A98E0443.png,assets/bmp/16/A98E0443.bmp,assets/bmp/24/A98E0443.bmp,assets/bmp/32/A98E0443.bmp
+A98E0444,U+1F47D,1F47D,👽,Extraterrestrial Alien,物品与活动,assets/png/72/A98E0444.png,assets/bmp/16/A98E0444.bmp,assets/bmp/24/A98E0444.bmp,assets/bmp/32/A98E0444.bmp
+A98E0445,U+1F47E,1F47E,👾,Alien Monster,物品与活动,assets/png/72/A98E0445.png,assets/bmp/16/A98E0445.bmp,assets/bmp/24/A98E0445.bmp,assets/bmp/32/A98E0445.bmp
+A98E0446,U+1F47F,1F47F,👿,Imp,物品与活动,assets/png/72/A98E0446.png,assets/bmp/16/A98E0446.bmp,assets/bmp/24/A98E0446.bmp,assets/bmp/32/A98E0446.bmp
+A98E0447,U+1F480,1F480,💀,Skull,物品与活动,assets/png/72/A98E0447.png,assets/bmp/16/A98E0447.bmp,assets/bmp/24/A98E0447.bmp,assets/bmp/32/A98E0447.bmp
+A98E0448,U+1F481,1F481,💁,Information Desk Person,物品与活动,assets/png/72/A98E0448.png,assets/bmp/16/A98E0448.bmp,assets/bmp/24/A98E0448.bmp,assets/bmp/32/A98E0448.bmp
+A98E0449,U+1F482,1F482,💂,Guardsman,物品与活动,assets/png/72/A98E0449.png,assets/bmp/16/A98E0449.bmp,assets/bmp/24/A98E0449.bmp,assets/bmp/32/A98E0449.bmp
+A98E0450,U+1F483,1F483,💃,Dancer,物品与活动,assets/png/72/A98E0450.png,assets/bmp/16/A98E0450.bmp,assets/bmp/24/A98E0450.bmp,assets/bmp/32/A98E0450.bmp
+A98E0451,U+1F484,1F484,💄,Lipstick,物品与活动,assets/png/72/A98E0451.png,assets/bmp/16/A98E0451.bmp,assets/bmp/24/A98E0451.bmp,assets/bmp/32/A98E0451.bmp
+A98E0452,U+1F485,1F485,💅,Nail Polish,物品与活动,assets/png/72/A98E0452.png,assets/bmp/16/A98E0452.bmp,assets/bmp/24/A98E0452.bmp,assets/bmp/32/A98E0452.bmp
+A98E0453,U+1F486,1F486,💆,Face Massage,物品与活动,assets/png/72/A98E0453.png,assets/bmp/16/A98E0453.bmp,assets/bmp/24/A98E0453.bmp,assets/bmp/32/A98E0453.bmp
+A98E0454,U+1F487,1F487,💇,Haircut,物品与活动,assets/png/72/A98E0454.png,assets/bmp/16/A98E0454.bmp,assets/bmp/24/A98E0454.bmp,assets/bmp/32/A98E0454.bmp
+A98E0455,U+1F488,1F488,💈,Barber Pole,物品与活动,assets/png/72/A98E0455.png,assets/bmp/16/A98E0455.bmp,assets/bmp/24/A98E0455.bmp,assets/bmp/32/A98E0455.bmp
+A98E0456,U+1F489,1F489,💉,Syringe,物品与活动,assets/png/72/A98E0456.png,assets/bmp/16/A98E0456.bmp,assets/bmp/24/A98E0456.bmp,assets/bmp/32/A98E0456.bmp
+A98E0457,U+1F48A,1F48A,💊,Pill,物品与活动,assets/png/72/A98E0457.png,assets/bmp/16/A98E0457.bmp,assets/bmp/24/A98E0457.bmp,assets/bmp/32/A98E0457.bmp
+A98E0458,U+1F48B,1F48B,💋,Kiss Mark,物品与活动,assets/png/72/A98E0458.png,assets/bmp/16/A98E0458.bmp,assets/bmp/24/A98E0458.bmp,assets/bmp/32/A98E0458.bmp
+A98E0459,U+1F48C,1F48C,💌,Love Letter,物品与活动,assets/png/72/A98E0459.png,assets/bmp/16/A98E0459.bmp,assets/bmp/24/A98E0459.bmp,assets/bmp/32/A98E0459.bmp
+A98E0460,U+1F48D,1F48D,💍,Ring,物品与活动,assets/png/72/A98E0460.png,assets/bmp/16/A98E0460.bmp,assets/bmp/24/A98E0460.bmp,assets/bmp/32/A98E0460.bmp
+A98E0461,U+1F48E,1F48E,💎,Gem Stone,物品与活动,assets/png/72/A98E0461.png,assets/bmp/16/A98E0461.bmp,assets/bmp/24/A98E0461.bmp,assets/bmp/32/A98E0461.bmp
+A98E0462,U+1F48F,1F48F,💏,Kiss,物品与活动,assets/png/72/A98E0462.png,assets/bmp/16/A98E0462.bmp,assets/bmp/24/A98E0462.bmp,assets/bmp/32/A98E0462.bmp
+A98E0463,U+1F490,1F490,💐,Bouquet,物品与活动,assets/png/72/A98E0463.png,assets/bmp/16/A98E0463.bmp,assets/bmp/24/A98E0463.bmp,assets/bmp/32/A98E0463.bmp
+A98E0464,U+1F491,1F491,💑,Couple With Heart,物品与活动,assets/png/72/A98E0464.png,assets/bmp/16/A98E0464.bmp,assets/bmp/24/A98E0464.bmp,assets/bmp/32/A98E0464.bmp
+A98E0465,U+1F492,1F492,💒,Wedding,物品与活动,assets/png/72/A98E0465.png,assets/bmp/16/A98E0465.bmp,assets/bmp/24/A98E0465.bmp,assets/bmp/32/A98E0465.bmp
+A98E0466,U+1F493,1F493,💓,Beating Heart,物品与活动,assets/png/72/A98E0466.png,assets/bmp/16/A98E0466.bmp,assets/bmp/24/A98E0466.bmp,assets/bmp/32/A98E0466.bmp
+A98E0467,U+1F494,1F494,💔,Broken Heart,物品与活动,assets/png/72/A98E0467.png,assets/bmp/16/A98E0467.bmp,assets/bmp/24/A98E0467.bmp,assets/bmp/32/A98E0467.bmp
+A98E0468,U+1F495,1F495,💕,Two Hearts,物品与活动,assets/png/72/A98E0468.png,assets/bmp/16/A98E0468.bmp,assets/bmp/24/A98E0468.bmp,assets/bmp/32/A98E0468.bmp
+A98E0469,U+1F496,1F496,💖,Sparkling Heart,物品与活动,assets/png/72/A98E0469.png,assets/bmp/16/A98E0469.bmp,assets/bmp/24/A98E0469.bmp,assets/bmp/32/A98E0469.bmp
+A98E0470,U+1F497,1F497,💗,Growing Heart,物品与活动,assets/png/72/A98E0470.png,assets/bmp/16/A98E0470.bmp,assets/bmp/24/A98E0470.bmp,assets/bmp/32/A98E0470.bmp
+A98E0471,U+1F498,1F498,💘,Heart With Arrow,物品与活动,assets/png/72/A98E0471.png,assets/bmp/16/A98E0471.bmp,assets/bmp/24/A98E0471.bmp,assets/bmp/32/A98E0471.bmp
+A98E0472,U+1F499,1F499,💙,Blue Heart,物品与活动,assets/png/72/A98E0472.png,assets/bmp/16/A98E0472.bmp,assets/bmp/24/A98E0472.bmp,assets/bmp/32/A98E0472.bmp
+A98E0473,U+1F49A,1F49A,💚,Green Heart,物品与活动,assets/png/72/A98E0473.png,assets/bmp/16/A98E0473.bmp,assets/bmp/24/A98E0473.bmp,assets/bmp/32/A98E0473.bmp
+A98E0474,U+1F49B,1F49B,💛,Yellow Heart,物品与活动,assets/png/72/A98E0474.png,assets/bmp/16/A98E0474.bmp,assets/bmp/24/A98E0474.bmp,assets/bmp/32/A98E0474.bmp
+A98E0475,U+1F49C,1F49C,💜,Purple Heart,物品与活动,assets/png/72/A98E0475.png,assets/bmp/16/A98E0475.bmp,assets/bmp/24/A98E0475.bmp,assets/bmp/32/A98E0475.bmp
+A98E0476,U+1F49D,1F49D,💝,Heart With Ribbon,物品与活动,assets/png/72/A98E0476.png,assets/bmp/16/A98E0476.bmp,assets/bmp/24/A98E0476.bmp,assets/bmp/32/A98E0476.bmp
+A98E0477,U+1F49E,1F49E,💞,Revolving Hearts,物品与活动,assets/png/72/A98E0477.png,assets/bmp/16/A98E0477.bmp,assets/bmp/24/A98E0477.bmp,assets/bmp/32/A98E0477.bmp
+A98E0478,U+1F49F,1F49F,💟,Heart Decoration,物品与活动,assets/png/72/A98E0478.png,assets/bmp/16/A98E0478.bmp,assets/bmp/24/A98E0478.bmp,assets/bmp/32/A98E0478.bmp
+A98E0479,U+1F4A0,1F4A0,💠,Diamond Shape With A Dot Inside,物品与活动,assets/png/72/A98E0479.png,assets/bmp/16/A98E0479.bmp,assets/bmp/24/A98E0479.bmp,assets/bmp/32/A98E0479.bmp
+A98E0480,U+1F4A1,1F4A1,💡,Electric Light Bulb,物品与活动,assets/png/72/A98E0480.png,assets/bmp/16/A98E0480.bmp,assets/bmp/24/A98E0480.bmp,assets/bmp/32/A98E0480.bmp
+A98E0481,U+1F4A2,1F4A2,💢,Anger Symbol,物品与活动,assets/png/72/A98E0481.png,assets/bmp/16/A98E0481.bmp,assets/bmp/24/A98E0481.bmp,assets/bmp/32/A98E0481.bmp
+A98E0482,U+1F4A3,1F4A3,💣,Bomb,物品与活动,assets/png/72/A98E0482.png,assets/bmp/16/A98E0482.bmp,assets/bmp/24/A98E0482.bmp,assets/bmp/32/A98E0482.bmp
+A98E0483,U+1F4A4,1F4A4,💤,Sleeping Symbol,物品与活动,assets/png/72/A98E0483.png,assets/bmp/16/A98E0483.bmp,assets/bmp/24/A98E0483.bmp,assets/bmp/32/A98E0483.bmp
+A98E0484,U+1F4A5,1F4A5,💥,Collision Symbol,物品与活动,assets/png/72/A98E0484.png,assets/bmp/16/A98E0484.bmp,assets/bmp/24/A98E0484.bmp,assets/bmp/32/A98E0484.bmp
+A98E0485,U+1F4A6,1F4A6,💦,Splashing Sweat Symbol,物品与活动,assets/png/72/A98E0485.png,assets/bmp/16/A98E0485.bmp,assets/bmp/24/A98E0485.bmp,assets/bmp/32/A98E0485.bmp
+A98E0486,U+1F4A7,1F4A7,💧,Droplet,物品与活动,assets/png/72/A98E0486.png,assets/bmp/16/A98E0486.bmp,assets/bmp/24/A98E0486.bmp,assets/bmp/32/A98E0486.bmp
+A98E0487,U+1F4A8,1F4A8,💨,Dash Symbol,物品与活动,assets/png/72/A98E0487.png,assets/bmp/16/A98E0487.bmp,assets/bmp/24/A98E0487.bmp,assets/bmp/32/A98E0487.bmp
+A98E0488,U+1F4A9,1F4A9,💩,Pile Of Poo,物品与活动,assets/png/72/A98E0488.png,assets/bmp/16/A98E0488.bmp,assets/bmp/24/A98E0488.bmp,assets/bmp/32/A98E0488.bmp
+A98E0489,U+1F4AA,1F4AA,💪,Flexed Biceps,物品与活动,assets/png/72/A98E0489.png,assets/bmp/16/A98E0489.bmp,assets/bmp/24/A98E0489.bmp,assets/bmp/32/A98E0489.bmp
+A98E0490,U+1F4AB,1F4AB,💫,Dizzy Symbol,物品与活动,assets/png/72/A98E0490.png,assets/bmp/16/A98E0490.bmp,assets/bmp/24/A98E0490.bmp,assets/bmp/32/A98E0490.bmp
+A98E0491,U+1F4AC,1F4AC,💬,Speech Balloon,物品与活动,assets/png/72/A98E0491.png,assets/bmp/16/A98E0491.bmp,assets/bmp/24/A98E0491.bmp,assets/bmp/32/A98E0491.bmp
+A98E0492,U+1F4AD,1F4AD,💭,Thought Balloon,物品与活动,assets/png/72/A98E0492.png,assets/bmp/16/A98E0492.bmp,assets/bmp/24/A98E0492.bmp,assets/bmp/32/A98E0492.bmp
+A98E0493,U+1F4AE,1F4AE,💮,White Flower,物品与活动,assets/png/72/A98E0493.png,assets/bmp/16/A98E0493.bmp,assets/bmp/24/A98E0493.bmp,assets/bmp/32/A98E0493.bmp
+A98E0494,U+1F4AF,1F4AF,💯,Hundred Points Symbol,物品与活动,assets/png/72/A98E0494.png,assets/bmp/16/A98E0494.bmp,assets/bmp/24/A98E0494.bmp,assets/bmp/32/A98E0494.bmp
+A98E0495,U+1F4B0,1F4B0,💰,Money Bag,物品与活动,assets/png/72/A98E0495.png,assets/bmp/16/A98E0495.bmp,assets/bmp/24/A98E0495.bmp,assets/bmp/32/A98E0495.bmp
+A98E0496,U+1F4B1,1F4B1,💱,Currency Exchange,物品与活动,assets/png/72/A98E0496.png,assets/bmp/16/A98E0496.bmp,assets/bmp/24/A98E0496.bmp,assets/bmp/32/A98E0496.bmp
+A98E0497,U+1F4B2,1F4B2,💲,Heavy Dollar Sign,物品与活动,assets/png/72/A98E0497.png,assets/bmp/16/A98E0497.bmp,assets/bmp/24/A98E0497.bmp,assets/bmp/32/A98E0497.bmp
+A98E0498,U+1F4B3,1F4B3,💳,Credit Card,物品与活动,assets/png/72/A98E0498.png,assets/bmp/16/A98E0498.bmp,assets/bmp/24/A98E0498.bmp,assets/bmp/32/A98E0498.bmp
+A98E0499,U+1F4B4,1F4B4,💴,Banknote With Yen Sign,物品与活动,assets/png/72/A98E0499.png,assets/bmp/16/A98E0499.bmp,assets/bmp/24/A98E0499.bmp,assets/bmp/32/A98E0499.bmp
+A98E0500,U+1F4B5,1F4B5,💵,Banknote With Dollar Sign,物品与活动,assets/png/72/A98E0500.png,assets/bmp/16/A98E0500.bmp,assets/bmp/24/A98E0500.bmp,assets/bmp/32/A98E0500.bmp
+A98E0501,U+1F4B6,1F4B6,💶,Banknote With Euro Sign,物品与活动,assets/png/72/A98E0501.png,assets/bmp/16/A98E0501.bmp,assets/bmp/24/A98E0501.bmp,assets/bmp/32/A98E0501.bmp
+A98E0502,U+1F4B7,1F4B7,💷,Banknote With Pound Sign,物品与活动,assets/png/72/A98E0502.png,assets/bmp/16/A98E0502.bmp,assets/bmp/24/A98E0502.bmp,assets/bmp/32/A98E0502.bmp
+A98E0503,U+1F4B8,1F4B8,💸,Money With Wings,物品与活动,assets/png/72/A98E0503.png,assets/bmp/16/A98E0503.bmp,assets/bmp/24/A98E0503.bmp,assets/bmp/32/A98E0503.bmp
+A98E0504,U+1F4B9,1F4B9,💹,Chart With Upwards Trend And Yen Sign,物品与活动,assets/png/72/A98E0504.png,assets/bmp/16/A98E0504.bmp,assets/bmp/24/A98E0504.bmp,assets/bmp/32/A98E0504.bmp
+A98E0505,U+1F4BA,1F4BA,💺,Seat,物品与活动,assets/png/72/A98E0505.png,assets/bmp/16/A98E0505.bmp,assets/bmp/24/A98E0505.bmp,assets/bmp/32/A98E0505.bmp
+A98E0506,U+1F4BB,1F4BB,💻,Personal Computer,物品与活动,assets/png/72/A98E0506.png,assets/bmp/16/A98E0506.bmp,assets/bmp/24/A98E0506.bmp,assets/bmp/32/A98E0506.bmp
+A98E0507,U+1F4BC,1F4BC,💼,Briefcase,物品与活动,assets/png/72/A98E0507.png,assets/bmp/16/A98E0507.bmp,assets/bmp/24/A98E0507.bmp,assets/bmp/32/A98E0507.bmp
+A98E0508,U+1F4BD,1F4BD,💽,Minidisc,物品与活动,assets/png/72/A98E0508.png,assets/bmp/16/A98E0508.bmp,assets/bmp/24/A98E0508.bmp,assets/bmp/32/A98E0508.bmp
+A98E0509,U+1F4BE,1F4BE,💾,Floppy Disk,物品与活动,assets/png/72/A98E0509.png,assets/bmp/16/A98E0509.bmp,assets/bmp/24/A98E0509.bmp,assets/bmp/32/A98E0509.bmp
+A98E0510,U+1F4BF,1F4BF,💿,Optical Disc,物品与活动,assets/png/72/A98E0510.png,assets/bmp/16/A98E0510.bmp,assets/bmp/24/A98E0510.bmp,assets/bmp/32/A98E0510.bmp
+A98E0511,U+1F4C0,1F4C0,📀,Dvd,物品与活动,assets/png/72/A98E0511.png,assets/bmp/16/A98E0511.bmp,assets/bmp/24/A98E0511.bmp,assets/bmp/32/A98E0511.bmp
+A98E0512,U+1F4C1,1F4C1,📁,File Folder,物品与活动,assets/png/72/A98E0512.png,assets/bmp/16/A98E0512.bmp,assets/bmp/24/A98E0512.bmp,assets/bmp/32/A98E0512.bmp
+A98E0513,U+1F4C2,1F4C2,📂,Open File Folder,物品与活动,assets/png/72/A98E0513.png,assets/bmp/16/A98E0513.bmp,assets/bmp/24/A98E0513.bmp,assets/bmp/32/A98E0513.bmp
+A98E0514,U+1F4C3,1F4C3,📃,Page With Curl,物品与活动,assets/png/72/A98E0514.png,assets/bmp/16/A98E0514.bmp,assets/bmp/24/A98E0514.bmp,assets/bmp/32/A98E0514.bmp
+A98E0515,U+1F4C4,1F4C4,📄,Page Facing Up,物品与活动,assets/png/72/A98E0515.png,assets/bmp/16/A98E0515.bmp,assets/bmp/24/A98E0515.bmp,assets/bmp/32/A98E0515.bmp
+A98E0516,U+1F4C5,1F4C5,📅,Calendar,物品与活动,assets/png/72/A98E0516.png,assets/bmp/16/A98E0516.bmp,assets/bmp/24/A98E0516.bmp,assets/bmp/32/A98E0516.bmp
+A98E0517,U+1F4C6,1F4C6,📆,Tear-Off Calendar,物品与活动,assets/png/72/A98E0517.png,assets/bmp/16/A98E0517.bmp,assets/bmp/24/A98E0517.bmp,assets/bmp/32/A98E0517.bmp
+A98E0518,U+1F4C7,1F4C7,📇,Card Index,物品与活动,assets/png/72/A98E0518.png,assets/bmp/16/A98E0518.bmp,assets/bmp/24/A98E0518.bmp,assets/bmp/32/A98E0518.bmp
+A98E0519,U+1F4C8,1F4C8,📈,Chart With Upwards Trend,物品与活动,assets/png/72/A98E0519.png,assets/bmp/16/A98E0519.bmp,assets/bmp/24/A98E0519.bmp,assets/bmp/32/A98E0519.bmp
+A98E0520,U+1F4C9,1F4C9,📉,Chart With Downwards Trend,物品与活动,assets/png/72/A98E0520.png,assets/bmp/16/A98E0520.bmp,assets/bmp/24/A98E0520.bmp,assets/bmp/32/A98E0520.bmp
+A98E0521,U+1F4CA,1F4CA,📊,Bar Chart,物品与活动,assets/png/72/A98E0521.png,assets/bmp/16/A98E0521.bmp,assets/bmp/24/A98E0521.bmp,assets/bmp/32/A98E0521.bmp
+A98E0522,U+1F4CB,1F4CB,📋,Clipboard,物品与活动,assets/png/72/A98E0522.png,assets/bmp/16/A98E0522.bmp,assets/bmp/24/A98E0522.bmp,assets/bmp/32/A98E0522.bmp
+A98E0523,U+1F4CC,1F4CC,📌,Pushpin,物品与活动,assets/png/72/A98E0523.png,assets/bmp/16/A98E0523.bmp,assets/bmp/24/A98E0523.bmp,assets/bmp/32/A98E0523.bmp
+A98E0524,U+1F4CD,1F4CD,📍,Round Pushpin,物品与活动,assets/png/72/A98E0524.png,assets/bmp/16/A98E0524.bmp,assets/bmp/24/A98E0524.bmp,assets/bmp/32/A98E0524.bmp
+A98E0525,U+1F4CE,1F4CE,📎,Paperclip,物品与活动,assets/png/72/A98E0525.png,assets/bmp/16/A98E0525.bmp,assets/bmp/24/A98E0525.bmp,assets/bmp/32/A98E0525.bmp
+A98E0526,U+1F4CF,1F4CF,📏,Straight Ruler,物品与活动,assets/png/72/A98E0526.png,assets/bmp/16/A98E0526.bmp,assets/bmp/24/A98E0526.bmp,assets/bmp/32/A98E0526.bmp
+A98E0527,U+1F4D0,1F4D0,📐,Triangular Ruler,物品与活动,assets/png/72/A98E0527.png,assets/bmp/16/A98E0527.bmp,assets/bmp/24/A98E0527.bmp,assets/bmp/32/A98E0527.bmp
+A98E0528,U+1F4D1,1F4D1,📑,Bookmark Tabs,物品与活动,assets/png/72/A98E0528.png,assets/bmp/16/A98E0528.bmp,assets/bmp/24/A98E0528.bmp,assets/bmp/32/A98E0528.bmp
+A98E0529,U+1F4D2,1F4D2,📒,Ledger,物品与活动,assets/png/72/A98E0529.png,assets/bmp/16/A98E0529.bmp,assets/bmp/24/A98E0529.bmp,assets/bmp/32/A98E0529.bmp
+A98E0530,U+1F4D3,1F4D3,📓,Notebook,物品与活动,assets/png/72/A98E0530.png,assets/bmp/16/A98E0530.bmp,assets/bmp/24/A98E0530.bmp,assets/bmp/32/A98E0530.bmp
+A98E0531,U+1F4D4,1F4D4,📔,Notebook With Decorative Cover,物品与活动,assets/png/72/A98E0531.png,assets/bmp/16/A98E0531.bmp,assets/bmp/24/A98E0531.bmp,assets/bmp/32/A98E0531.bmp
+A98E0532,U+1F4D5,1F4D5,📕,Closed Book,物品与活动,assets/png/72/A98E0532.png,assets/bmp/16/A98E0532.bmp,assets/bmp/24/A98E0532.bmp,assets/bmp/32/A98E0532.bmp
+A98E0533,U+1F4D6,1F4D6,📖,Open Book,物品与活动,assets/png/72/A98E0533.png,assets/bmp/16/A98E0533.bmp,assets/bmp/24/A98E0533.bmp,assets/bmp/32/A98E0533.bmp
+A98E0534,U+1F4D7,1F4D7,📗,Green Book,物品与活动,assets/png/72/A98E0534.png,assets/bmp/16/A98E0534.bmp,assets/bmp/24/A98E0534.bmp,assets/bmp/32/A98E0534.bmp
+A98E0535,U+1F4D8,1F4D8,📘,Blue Book,物品与活动,assets/png/72/A98E0535.png,assets/bmp/16/A98E0535.bmp,assets/bmp/24/A98E0535.bmp,assets/bmp/32/A98E0535.bmp
+A98E0536,U+1F4D9,1F4D9,📙,Orange Book,物品与活动,assets/png/72/A98E0536.png,assets/bmp/16/A98E0536.bmp,assets/bmp/24/A98E0536.bmp,assets/bmp/32/A98E0536.bmp
+A98E0537,U+1F4DA,1F4DA,📚,Books,物品与活动,assets/png/72/A98E0537.png,assets/bmp/16/A98E0537.bmp,assets/bmp/24/A98E0537.bmp,assets/bmp/32/A98E0537.bmp
+A98E0538,U+1F4DB,1F4DB,📛,Name Badge,物品与活动,assets/png/72/A98E0538.png,assets/bmp/16/A98E0538.bmp,assets/bmp/24/A98E0538.bmp,assets/bmp/32/A98E0538.bmp
+A98E0539,U+1F4DC,1F4DC,📜,Scroll,物品与活动,assets/png/72/A98E0539.png,assets/bmp/16/A98E0539.bmp,assets/bmp/24/A98E0539.bmp,assets/bmp/32/A98E0539.bmp
+A98E0540,U+1F4DD,1F4DD,📝,Memo,物品与活动,assets/png/72/A98E0540.png,assets/bmp/16/A98E0540.bmp,assets/bmp/24/A98E0540.bmp,assets/bmp/32/A98E0540.bmp
+A98E0541,U+1F4DE,1F4DE,📞,Telephone Receiver,物品与活动,assets/png/72/A98E0541.png,assets/bmp/16/A98E0541.bmp,assets/bmp/24/A98E0541.bmp,assets/bmp/32/A98E0541.bmp
+A98E0542,U+1F4DF,1F4DF,📟,Pager,物品与活动,assets/png/72/A98E0542.png,assets/bmp/16/A98E0542.bmp,assets/bmp/24/A98E0542.bmp,assets/bmp/32/A98E0542.bmp
+A98E0543,U+1F4E0,1F4E0,📠,Fax Machine,物品与活动,assets/png/72/A98E0543.png,assets/bmp/16/A98E0543.bmp,assets/bmp/24/A98E0543.bmp,assets/bmp/32/A98E0543.bmp
+A98E0544,U+1F4E1,1F4E1,📡,Satellite Antenna,物品与活动,assets/png/72/A98E0544.png,assets/bmp/16/A98E0544.bmp,assets/bmp/24/A98E0544.bmp,assets/bmp/32/A98E0544.bmp
+A98E0545,U+1F4E2,1F4E2,📢,Public Address Loudspeaker,物品与活动,assets/png/72/A98E0545.png,assets/bmp/16/A98E0545.bmp,assets/bmp/24/A98E0545.bmp,assets/bmp/32/A98E0545.bmp
+A98E0546,U+1F4E3,1F4E3,📣,Cheering Megaphone,物品与活动,assets/png/72/A98E0546.png,assets/bmp/16/A98E0546.bmp,assets/bmp/24/A98E0546.bmp,assets/bmp/32/A98E0546.bmp
+A98E0547,U+1F4E4,1F4E4,📤,Outbox Tray,物品与活动,assets/png/72/A98E0547.png,assets/bmp/16/A98E0547.bmp,assets/bmp/24/A98E0547.bmp,assets/bmp/32/A98E0547.bmp
+A98E0548,U+1F4E5,1F4E5,📥,Inbox Tray,物品与活动,assets/png/72/A98E0548.png,assets/bmp/16/A98E0548.bmp,assets/bmp/24/A98E0548.bmp,assets/bmp/32/A98E0548.bmp
+A98E0549,U+1F4E6,1F4E6,📦,Package,物品与活动,assets/png/72/A98E0549.png,assets/bmp/16/A98E0549.bmp,assets/bmp/24/A98E0549.bmp,assets/bmp/32/A98E0549.bmp
+A98E0550,U+1F4E7,1F4E7,📧,E-Mail Symbol,物品与活动,assets/png/72/A98E0550.png,assets/bmp/16/A98E0550.bmp,assets/bmp/24/A98E0550.bmp,assets/bmp/32/A98E0550.bmp
+A98E0551,U+1F4E8,1F4E8,📨,Incoming Envelope,物品与活动,assets/png/72/A98E0551.png,assets/bmp/16/A98E0551.bmp,assets/bmp/24/A98E0551.bmp,assets/bmp/32/A98E0551.bmp
+A98E0552,U+1F4E9,1F4E9,📩,Envelope With Downwards Arrow Above,物品与活动,assets/png/72/A98E0552.png,assets/bmp/16/A98E0552.bmp,assets/bmp/24/A98E0552.bmp,assets/bmp/32/A98E0552.bmp
+A98E0553,U+1F4EA,1F4EA,📪,Closed Mailbox With Lowered Flag,物品与活动,assets/png/72/A98E0553.png,assets/bmp/16/A98E0553.bmp,assets/bmp/24/A98E0553.bmp,assets/bmp/32/A98E0553.bmp
+A98E0554,U+1F4EB,1F4EB,📫,Closed Mailbox With Raised Flag,物品与活动,assets/png/72/A98E0554.png,assets/bmp/16/A98E0554.bmp,assets/bmp/24/A98E0554.bmp,assets/bmp/32/A98E0554.bmp
+A98E0555,U+1F4EC,1F4EC,📬,Open Mailbox With Raised Flag,物品与活动,assets/png/72/A98E0555.png,assets/bmp/16/A98E0555.bmp,assets/bmp/24/A98E0555.bmp,assets/bmp/32/A98E0555.bmp
+A98E0556,U+1F4ED,1F4ED,📭,Open Mailbox With Lowered Flag,物品与活动,assets/png/72/A98E0556.png,assets/bmp/16/A98E0556.bmp,assets/bmp/24/A98E0556.bmp,assets/bmp/32/A98E0556.bmp
+A98E0557,U+1F4EE,1F4EE,📮,Postbox,物品与活动,assets/png/72/A98E0557.png,assets/bmp/16/A98E0557.bmp,assets/bmp/24/A98E0557.bmp,assets/bmp/32/A98E0557.bmp
+A98E0558,U+1F4EF,1F4EF,📯,Postal Horn,物品与活动,assets/png/72/A98E0558.png,assets/bmp/16/A98E0558.bmp,assets/bmp/24/A98E0558.bmp,assets/bmp/32/A98E0558.bmp
+A98E0559,U+1F4F0,1F4F0,📰,Newspaper,物品与活动,assets/png/72/A98E0559.png,assets/bmp/16/A98E0559.bmp,assets/bmp/24/A98E0559.bmp,assets/bmp/32/A98E0559.bmp
+A98E0560,U+1F4F1,1F4F1,📱,Mobile Phone,物品与活动,assets/png/72/A98E0560.png,assets/bmp/16/A98E0560.bmp,assets/bmp/24/A98E0560.bmp,assets/bmp/32/A98E0560.bmp
+A98E0561,U+1F4F2,1F4F2,📲,Mobile Phone With Rightwards Arrow At Left,物品与活动,assets/png/72/A98E0561.png,assets/bmp/16/A98E0561.bmp,assets/bmp/24/A98E0561.bmp,assets/bmp/32/A98E0561.bmp
+A98E0562,U+1F4F3,1F4F3,📳,Vibration Mode,物品与活动,assets/png/72/A98E0562.png,assets/bmp/16/A98E0562.bmp,assets/bmp/24/A98E0562.bmp,assets/bmp/32/A98E0562.bmp
+A98E0563,U+1F4F4,1F4F4,📴,Mobile Phone Off,物品与活动,assets/png/72/A98E0563.png,assets/bmp/16/A98E0563.bmp,assets/bmp/24/A98E0563.bmp,assets/bmp/32/A98E0563.bmp
+A98E0564,U+1F4F5,1F4F5,📵,No Mobile Phones,物品与活动,assets/png/72/A98E0564.png,assets/bmp/16/A98E0564.bmp,assets/bmp/24/A98E0564.bmp,assets/bmp/32/A98E0564.bmp
+A98E0565,U+1F4F6,1F4F6,📶,Antenna With Bars,物品与活动,assets/png/72/A98E0565.png,assets/bmp/16/A98E0565.bmp,assets/bmp/24/A98E0565.bmp,assets/bmp/32/A98E0565.bmp
+A98E0566,U+1F4F7,1F4F7,📷,Camera,物品与活动,assets/png/72/A98E0566.png,assets/bmp/16/A98E0566.bmp,assets/bmp/24/A98E0566.bmp,assets/bmp/32/A98E0566.bmp
+A98E0567,U+1F4F8,1F4F8,📸,Camera With Flash,物品与活动,assets/png/72/A98E0567.png,assets/bmp/16/A98E0567.bmp,assets/bmp/24/A98E0567.bmp,assets/bmp/32/A98E0567.bmp
+A98E0568,U+1F4F9,1F4F9,📹,Video Camera,物品与活动,assets/png/72/A98E0568.png,assets/bmp/16/A98E0568.bmp,assets/bmp/24/A98E0568.bmp,assets/bmp/32/A98E0568.bmp
+A98E0569,U+1F4FA,1F4FA,📺,Television,物品与活动,assets/png/72/A98E0569.png,assets/bmp/16/A98E0569.bmp,assets/bmp/24/A98E0569.bmp,assets/bmp/32/A98E0569.bmp
+A98E0570,U+1F4FB,1F4FB,📻,Radio,物品与活动,assets/png/72/A98E0570.png,assets/bmp/16/A98E0570.bmp,assets/bmp/24/A98E0570.bmp,assets/bmp/32/A98E0570.bmp
+A98E0571,U+1F4FC,1F4FC,📼,Videocassette,物品与活动,assets/png/72/A98E0571.png,assets/bmp/16/A98E0571.bmp,assets/bmp/24/A98E0571.bmp,assets/bmp/32/A98E0571.bmp
+A98E0572,U+1F4FF,1F4FF,📿,Prayer Beads,物品与活动,assets/png/72/A98E0572.png,assets/bmp/16/A98E0572.bmp,assets/bmp/24/A98E0572.bmp,assets/bmp/32/A98E0572.bmp
+A98E0573,U+1F500,1F500,🔀,Twisted Rightwards Arrows,物品与工具,assets/png/72/A98E0573.png,assets/bmp/16/A98E0573.bmp,assets/bmp/24/A98E0573.bmp,assets/bmp/32/A98E0573.bmp
+A98E0574,U+1F501,1F501,🔁,Clockwise Rightwards And Leftwards Open Circle Arrows,物品与工具,assets/png/72/A98E0574.png,assets/bmp/16/A98E0574.bmp,assets/bmp/24/A98E0574.bmp,assets/bmp/32/A98E0574.bmp
+A98E0575,U+1F502,1F502,🔂,Clockwise Rightwards And Leftwards Open Circle Arrows With Circled One Overlay,物品与工具,assets/png/72/A98E0575.png,assets/bmp/16/A98E0575.bmp,assets/bmp/24/A98E0575.bmp,assets/bmp/32/A98E0575.bmp
+A98E0576,U+1F503,1F503,🔃,Clockwise Downwards And Upwards Open Circle Arrows,物品与工具,assets/png/72/A98E0576.png,assets/bmp/16/A98E0576.bmp,assets/bmp/24/A98E0576.bmp,assets/bmp/32/A98E0576.bmp
+A98E0577,U+1F504,1F504,🔄,Anticlockwise Downwards And Upwards Open Circle Arrows,物品与工具,assets/png/72/A98E0577.png,assets/bmp/16/A98E0577.bmp,assets/bmp/24/A98E0577.bmp,assets/bmp/32/A98E0577.bmp
+A98E0578,U+1F505,1F505,🔅,Low Brightness Symbol,物品与工具,assets/png/72/A98E0578.png,assets/bmp/16/A98E0578.bmp,assets/bmp/24/A98E0578.bmp,assets/bmp/32/A98E0578.bmp
+A98E0579,U+1F506,1F506,🔆,High Brightness Symbol,物品与工具,assets/png/72/A98E0579.png,assets/bmp/16/A98E0579.bmp,assets/bmp/24/A98E0579.bmp,assets/bmp/32/A98E0579.bmp
+A98E0580,U+1F507,1F507,🔇,Speaker With Cancellation Stroke,物品与工具,assets/png/72/A98E0580.png,assets/bmp/16/A98E0580.bmp,assets/bmp/24/A98E0580.bmp,assets/bmp/32/A98E0580.bmp
+A98E0581,U+1F508,1F508,🔈,Speaker,物品与工具,assets/png/72/A98E0581.png,assets/bmp/16/A98E0581.bmp,assets/bmp/24/A98E0581.bmp,assets/bmp/32/A98E0581.bmp
+A98E0582,U+1F509,1F509,🔉,Speaker With One Sound Wave,物品与工具,assets/png/72/A98E0582.png,assets/bmp/16/A98E0582.bmp,assets/bmp/24/A98E0582.bmp,assets/bmp/32/A98E0582.bmp
+A98E0583,U+1F50A,1F50A,🔊,Speaker With Three Sound Waves,物品与工具,assets/png/72/A98E0583.png,assets/bmp/16/A98E0583.bmp,assets/bmp/24/A98E0583.bmp,assets/bmp/32/A98E0583.bmp
+A98E0584,U+1F50B,1F50B,🔋,Battery,物品与工具,assets/png/72/A98E0584.png,assets/bmp/16/A98E0584.bmp,assets/bmp/24/A98E0584.bmp,assets/bmp/32/A98E0584.bmp
+A98E0585,U+1F50C,1F50C,🔌,Electric Plug,物品与工具,assets/png/72/A98E0585.png,assets/bmp/16/A98E0585.bmp,assets/bmp/24/A98E0585.bmp,assets/bmp/32/A98E0585.bmp
+A98E0586,U+1F50D,1F50D,🔍,Left-Pointing Magnifying Glass,物品与工具,assets/png/72/A98E0586.png,assets/bmp/16/A98E0586.bmp,assets/bmp/24/A98E0586.bmp,assets/bmp/32/A98E0586.bmp
+A98E0587,U+1F50E,1F50E,🔎,Right-Pointing Magnifying Glass,物品与工具,assets/png/72/A98E0587.png,assets/bmp/16/A98E0587.bmp,assets/bmp/24/A98E0587.bmp,assets/bmp/32/A98E0587.bmp
+A98E0588,U+1F50F,1F50F,🔏,Lock With Ink Pen,物品与工具,assets/png/72/A98E0588.png,assets/bmp/16/A98E0588.bmp,assets/bmp/24/A98E0588.bmp,assets/bmp/32/A98E0588.bmp
+A98E0589,U+1F510,1F510,🔐,Closed Lock With Key,物品与工具,assets/png/72/A98E0589.png,assets/bmp/16/A98E0589.bmp,assets/bmp/24/A98E0589.bmp,assets/bmp/32/A98E0589.bmp
+A98E0590,U+1F511,1F511,🔑,Key,物品与工具,assets/png/72/A98E0590.png,assets/bmp/16/A98E0590.bmp,assets/bmp/24/A98E0590.bmp,assets/bmp/32/A98E0590.bmp
+A98E0591,U+1F512,1F512,🔒,Lock,物品与工具,assets/png/72/A98E0591.png,assets/bmp/16/A98E0591.bmp,assets/bmp/24/A98E0591.bmp,assets/bmp/32/A98E0591.bmp
+A98E0592,U+1F513,1F513,🔓,Open Lock,物品与工具,assets/png/72/A98E0592.png,assets/bmp/16/A98E0592.bmp,assets/bmp/24/A98E0592.bmp,assets/bmp/32/A98E0592.bmp
+A98E0593,U+1F514,1F514,🔔,Bell,物品与工具,assets/png/72/A98E0593.png,assets/bmp/16/A98E0593.bmp,assets/bmp/24/A98E0593.bmp,assets/bmp/32/A98E0593.bmp
+A98E0594,U+1F515,1F515,🔕,Bell With Cancellation Stroke,物品与工具,assets/png/72/A98E0594.png,assets/bmp/16/A98E0594.bmp,assets/bmp/24/A98E0594.bmp,assets/bmp/32/A98E0594.bmp
+A98E0595,U+1F516,1F516,🔖,Bookmark,物品与工具,assets/png/72/A98E0595.png,assets/bmp/16/A98E0595.bmp,assets/bmp/24/A98E0595.bmp,assets/bmp/32/A98E0595.bmp
+A98E0596,U+1F517,1F517,🔗,Link Symbol,物品与工具,assets/png/72/A98E0596.png,assets/bmp/16/A98E0596.bmp,assets/bmp/24/A98E0596.bmp,assets/bmp/32/A98E0596.bmp
+A98E0597,U+1F518,1F518,🔘,Radio Button,物品与工具,assets/png/72/A98E0597.png,assets/bmp/16/A98E0597.bmp,assets/bmp/24/A98E0597.bmp,assets/bmp/32/A98E0597.bmp
+A98E0598,U+1F519,1F519,🔙,Back With Leftwards Arrow Above,物品与工具,assets/png/72/A98E0598.png,assets/bmp/16/A98E0598.bmp,assets/bmp/24/A98E0598.bmp,assets/bmp/32/A98E0598.bmp
+A98E0599,U+1F51A,1F51A,🔚,End With Leftwards Arrow Above,物品与工具,assets/png/72/A98E0599.png,assets/bmp/16/A98E0599.bmp,assets/bmp/24/A98E0599.bmp,assets/bmp/32/A98E0599.bmp
+A98E0600,U+1F51B,1F51B,🔛,On With Exclamation Mark With Left Right Arrow Above,物品与工具,assets/png/72/A98E0600.png,assets/bmp/16/A98E0600.bmp,assets/bmp/24/A98E0600.bmp,assets/bmp/32/A98E0600.bmp
+A98E0601,U+1F51C,1F51C,🔜,Soon With Rightwards Arrow Above,物品与工具,assets/png/72/A98E0601.png,assets/bmp/16/A98E0601.bmp,assets/bmp/24/A98E0601.bmp,assets/bmp/32/A98E0601.bmp
+A98E0602,U+1F51D,1F51D,🔝,Top With Upwards Arrow Above,物品与工具,assets/png/72/A98E0602.png,assets/bmp/16/A98E0602.bmp,assets/bmp/24/A98E0602.bmp,assets/bmp/32/A98E0602.bmp
+A98E0603,U+1F51E,1F51E,🔞,No One Under Eighteen Symbol,物品与工具,assets/png/72/A98E0603.png,assets/bmp/16/A98E0603.bmp,assets/bmp/24/A98E0603.bmp,assets/bmp/32/A98E0603.bmp
+A98E0604,U+1F51F,1F51F,🔟,Keycap Ten,物品与工具,assets/png/72/A98E0604.png,assets/bmp/16/A98E0604.bmp,assets/bmp/24/A98E0604.bmp,assets/bmp/32/A98E0604.bmp
+A98E0605,U+1F520,1F520,🔠,Input Symbol For Latin Capital Letters,物品与工具,assets/png/72/A98E0605.png,assets/bmp/16/A98E0605.bmp,assets/bmp/24/A98E0605.bmp,assets/bmp/32/A98E0605.bmp
+A98E0606,U+1F521,1F521,🔡,Input Symbol For Latin Small Letters,物品与工具,assets/png/72/A98E0606.png,assets/bmp/16/A98E0606.bmp,assets/bmp/24/A98E0606.bmp,assets/bmp/32/A98E0606.bmp
+A98E0607,U+1F522,1F522,🔢,Input Symbol For Numbers,物品与工具,assets/png/72/A98E0607.png,assets/bmp/16/A98E0607.bmp,assets/bmp/24/A98E0607.bmp,assets/bmp/32/A98E0607.bmp
+A98E0608,U+1F523,1F523,🔣,Input Symbol For Symbols,物品与工具,assets/png/72/A98E0608.png,assets/bmp/16/A98E0608.bmp,assets/bmp/24/A98E0608.bmp,assets/bmp/32/A98E0608.bmp
+A98E0609,U+1F524,1F524,🔤,Input Symbol For Latin Letters,物品与工具,assets/png/72/A98E0609.png,assets/bmp/16/A98E0609.bmp,assets/bmp/24/A98E0609.bmp,assets/bmp/32/A98E0609.bmp
+A98E0610,U+1F525,1F525,🔥,Fire,物品与工具,assets/png/72/A98E0610.png,assets/bmp/16/A98E0610.bmp,assets/bmp/24/A98E0610.bmp,assets/bmp/32/A98E0610.bmp
+A98E0611,U+1F526,1F526,🔦,Electric Torch,物品与工具,assets/png/72/A98E0611.png,assets/bmp/16/A98E0611.bmp,assets/bmp/24/A98E0611.bmp,assets/bmp/32/A98E0611.bmp
+A98E0612,U+1F527,1F527,🔧,Wrench,物品与工具,assets/png/72/A98E0612.png,assets/bmp/16/A98E0612.bmp,assets/bmp/24/A98E0612.bmp,assets/bmp/32/A98E0612.bmp
+A98E0613,U+1F528,1F528,🔨,Hammer,物品与工具,assets/png/72/A98E0613.png,assets/bmp/16/A98E0613.bmp,assets/bmp/24/A98E0613.bmp,assets/bmp/32/A98E0613.bmp
+A98E0614,U+1F529,1F529,🔩,Nut And Bolt,物品与工具,assets/png/72/A98E0614.png,assets/bmp/16/A98E0614.bmp,assets/bmp/24/A98E0614.bmp,assets/bmp/32/A98E0614.bmp
+A98E0615,U+1F52A,1F52A,🔪,Hocho,物品与工具,assets/png/72/A98E0615.png,assets/bmp/16/A98E0615.bmp,assets/bmp/24/A98E0615.bmp,assets/bmp/32/A98E0615.bmp
+A98E0616,U+1F52B,1F52B,🔫,Pistol,物品与工具,assets/png/72/A98E0616.png,assets/bmp/16/A98E0616.bmp,assets/bmp/24/A98E0616.bmp,assets/bmp/32/A98E0616.bmp
+A98E0617,U+1F52C,1F52C,🔬,Microscope,物品与工具,assets/png/72/A98E0617.png,assets/bmp/16/A98E0617.bmp,assets/bmp/24/A98E0617.bmp,assets/bmp/32/A98E0617.bmp
+A98E0618,U+1F52D,1F52D,🔭,Telescope,物品与工具,assets/png/72/A98E0618.png,assets/bmp/16/A98E0618.bmp,assets/bmp/24/A98E0618.bmp,assets/bmp/32/A98E0618.bmp
+A98E0619,U+1F52E,1F52E,🔮,Crystal Ball,物品与工具,assets/png/72/A98E0619.png,assets/bmp/16/A98E0619.bmp,assets/bmp/24/A98E0619.bmp,assets/bmp/32/A98E0619.bmp
+A98E0620,U+1F52F,1F52F,🔯,Six Pointed Star With Middle Dot,物品与工具,assets/png/72/A98E0620.png,assets/bmp/16/A98E0620.bmp,assets/bmp/24/A98E0620.bmp,assets/bmp/32/A98E0620.bmp
+A98E0621,U+1F530,1F530,🔰,Japanese Symbol For Beginner,物品与工具,assets/png/72/A98E0621.png,assets/bmp/16/A98E0621.bmp,assets/bmp/24/A98E0621.bmp,assets/bmp/32/A98E0621.bmp
+A98E0622,U+1F531,1F531,🔱,Trident Emblem,物品与工具,assets/png/72/A98E0622.png,assets/bmp/16/A98E0622.bmp,assets/bmp/24/A98E0622.bmp,assets/bmp/32/A98E0622.bmp
+A98E0623,U+1F532,1F532,🔲,Black Square Button,物品与工具,assets/png/72/A98E0623.png,assets/bmp/16/A98E0623.bmp,assets/bmp/24/A98E0623.bmp,assets/bmp/32/A98E0623.bmp
+A98E0624,U+1F533,1F533,🔳,White Square Button,物品与工具,assets/png/72/A98E0624.png,assets/bmp/16/A98E0624.bmp,assets/bmp/24/A98E0624.bmp,assets/bmp/32/A98E0624.bmp
+A98E0625,U+1F534,1F534,🔴,Large Red Circle,物品与工具,assets/png/72/A98E0625.png,assets/bmp/16/A98E0625.bmp,assets/bmp/24/A98E0625.bmp,assets/bmp/32/A98E0625.bmp
+A98E0626,U+1F535,1F535,🔵,Large Blue Circle,物品与工具,assets/png/72/A98E0626.png,assets/bmp/16/A98E0626.bmp,assets/bmp/24/A98E0626.bmp,assets/bmp/32/A98E0626.bmp
+A98E0627,U+1F536,1F536,🔶,Large Orange Diamond,物品与工具,assets/png/72/A98E0627.png,assets/bmp/16/A98E0627.bmp,assets/bmp/24/A98E0627.bmp,assets/bmp/32/A98E0627.bmp
+A98E0628,U+1F537,1F537,🔷,Large Blue Diamond,物品与工具,assets/png/72/A98E0628.png,assets/bmp/16/A98E0628.bmp,assets/bmp/24/A98E0628.bmp,assets/bmp/32/A98E0628.bmp
+A98E0629,U+1F538,1F538,🔸,Small Orange Diamond,物品与工具,assets/png/72/A98E0629.png,assets/bmp/16/A98E0629.bmp,assets/bmp/24/A98E0629.bmp,assets/bmp/32/A98E0629.bmp
+A98E0630,U+1F539,1F539,🔹,Small Blue Diamond,物品与工具,assets/png/72/A98E0630.png,assets/bmp/16/A98E0630.bmp,assets/bmp/24/A98E0630.bmp,assets/bmp/32/A98E0630.bmp
+A98E0631,U+1F53A,1F53A,🔺,Up-Pointing Red Triangle,物品与工具,assets/png/72/A98E0631.png,assets/bmp/16/A98E0631.bmp,assets/bmp/24/A98E0631.bmp,assets/bmp/32/A98E0631.bmp
+A98E0632,U+1F53B,1F53B,🔻,Down-Pointing Red Triangle,物品与工具,assets/png/72/A98E0632.png,assets/bmp/16/A98E0632.bmp,assets/bmp/24/A98E0632.bmp,assets/bmp/32/A98E0632.bmp
+A98E0633,U+1F53C,1F53C,🔼,Up-Pointing Small Red Triangle,物品与工具,assets/png/72/A98E0633.png,assets/bmp/16/A98E0633.bmp,assets/bmp/24/A98E0633.bmp,assets/bmp/32/A98E0633.bmp
+A98E0634,U+1F53D,1F53D,🔽,Down-Pointing Small Red Triangle,物品与工具,assets/png/72/A98E0634.png,assets/bmp/16/A98E0634.bmp,assets/bmp/24/A98E0634.bmp,assets/bmp/32/A98E0634.bmp
+A98E0635,U+1F54B,1F54B,🕋,Kaaba,物品与工具,assets/png/72/A98E0635.png,assets/bmp/16/A98E0635.bmp,assets/bmp/24/A98E0635.bmp,assets/bmp/32/A98E0635.bmp
+A98E0636,U+1F54C,1F54C,🕌,Mosque,物品与工具,assets/png/72/A98E0636.png,assets/bmp/16/A98E0636.bmp,assets/bmp/24/A98E0636.bmp,assets/bmp/32/A98E0636.bmp
+A98E0637,U+1F54D,1F54D,🕍,Synagogue,物品与工具,assets/png/72/A98E0637.png,assets/bmp/16/A98E0637.bmp,assets/bmp/24/A98E0637.bmp,assets/bmp/32/A98E0637.bmp
+A98E0638,U+1F54E,1F54E,🕎,Menorah With Nine Branches,物品与工具,assets/png/72/A98E0638.png,assets/bmp/16/A98E0638.bmp,assets/bmp/24/A98E0638.bmp,assets/bmp/32/A98E0638.bmp
+A98E0639,U+1F550,1F550,🕐,Clock Face One Oclock,物品与工具,assets/png/72/A98E0639.png,assets/bmp/16/A98E0639.bmp,assets/bmp/24/A98E0639.bmp,assets/bmp/32/A98E0639.bmp
+A98E0640,U+1F551,1F551,🕑,Clock Face Two Oclock,物品与工具,assets/png/72/A98E0640.png,assets/bmp/16/A98E0640.bmp,assets/bmp/24/A98E0640.bmp,assets/bmp/32/A98E0640.bmp
+A98E0641,U+1F552,1F552,🕒,Clock Face Three Oclock,物品与工具,assets/png/72/A98E0641.png,assets/bmp/16/A98E0641.bmp,assets/bmp/24/A98E0641.bmp,assets/bmp/32/A98E0641.bmp
+A98E0642,U+1F553,1F553,🕓,Clock Face Four Oclock,物品与工具,assets/png/72/A98E0642.png,assets/bmp/16/A98E0642.bmp,assets/bmp/24/A98E0642.bmp,assets/bmp/32/A98E0642.bmp
+A98E0643,U+1F554,1F554,🕔,Clock Face Five Oclock,物品与工具,assets/png/72/A98E0643.png,assets/bmp/16/A98E0643.bmp,assets/bmp/24/A98E0643.bmp,assets/bmp/32/A98E0643.bmp
+A98E0644,U+1F555,1F555,🕕,Clock Face Six Oclock,物品与工具,assets/png/72/A98E0644.png,assets/bmp/16/A98E0644.bmp,assets/bmp/24/A98E0644.bmp,assets/bmp/32/A98E0644.bmp
+A98E0645,U+1F556,1F556,🕖,Clock Face Seven Oclock,物品与工具,assets/png/72/A98E0645.png,assets/bmp/16/A98E0645.bmp,assets/bmp/24/A98E0645.bmp,assets/bmp/32/A98E0645.bmp
+A98E0646,U+1F557,1F557,🕗,Clock Face Eight Oclock,物品与工具,assets/png/72/A98E0646.png,assets/bmp/16/A98E0646.bmp,assets/bmp/24/A98E0646.bmp,assets/bmp/32/A98E0646.bmp
+A98E0647,U+1F558,1F558,🕘,Clock Face Nine Oclock,物品与工具,assets/png/72/A98E0647.png,assets/bmp/16/A98E0647.bmp,assets/bmp/24/A98E0647.bmp,assets/bmp/32/A98E0647.bmp
+A98E0648,U+1F559,1F559,🕙,Clock Face Ten Oclock,物品与工具,assets/png/72/A98E0648.png,assets/bmp/16/A98E0648.bmp,assets/bmp/24/A98E0648.bmp,assets/bmp/32/A98E0648.bmp
+A98E0649,U+1F55A,1F55A,🕚,Clock Face Eleven Oclock,物品与工具,assets/png/72/A98E0649.png,assets/bmp/16/A98E0649.bmp,assets/bmp/24/A98E0649.bmp,assets/bmp/32/A98E0649.bmp
+A98E0650,U+1F55B,1F55B,🕛,Clock Face Twelve Oclock,物品与工具,assets/png/72/A98E0650.png,assets/bmp/16/A98E0650.bmp,assets/bmp/24/A98E0650.bmp,assets/bmp/32/A98E0650.bmp
+A98E0651,U+1F55C,1F55C,🕜,Clock Face One-Thirty,物品与工具,assets/png/72/A98E0651.png,assets/bmp/16/A98E0651.bmp,assets/bmp/24/A98E0651.bmp,assets/bmp/32/A98E0651.bmp
+A98E0652,U+1F55D,1F55D,🕝,Clock Face Two-Thirty,物品与工具,assets/png/72/A98E0652.png,assets/bmp/16/A98E0652.bmp,assets/bmp/24/A98E0652.bmp,assets/bmp/32/A98E0652.bmp
+A98E0653,U+1F55E,1F55E,🕞,Clock Face Three-Thirty,物品与工具,assets/png/72/A98E0653.png,assets/bmp/16/A98E0653.bmp,assets/bmp/24/A98E0653.bmp,assets/bmp/32/A98E0653.bmp
+A98E0654,U+1F55F,1F55F,🕟,Clock Face Four-Thirty,物品与工具,assets/png/72/A98E0654.png,assets/bmp/16/A98E0654.bmp,assets/bmp/24/A98E0654.bmp,assets/bmp/32/A98E0654.bmp
+A98E0655,U+1F560,1F560,🕠,Clock Face Five-Thirty,物品与工具,assets/png/72/A98E0655.png,assets/bmp/16/A98E0655.bmp,assets/bmp/24/A98E0655.bmp,assets/bmp/32/A98E0655.bmp
+A98E0656,U+1F561,1F561,🕡,Clock Face Six-Thirty,物品与工具,assets/png/72/A98E0656.png,assets/bmp/16/A98E0656.bmp,assets/bmp/24/A98E0656.bmp,assets/bmp/32/A98E0656.bmp
+A98E0657,U+1F562,1F562,🕢,Clock Face Seven-Thirty,物品与工具,assets/png/72/A98E0657.png,assets/bmp/16/A98E0657.bmp,assets/bmp/24/A98E0657.bmp,assets/bmp/32/A98E0657.bmp
+A98E0658,U+1F563,1F563,🕣,Clock Face Eight-Thirty,物品与工具,assets/png/72/A98E0658.png,assets/bmp/16/A98E0658.bmp,assets/bmp/24/A98E0658.bmp,assets/bmp/32/A98E0658.bmp
+A98E0659,U+1F564,1F564,🕤,Clock Face Nine-Thirty,物品与工具,assets/png/72/A98E0659.png,assets/bmp/16/A98E0659.bmp,assets/bmp/24/A98E0659.bmp,assets/bmp/32/A98E0659.bmp
+A98E0660,U+1F565,1F565,🕥,Clock Face Ten-Thirty,物品与工具,assets/png/72/A98E0660.png,assets/bmp/16/A98E0660.bmp,assets/bmp/24/A98E0660.bmp,assets/bmp/32/A98E0660.bmp
+A98E0661,U+1F566,1F566,🕦,Clock Face Eleven-Thirty,物品与工具,assets/png/72/A98E0661.png,assets/bmp/16/A98E0661.bmp,assets/bmp/24/A98E0661.bmp,assets/bmp/32/A98E0661.bmp
+A98E0662,U+1F567,1F567,🕧,Clock Face Twelve-Thirty,物品与工具,assets/png/72/A98E0662.png,assets/bmp/16/A98E0662.bmp,assets/bmp/24/A98E0662.bmp,assets/bmp/32/A98E0662.bmp
+A98E0663,U+1F57A,1F57A,🕺,Man Dancing,物品与工具,assets/png/72/A98E0663.png,assets/bmp/16/A98E0663.bmp,assets/bmp/24/A98E0663.bmp,assets/bmp/32/A98E0663.bmp
+A98E0664,U+1F595,1F595,🖕,Reversed Hand With Middle Finger Extended,物品与工具,assets/png/72/A98E0664.png,assets/bmp/16/A98E0664.bmp,assets/bmp/24/A98E0664.bmp,assets/bmp/32/A98E0664.bmp
+A98E0665,U+1F596,1F596,🖖,Raised Hand With Part Between Middle And Ring Fingers,物品与工具,assets/png/72/A98E0665.png,assets/bmp/16/A98E0665.bmp,assets/bmp/24/A98E0665.bmp,assets/bmp/32/A98E0665.bmp
+A98E0666,U+1F5A4,1F5A4,🖤,Black Heart,物品与工具,assets/png/72/A98E0666.png,assets/bmp/16/A98E0666.bmp,assets/bmp/24/A98E0666.bmp,assets/bmp/32/A98E0666.bmp
+A98E0667,U+1F5FB,1F5FB,🗻,Mount Fuji,物品与工具,assets/png/72/A98E0667.png,assets/bmp/16/A98E0667.bmp,assets/bmp/24/A98E0667.bmp,assets/bmp/32/A98E0667.bmp
+A98E0668,U+1F5FC,1F5FC,🗼,Tokyo Tower,物品与工具,assets/png/72/A98E0668.png,assets/bmp/16/A98E0668.bmp,assets/bmp/24/A98E0668.bmp,assets/bmp/32/A98E0668.bmp
+A98E0669,U+1F5FD,1F5FD,🗽,Statue Of Liberty,物品与工具,assets/png/72/A98E0669.png,assets/bmp/16/A98E0669.bmp,assets/bmp/24/A98E0669.bmp,assets/bmp/32/A98E0669.bmp
+A98E0670,U+1F5FE,1F5FE,🗾,Silhouette Of Japan,物品与工具,assets/png/72/A98E0670.png,assets/bmp/16/A98E0670.bmp,assets/bmp/24/A98E0670.bmp,assets/bmp/32/A98E0670.bmp
+A98E0671,U+1F5FF,1F5FF,🗿,Moyai,物品与工具,assets/png/72/A98E0671.png,assets/bmp/16/A98E0671.bmp,assets/bmp/24/A98E0671.bmp,assets/bmp/32/A98E0671.bmp
+A98E0672,U+1F600,1F600,😀,Grinning Face,表情与人物,assets/png/72/A98E0672.png,assets/bmp/16/A98E0672.bmp,assets/bmp/24/A98E0672.bmp,assets/bmp/32/A98E0672.bmp
+A98E0673,U+1F601,1F601,😁,Grinning Face With Smiling Eyes,表情与人物,assets/png/72/A98E0673.png,assets/bmp/16/A98E0673.bmp,assets/bmp/24/A98E0673.bmp,assets/bmp/32/A98E0673.bmp
+A98E0674,U+1F602,1F602,😂,Face With Tears Of Joy,表情与人物,assets/png/72/A98E0674.png,assets/bmp/16/A98E0674.bmp,assets/bmp/24/A98E0674.bmp,assets/bmp/32/A98E0674.bmp
+A98E0675,U+1F603,1F603,😃,Smiling Face With Open Mouth,表情与人物,assets/png/72/A98E0675.png,assets/bmp/16/A98E0675.bmp,assets/bmp/24/A98E0675.bmp,assets/bmp/32/A98E0675.bmp
+A98E0676,U+1F604,1F604,😄,Smiling Face With Open Mouth And Smiling Eyes,表情与人物,assets/png/72/A98E0676.png,assets/bmp/16/A98E0676.bmp,assets/bmp/24/A98E0676.bmp,assets/bmp/32/A98E0676.bmp
+A98E0677,U+1F605,1F605,😅,Smiling Face With Open Mouth And Cold Sweat,表情与人物,assets/png/72/A98E0677.png,assets/bmp/16/A98E0677.bmp,assets/bmp/24/A98E0677.bmp,assets/bmp/32/A98E0677.bmp
+A98E0678,U+1F606,1F606,😆,Smiling Face With Open Mouth And Tightly-Closed Eyes,表情与人物,assets/png/72/A98E0678.png,assets/bmp/16/A98E0678.bmp,assets/bmp/24/A98E0678.bmp,assets/bmp/32/A98E0678.bmp
+A98E0679,U+1F607,1F607,😇,Smiling Face With Halo,表情与人物,assets/png/72/A98E0679.png,assets/bmp/16/A98E0679.bmp,assets/bmp/24/A98E0679.bmp,assets/bmp/32/A98E0679.bmp
+A98E0680,U+1F608,1F608,😈,Smiling Face With Horns,表情与人物,assets/png/72/A98E0680.png,assets/bmp/16/A98E0680.bmp,assets/bmp/24/A98E0680.bmp,assets/bmp/32/A98E0680.bmp
+A98E0681,U+1F609,1F609,😉,Winking Face,表情与人物,assets/png/72/A98E0681.png,assets/bmp/16/A98E0681.bmp,assets/bmp/24/A98E0681.bmp,assets/bmp/32/A98E0681.bmp
+A98E0682,U+1F60A,1F60A,😊,Smiling Face With Smiling Eyes,表情与人物,assets/png/72/A98E0682.png,assets/bmp/16/A98E0682.bmp,assets/bmp/24/A98E0682.bmp,assets/bmp/32/A98E0682.bmp
+A98E0683,U+1F60B,1F60B,😋,Face Savouring Delicious Food,表情与人物,assets/png/72/A98E0683.png,assets/bmp/16/A98E0683.bmp,assets/bmp/24/A98E0683.bmp,assets/bmp/32/A98E0683.bmp
+A98E0684,U+1F60C,1F60C,😌,Relieved Face,表情与人物,assets/png/72/A98E0684.png,assets/bmp/16/A98E0684.bmp,assets/bmp/24/A98E0684.bmp,assets/bmp/32/A98E0684.bmp
+A98E0685,U+1F60D,1F60D,😍,Smiling Face With Heart-Shaped Eyes,表情与人物,assets/png/72/A98E0685.png,assets/bmp/16/A98E0685.bmp,assets/bmp/24/A98E0685.bmp,assets/bmp/32/A98E0685.bmp
+A98E0686,U+1F60E,1F60E,😎,Smiling Face With Sunglasses,表情与人物,assets/png/72/A98E0686.png,assets/bmp/16/A98E0686.bmp,assets/bmp/24/A98E0686.bmp,assets/bmp/32/A98E0686.bmp
+A98E0687,U+1F60F,1F60F,😏,Smirking Face,表情与人物,assets/png/72/A98E0687.png,assets/bmp/16/A98E0687.bmp,assets/bmp/24/A98E0687.bmp,assets/bmp/32/A98E0687.bmp
+A98E0688,U+1F610,1F610,😐,Neutral Face,表情与人物,assets/png/72/A98E0688.png,assets/bmp/16/A98E0688.bmp,assets/bmp/24/A98E0688.bmp,assets/bmp/32/A98E0688.bmp
+A98E0689,U+1F611,1F611,😑,Expressionless Face,表情与人物,assets/png/72/A98E0689.png,assets/bmp/16/A98E0689.bmp,assets/bmp/24/A98E0689.bmp,assets/bmp/32/A98E0689.bmp
+A98E0690,U+1F612,1F612,😒,Unamused Face,表情与人物,assets/png/72/A98E0690.png,assets/bmp/16/A98E0690.bmp,assets/bmp/24/A98E0690.bmp,assets/bmp/32/A98E0690.bmp
+A98E0691,U+1F613,1F613,😓,Face With Cold Sweat,表情与人物,assets/png/72/A98E0691.png,assets/bmp/16/A98E0691.bmp,assets/bmp/24/A98E0691.bmp,assets/bmp/32/A98E0691.bmp
+A98E0692,U+1F614,1F614,😔,Pensive Face,表情与人物,assets/png/72/A98E0692.png,assets/bmp/16/A98E0692.bmp,assets/bmp/24/A98E0692.bmp,assets/bmp/32/A98E0692.bmp
+A98E0693,U+1F615,1F615,😕,Confused Face,表情与人物,assets/png/72/A98E0693.png,assets/bmp/16/A98E0693.bmp,assets/bmp/24/A98E0693.bmp,assets/bmp/32/A98E0693.bmp
+A98E0694,U+1F616,1F616,😖,Confounded Face,表情与人物,assets/png/72/A98E0694.png,assets/bmp/16/A98E0694.bmp,assets/bmp/24/A98E0694.bmp,assets/bmp/32/A98E0694.bmp
+A98E0695,U+1F617,1F617,😗,Kissing Face,表情与人物,assets/png/72/A98E0695.png,assets/bmp/16/A98E0695.bmp,assets/bmp/24/A98E0695.bmp,assets/bmp/32/A98E0695.bmp
+A98E0696,U+1F618,1F618,😘,Face Throwing A Kiss,表情与人物,assets/png/72/A98E0696.png,assets/bmp/16/A98E0696.bmp,assets/bmp/24/A98E0696.bmp,assets/bmp/32/A98E0696.bmp
+A98E0697,U+1F619,1F619,😙,Kissing Face With Smiling Eyes,表情与人物,assets/png/72/A98E0697.png,assets/bmp/16/A98E0697.bmp,assets/bmp/24/A98E0697.bmp,assets/bmp/32/A98E0697.bmp
+A98E0698,U+1F61A,1F61A,😚,Kissing Face With Closed Eyes,表情与人物,assets/png/72/A98E0698.png,assets/bmp/16/A98E0698.bmp,assets/bmp/24/A98E0698.bmp,assets/bmp/32/A98E0698.bmp
+A98E0699,U+1F61B,1F61B,😛,Face With Stuck-Out Tongue,表情与人物,assets/png/72/A98E0699.png,assets/bmp/16/A98E0699.bmp,assets/bmp/24/A98E0699.bmp,assets/bmp/32/A98E0699.bmp
+A98E0700,U+1F61C,1F61C,😜,Face With Stuck-Out Tongue And Winking Eye,表情与人物,assets/png/72/A98E0700.png,assets/bmp/16/A98E0700.bmp,assets/bmp/24/A98E0700.bmp,assets/bmp/32/A98E0700.bmp
+A98E0701,U+1F61D,1F61D,😝,Face With Stuck-Out Tongue And Tightly-Closed Eyes,表情与人物,assets/png/72/A98E0701.png,assets/bmp/16/A98E0701.bmp,assets/bmp/24/A98E0701.bmp,assets/bmp/32/A98E0701.bmp
+A98E0702,U+1F61E,1F61E,😞,Disappointed Face,表情与人物,assets/png/72/A98E0702.png,assets/bmp/16/A98E0702.bmp,assets/bmp/24/A98E0702.bmp,assets/bmp/32/A98E0702.bmp
+A98E0703,U+1F61F,1F61F,😟,Worried Face,表情与人物,assets/png/72/A98E0703.png,assets/bmp/16/A98E0703.bmp,assets/bmp/24/A98E0703.bmp,assets/bmp/32/A98E0703.bmp
+A98E0704,U+1F620,1F620,😠,Angry Face,表情与人物,assets/png/72/A98E0704.png,assets/bmp/16/A98E0704.bmp,assets/bmp/24/A98E0704.bmp,assets/bmp/32/A98E0704.bmp
+A98E0705,U+1F621,1F621,😡,Pouting Face,表情与人物,assets/png/72/A98E0705.png,assets/bmp/16/A98E0705.bmp,assets/bmp/24/A98E0705.bmp,assets/bmp/32/A98E0705.bmp
+A98E0706,U+1F622,1F622,😢,Crying Face,表情与人物,assets/png/72/A98E0706.png,assets/bmp/16/A98E0706.bmp,assets/bmp/24/A98E0706.bmp,assets/bmp/32/A98E0706.bmp
+A98E0707,U+1F623,1F623,😣,Persevering Face,表情与人物,assets/png/72/A98E0707.png,assets/bmp/16/A98E0707.bmp,assets/bmp/24/A98E0707.bmp,assets/bmp/32/A98E0707.bmp
+A98E0708,U+1F624,1F624,😤,Face With Look Of Triumph,表情与人物,assets/png/72/A98E0708.png,assets/bmp/16/A98E0708.bmp,assets/bmp/24/A98E0708.bmp,assets/bmp/32/A98E0708.bmp
+A98E0709,U+1F625,1F625,😥,Disappointed But Relieved Face,表情与人物,assets/png/72/A98E0709.png,assets/bmp/16/A98E0709.bmp,assets/bmp/24/A98E0709.bmp,assets/bmp/32/A98E0709.bmp
+A98E0710,U+1F626,1F626,😦,Frowning Face With Open Mouth,表情与人物,assets/png/72/A98E0710.png,assets/bmp/16/A98E0710.bmp,assets/bmp/24/A98E0710.bmp,assets/bmp/32/A98E0710.bmp
+A98E0711,U+1F627,1F627,😧,Anguished Face,表情与人物,assets/png/72/A98E0711.png,assets/bmp/16/A98E0711.bmp,assets/bmp/24/A98E0711.bmp,assets/bmp/32/A98E0711.bmp
+A98E0712,U+1F628,1F628,😨,Fearful Face,表情与人物,assets/png/72/A98E0712.png,assets/bmp/16/A98E0712.bmp,assets/bmp/24/A98E0712.bmp,assets/bmp/32/A98E0712.bmp
+A98E0713,U+1F629,1F629,😩,Weary Face,表情与人物,assets/png/72/A98E0713.png,assets/bmp/16/A98E0713.bmp,assets/bmp/24/A98E0713.bmp,assets/bmp/32/A98E0713.bmp
+A98E0714,U+1F62A,1F62A,😪,Sleepy Face,表情与人物,assets/png/72/A98E0714.png,assets/bmp/16/A98E0714.bmp,assets/bmp/24/A98E0714.bmp,assets/bmp/32/A98E0714.bmp
+A98E0715,U+1F62B,1F62B,😫,Tired Face,表情与人物,assets/png/72/A98E0715.png,assets/bmp/16/A98E0715.bmp,assets/bmp/24/A98E0715.bmp,assets/bmp/32/A98E0715.bmp
+A98E0716,U+1F62C,1F62C,😬,Grimacing Face,表情与人物,assets/png/72/A98E0716.png,assets/bmp/16/A98E0716.bmp,assets/bmp/24/A98E0716.bmp,assets/bmp/32/A98E0716.bmp
+A98E0717,U+1F62D,1F62D,😭,Loudly Crying Face,表情与人物,assets/png/72/A98E0717.png,assets/bmp/16/A98E0717.bmp,assets/bmp/24/A98E0717.bmp,assets/bmp/32/A98E0717.bmp
+A98E0718,U+1F62E,1F62E,😮,Face With Open Mouth,表情与人物,assets/png/72/A98E0718.png,assets/bmp/16/A98E0718.bmp,assets/bmp/24/A98E0718.bmp,assets/bmp/32/A98E0718.bmp
+A98E0719,U+1F62F,1F62F,😯,Hushed Face,表情与人物,assets/png/72/A98E0719.png,assets/bmp/16/A98E0719.bmp,assets/bmp/24/A98E0719.bmp,assets/bmp/32/A98E0719.bmp
+A98E0720,U+1F630,1F630,😰,Face With Open Mouth And Cold Sweat,表情与人物,assets/png/72/A98E0720.png,assets/bmp/16/A98E0720.bmp,assets/bmp/24/A98E0720.bmp,assets/bmp/32/A98E0720.bmp
+A98E0721,U+1F631,1F631,😱,Face Screaming In Fear,表情与人物,assets/png/72/A98E0721.png,assets/bmp/16/A98E0721.bmp,assets/bmp/24/A98E0721.bmp,assets/bmp/32/A98E0721.bmp
+A98E0722,U+1F632,1F632,😲,Astonished Face,表情与人物,assets/png/72/A98E0722.png,assets/bmp/16/A98E0722.bmp,assets/bmp/24/A98E0722.bmp,assets/bmp/32/A98E0722.bmp
+A98E0723,U+1F633,1F633,😳,Flushed Face,表情与人物,assets/png/72/A98E0723.png,assets/bmp/16/A98E0723.bmp,assets/bmp/24/A98E0723.bmp,assets/bmp/32/A98E0723.bmp
+A98E0724,U+1F634,1F634,😴,Sleeping Face,表情与人物,assets/png/72/A98E0724.png,assets/bmp/16/A98E0724.bmp,assets/bmp/24/A98E0724.bmp,assets/bmp/32/A98E0724.bmp
+A98E0725,U+1F635,1F635,😵,Dizzy Face,表情与人物,assets/png/72/A98E0725.png,assets/bmp/16/A98E0725.bmp,assets/bmp/24/A98E0725.bmp,assets/bmp/32/A98E0725.bmp
+A98E0726,U+1F636,1F636,😶,Face Without Mouth,表情与人物,assets/png/72/A98E0726.png,assets/bmp/16/A98E0726.bmp,assets/bmp/24/A98E0726.bmp,assets/bmp/32/A98E0726.bmp
+A98E0727,U+1F637,1F637,😷,Face With Medical Mask,表情与人物,assets/png/72/A98E0727.png,assets/bmp/16/A98E0727.bmp,assets/bmp/24/A98E0727.bmp,assets/bmp/32/A98E0727.bmp
+A98E0728,U+1F638,1F638,😸,Grinning Cat Face With Smiling Eyes,表情与人物,assets/png/72/A98E0728.png,assets/bmp/16/A98E0728.bmp,assets/bmp/24/A98E0728.bmp,assets/bmp/32/A98E0728.bmp
+A98E0729,U+1F639,1F639,😹,Cat Face With Tears Of Joy,表情与人物,assets/png/72/A98E0729.png,assets/bmp/16/A98E0729.bmp,assets/bmp/24/A98E0729.bmp,assets/bmp/32/A98E0729.bmp
+A98E0730,U+1F63A,1F63A,😺,Smiling Cat Face With Open Mouth,表情与人物,assets/png/72/A98E0730.png,assets/bmp/16/A98E0730.bmp,assets/bmp/24/A98E0730.bmp,assets/bmp/32/A98E0730.bmp
+A98E0731,U+1F63B,1F63B,😻,Smiling Cat Face With Heart-Shaped Eyes,表情与人物,assets/png/72/A98E0731.png,assets/bmp/16/A98E0731.bmp,assets/bmp/24/A98E0731.bmp,assets/bmp/32/A98E0731.bmp
+A98E0732,U+1F63C,1F63C,😼,Cat Face With Wry Smile,表情与人物,assets/png/72/A98E0732.png,assets/bmp/16/A98E0732.bmp,assets/bmp/24/A98E0732.bmp,assets/bmp/32/A98E0732.bmp
+A98E0733,U+1F63D,1F63D,😽,Kissing Cat Face With Closed Eyes,表情与人物,assets/png/72/A98E0733.png,assets/bmp/16/A98E0733.bmp,assets/bmp/24/A98E0733.bmp,assets/bmp/32/A98E0733.bmp
+A98E0734,U+1F63E,1F63E,😾,Pouting Cat Face,表情与人物,assets/png/72/A98E0734.png,assets/bmp/16/A98E0734.bmp,assets/bmp/24/A98E0734.bmp,assets/bmp/32/A98E0734.bmp
+A98E0735,U+1F63F,1F63F,😿,Crying Cat Face,表情与人物,assets/png/72/A98E0735.png,assets/bmp/16/A98E0735.bmp,assets/bmp/24/A98E0735.bmp,assets/bmp/32/A98E0735.bmp
+A98E0736,U+1F640,1F640,🙀,Weary Cat Face,表情与人物,assets/png/72/A98E0736.png,assets/bmp/16/A98E0736.bmp,assets/bmp/24/A98E0736.bmp,assets/bmp/32/A98E0736.bmp
+A98E0737,U+1F641,1F641,🙁,Slightly Frowning Face,表情与人物,assets/png/72/A98E0737.png,assets/bmp/16/A98E0737.bmp,assets/bmp/24/A98E0737.bmp,assets/bmp/32/A98E0737.bmp
+A98E0738,U+1F642,1F642,🙂,Slightly Smiling Face,表情与人物,assets/png/72/A98E0738.png,assets/bmp/16/A98E0738.bmp,assets/bmp/24/A98E0738.bmp,assets/bmp/32/A98E0738.bmp
+A98E0739,U+1F643,1F643,🙃,Upside-Down Face,表情与人物,assets/png/72/A98E0739.png,assets/bmp/16/A98E0739.bmp,assets/bmp/24/A98E0739.bmp,assets/bmp/32/A98E0739.bmp
+A98E0740,U+1F644,1F644,🙄,Face With Rolling Eyes,表情与人物,assets/png/72/A98E0740.png,assets/bmp/16/A98E0740.bmp,assets/bmp/24/A98E0740.bmp,assets/bmp/32/A98E0740.bmp
+A98E0741,U+1F645,1F645,🙅,Face With No Good Gesture,表情与人物,assets/png/72/A98E0741.png,assets/bmp/16/A98E0741.bmp,assets/bmp/24/A98E0741.bmp,assets/bmp/32/A98E0741.bmp
+A98E0742,U+1F646,1F646,🙆,Face With Ok Gesture,表情与人物,assets/png/72/A98E0742.png,assets/bmp/16/A98E0742.bmp,assets/bmp/24/A98E0742.bmp,assets/bmp/32/A98E0742.bmp
+A98E0743,U+1F647,1F647,🙇,Person Bowing Deeply,表情与人物,assets/png/72/A98E0743.png,assets/bmp/16/A98E0743.bmp,assets/bmp/24/A98E0743.bmp,assets/bmp/32/A98E0743.bmp
+A98E0744,U+1F648,1F648,🙈,See-No-Evil Monkey,表情与人物,assets/png/72/A98E0744.png,assets/bmp/16/A98E0744.bmp,assets/bmp/24/A98E0744.bmp,assets/bmp/32/A98E0744.bmp
+A98E0745,U+1F649,1F649,🙉,Hear-No-Evil Monkey,表情与人物,assets/png/72/A98E0745.png,assets/bmp/16/A98E0745.bmp,assets/bmp/24/A98E0745.bmp,assets/bmp/32/A98E0745.bmp
+A98E0746,U+1F64A,1F64A,🙊,Speak-No-Evil Monkey,表情与人物,assets/png/72/A98E0746.png,assets/bmp/16/A98E0746.bmp,assets/bmp/24/A98E0746.bmp,assets/bmp/32/A98E0746.bmp
+A98E0747,U+1F64B,1F64B,🙋,Happy Person Raising One Hand,表情与人物,assets/png/72/A98E0747.png,assets/bmp/16/A98E0747.bmp,assets/bmp/24/A98E0747.bmp,assets/bmp/32/A98E0747.bmp
+A98E0748,U+1F64C,1F64C,🙌,Person Raising Both Hands In Celebration,表情与人物,assets/png/72/A98E0748.png,assets/bmp/16/A98E0748.bmp,assets/bmp/24/A98E0748.bmp,assets/bmp/32/A98E0748.bmp
+A98E0749,U+1F64D,1F64D,🙍,Person Frowning,表情与人物,assets/png/72/A98E0749.png,assets/bmp/16/A98E0749.bmp,assets/bmp/24/A98E0749.bmp,assets/bmp/32/A98E0749.bmp
+A98E0750,U+1F64E,1F64E,🙎,Person With Pouting Face,表情与人物,assets/png/72/A98E0750.png,assets/bmp/16/A98E0750.bmp,assets/bmp/24/A98E0750.bmp,assets/bmp/32/A98E0750.bmp
+A98E0751,U+1F64F,1F64F,🙏,Person With Folded Hands,表情与人物,assets/png/72/A98E0751.png,assets/bmp/16/A98E0751.bmp,assets/bmp/24/A98E0751.bmp,assets/bmp/32/A98E0751.bmp
+A98E0752,U+1F680,1F680,🚀,Rocket,交通与地点,assets/png/72/A98E0752.png,assets/bmp/16/A98E0752.bmp,assets/bmp/24/A98E0752.bmp,assets/bmp/32/A98E0752.bmp
+A98E0753,U+1F681,1F681,🚁,Helicopter,交通与地点,assets/png/72/A98E0753.png,assets/bmp/16/A98E0753.bmp,assets/bmp/24/A98E0753.bmp,assets/bmp/32/A98E0753.bmp
+A98E0754,U+1F682,1F682,🚂,Steam Locomotive,交通与地点,assets/png/72/A98E0754.png,assets/bmp/16/A98E0754.bmp,assets/bmp/24/A98E0754.bmp,assets/bmp/32/A98E0754.bmp
+A98E0755,U+1F683,1F683,🚃,Railway Car,交通与地点,assets/png/72/A98E0755.png,assets/bmp/16/A98E0755.bmp,assets/bmp/24/A98E0755.bmp,assets/bmp/32/A98E0755.bmp
+A98E0756,U+1F684,1F684,🚄,High-Speed Train,交通与地点,assets/png/72/A98E0756.png,assets/bmp/16/A98E0756.bmp,assets/bmp/24/A98E0756.bmp,assets/bmp/32/A98E0756.bmp
+A98E0757,U+1F685,1F685,🚅,High-Speed Train With Bullet Nose,交通与地点,assets/png/72/A98E0757.png,assets/bmp/16/A98E0757.bmp,assets/bmp/24/A98E0757.bmp,assets/bmp/32/A98E0757.bmp
+A98E0758,U+1F686,1F686,🚆,Train,交通与地点,assets/png/72/A98E0758.png,assets/bmp/16/A98E0758.bmp,assets/bmp/24/A98E0758.bmp,assets/bmp/32/A98E0758.bmp
+A98E0759,U+1F687,1F687,🚇,Metro,交通与地点,assets/png/72/A98E0759.png,assets/bmp/16/A98E0759.bmp,assets/bmp/24/A98E0759.bmp,assets/bmp/32/A98E0759.bmp
+A98E0760,U+1F688,1F688,🚈,Light Rail,交通与地点,assets/png/72/A98E0760.png,assets/bmp/16/A98E0760.bmp,assets/bmp/24/A98E0760.bmp,assets/bmp/32/A98E0760.bmp
+A98E0761,U+1F689,1F689,🚉,Station,交通与地点,assets/png/72/A98E0761.png,assets/bmp/16/A98E0761.bmp,assets/bmp/24/A98E0761.bmp,assets/bmp/32/A98E0761.bmp
+A98E0762,U+1F68A,1F68A,🚊,Tram,交通与地点,assets/png/72/A98E0762.png,assets/bmp/16/A98E0762.bmp,assets/bmp/24/A98E0762.bmp,assets/bmp/32/A98E0762.bmp
+A98E0763,U+1F68B,1F68B,🚋,Tram Car,交通与地点,assets/png/72/A98E0763.png,assets/bmp/16/A98E0763.bmp,assets/bmp/24/A98E0763.bmp,assets/bmp/32/A98E0763.bmp
+A98E0764,U+1F68C,1F68C,🚌,Bus,交通与地点,assets/png/72/A98E0764.png,assets/bmp/16/A98E0764.bmp,assets/bmp/24/A98E0764.bmp,assets/bmp/32/A98E0764.bmp
+A98E0765,U+1F68D,1F68D,🚍,Oncoming Bus,交通与地点,assets/png/72/A98E0765.png,assets/bmp/16/A98E0765.bmp,assets/bmp/24/A98E0765.bmp,assets/bmp/32/A98E0765.bmp
+A98E0766,U+1F68E,1F68E,🚎,Trolleybus,交通与地点,assets/png/72/A98E0766.png,assets/bmp/16/A98E0766.bmp,assets/bmp/24/A98E0766.bmp,assets/bmp/32/A98E0766.bmp
+A98E0767,U+1F68F,1F68F,🚏,Bus Stop,交通与地点,assets/png/72/A98E0767.png,assets/bmp/16/A98E0767.bmp,assets/bmp/24/A98E0767.bmp,assets/bmp/32/A98E0767.bmp
+A98E0768,U+1F690,1F690,🚐,Minibus,交通与地点,assets/png/72/A98E0768.png,assets/bmp/16/A98E0768.bmp,assets/bmp/24/A98E0768.bmp,assets/bmp/32/A98E0768.bmp
+A98E0769,U+1F691,1F691,🚑,Ambulance,交通与地点,assets/png/72/A98E0769.png,assets/bmp/16/A98E0769.bmp,assets/bmp/24/A98E0769.bmp,assets/bmp/32/A98E0769.bmp
+A98E0770,U+1F692,1F692,🚒,Fire Engine,交通与地点,assets/png/72/A98E0770.png,assets/bmp/16/A98E0770.bmp,assets/bmp/24/A98E0770.bmp,assets/bmp/32/A98E0770.bmp
+A98E0771,U+1F693,1F693,🚓,Police Car,交通与地点,assets/png/72/A98E0771.png,assets/bmp/16/A98E0771.bmp,assets/bmp/24/A98E0771.bmp,assets/bmp/32/A98E0771.bmp
+A98E0772,U+1F694,1F694,🚔,Oncoming Police Car,交通与地点,assets/png/72/A98E0772.png,assets/bmp/16/A98E0772.bmp,assets/bmp/24/A98E0772.bmp,assets/bmp/32/A98E0772.bmp
+A98E0773,U+1F695,1F695,🚕,Taxi,交通与地点,assets/png/72/A98E0773.png,assets/bmp/16/A98E0773.bmp,assets/bmp/24/A98E0773.bmp,assets/bmp/32/A98E0773.bmp
+A98E0774,U+1F696,1F696,🚖,Oncoming Taxi,交通与地点,assets/png/72/A98E0774.png,assets/bmp/16/A98E0774.bmp,assets/bmp/24/A98E0774.bmp,assets/bmp/32/A98E0774.bmp
+A98E0775,U+1F697,1F697,🚗,Automobile,交通与地点,assets/png/72/A98E0775.png,assets/bmp/16/A98E0775.bmp,assets/bmp/24/A98E0775.bmp,assets/bmp/32/A98E0775.bmp
+A98E0776,U+1F698,1F698,🚘,Oncoming Automobile,交通与地点,assets/png/72/A98E0776.png,assets/bmp/16/A98E0776.bmp,assets/bmp/24/A98E0776.bmp,assets/bmp/32/A98E0776.bmp
+A98E0777,U+1F699,1F699,🚙,Recreational Vehicle,交通与地点,assets/png/72/A98E0777.png,assets/bmp/16/A98E0777.bmp,assets/bmp/24/A98E0777.bmp,assets/bmp/32/A98E0777.bmp
+A98E0778,U+1F69A,1F69A,🚚,Delivery Truck,交通与地点,assets/png/72/A98E0778.png,assets/bmp/16/A98E0778.bmp,assets/bmp/24/A98E0778.bmp,assets/bmp/32/A98E0778.bmp
+A98E0779,U+1F69B,1F69B,🚛,Articulated Lorry,交通与地点,assets/png/72/A98E0779.png,assets/bmp/16/A98E0779.bmp,assets/bmp/24/A98E0779.bmp,assets/bmp/32/A98E0779.bmp
+A98E0780,U+1F69C,1F69C,🚜,Tractor,交通与地点,assets/png/72/A98E0780.png,assets/bmp/16/A98E0780.bmp,assets/bmp/24/A98E0780.bmp,assets/bmp/32/A98E0780.bmp
+A98E0781,U+1F69D,1F69D,🚝,Monorail,交通与地点,assets/png/72/A98E0781.png,assets/bmp/16/A98E0781.bmp,assets/bmp/24/A98E0781.bmp,assets/bmp/32/A98E0781.bmp
+A98E0782,U+1F69E,1F69E,🚞,Mountain Railway,交通与地点,assets/png/72/A98E0782.png,assets/bmp/16/A98E0782.bmp,assets/bmp/24/A98E0782.bmp,assets/bmp/32/A98E0782.bmp
+A98E0783,U+1F69F,1F69F,🚟,Suspension Railway,交通与地点,assets/png/72/A98E0783.png,assets/bmp/16/A98E0783.bmp,assets/bmp/24/A98E0783.bmp,assets/bmp/32/A98E0783.bmp
+A98E0784,U+1F6A0,1F6A0,🚠,Mountain Cableway,交通与地点,assets/png/72/A98E0784.png,assets/bmp/16/A98E0784.bmp,assets/bmp/24/A98E0784.bmp,assets/bmp/32/A98E0784.bmp
+A98E0785,U+1F6A1,1F6A1,🚡,Aerial Tramway,交通与地点,assets/png/72/A98E0785.png,assets/bmp/16/A98E0785.bmp,assets/bmp/24/A98E0785.bmp,assets/bmp/32/A98E0785.bmp
+A98E0786,U+1F6A2,1F6A2,🚢,Ship,交通与地点,assets/png/72/A98E0786.png,assets/bmp/16/A98E0786.bmp,assets/bmp/24/A98E0786.bmp,assets/bmp/32/A98E0786.bmp
+A98E0787,U+1F6A3,1F6A3,🚣,Rowboat,交通与地点,assets/png/72/A98E0787.png,assets/bmp/16/A98E0787.bmp,assets/bmp/24/A98E0787.bmp,assets/bmp/32/A98E0787.bmp
+A98E0788,U+1F6A4,1F6A4,🚤,Speedboat,交通与地点,assets/png/72/A98E0788.png,assets/bmp/16/A98E0788.bmp,assets/bmp/24/A98E0788.bmp,assets/bmp/32/A98E0788.bmp
+A98E0789,U+1F6A5,1F6A5,🚥,Horizontal Traffic Light,交通与地点,assets/png/72/A98E0789.png,assets/bmp/16/A98E0789.bmp,assets/bmp/24/A98E0789.bmp,assets/bmp/32/A98E0789.bmp
+A98E0790,U+1F6A6,1F6A6,🚦,Vertical Traffic Light,交通与地点,assets/png/72/A98E0790.png,assets/bmp/16/A98E0790.bmp,assets/bmp/24/A98E0790.bmp,assets/bmp/32/A98E0790.bmp
+A98E0791,U+1F6A7,1F6A7,🚧,Construction Sign,交通与地点,assets/png/72/A98E0791.png,assets/bmp/16/A98E0791.bmp,assets/bmp/24/A98E0791.bmp,assets/bmp/32/A98E0791.bmp
+A98E0792,U+1F6A8,1F6A8,🚨,Police Cars Revolving Light,交通与地点,assets/png/72/A98E0792.png,assets/bmp/16/A98E0792.bmp,assets/bmp/24/A98E0792.bmp,assets/bmp/32/A98E0792.bmp
+A98E0793,U+1F6A9,1F6A9,🚩,Triangular Flag On Post,交通与地点,assets/png/72/A98E0793.png,assets/bmp/16/A98E0793.bmp,assets/bmp/24/A98E0793.bmp,assets/bmp/32/A98E0793.bmp
+A98E0794,U+1F6AA,1F6AA,🚪,Door,交通与地点,assets/png/72/A98E0794.png,assets/bmp/16/A98E0794.bmp,assets/bmp/24/A98E0794.bmp,assets/bmp/32/A98E0794.bmp
+A98E0795,U+1F6AB,1F6AB,🚫,No Entry Sign,交通与地点,assets/png/72/A98E0795.png,assets/bmp/16/A98E0795.bmp,assets/bmp/24/A98E0795.bmp,assets/bmp/32/A98E0795.bmp
+A98E0796,U+1F6AC,1F6AC,🚬,Smoking Symbol,交通与地点,assets/png/72/A98E0796.png,assets/bmp/16/A98E0796.bmp,assets/bmp/24/A98E0796.bmp,assets/bmp/32/A98E0796.bmp
+A98E0797,U+1F6AD,1F6AD,🚭,No Smoking Symbol,交通与地点,assets/png/72/A98E0797.png,assets/bmp/16/A98E0797.bmp,assets/bmp/24/A98E0797.bmp,assets/bmp/32/A98E0797.bmp
+A98E0798,U+1F6AE,1F6AE,🚮,Put Litter In Its Place Symbol,交通与地点,assets/png/72/A98E0798.png,assets/bmp/16/A98E0798.bmp,assets/bmp/24/A98E0798.bmp,assets/bmp/32/A98E0798.bmp
+A98E0799,U+1F6AF,1F6AF,🚯,Do Not Litter Symbol,交通与地点,assets/png/72/A98E0799.png,assets/bmp/16/A98E0799.bmp,assets/bmp/24/A98E0799.bmp,assets/bmp/32/A98E0799.bmp
+A98E0800,U+1F6B0,1F6B0,🚰,Potable Water Symbol,交通与地点,assets/png/72/A98E0800.png,assets/bmp/16/A98E0800.bmp,assets/bmp/24/A98E0800.bmp,assets/bmp/32/A98E0800.bmp
+A98E0801,U+1F6B1,1F6B1,🚱,Non-Potable Water Symbol,交通与地点,assets/png/72/A98E0801.png,assets/bmp/16/A98E0801.bmp,assets/bmp/24/A98E0801.bmp,assets/bmp/32/A98E0801.bmp
+A98E0802,U+1F6B2,1F6B2,🚲,Bicycle,交通与地点,assets/png/72/A98E0802.png,assets/bmp/16/A98E0802.bmp,assets/bmp/24/A98E0802.bmp,assets/bmp/32/A98E0802.bmp
+A98E0803,U+1F6B3,1F6B3,🚳,No Bicycles,交通与地点,assets/png/72/A98E0803.png,assets/bmp/16/A98E0803.bmp,assets/bmp/24/A98E0803.bmp,assets/bmp/32/A98E0803.bmp
+A98E0804,U+1F6B4,1F6B4,🚴,Bicyclist,交通与地点,assets/png/72/A98E0804.png,assets/bmp/16/A98E0804.bmp,assets/bmp/24/A98E0804.bmp,assets/bmp/32/A98E0804.bmp
+A98E0805,U+1F6B5,1F6B5,🚵,Mountain Bicyclist,交通与地点,assets/png/72/A98E0805.png,assets/bmp/16/A98E0805.bmp,assets/bmp/24/A98E0805.bmp,assets/bmp/32/A98E0805.bmp
+A98E0806,U+1F6B6,1F6B6,🚶,Pedestrian,交通与地点,assets/png/72/A98E0806.png,assets/bmp/16/A98E0806.bmp,assets/bmp/24/A98E0806.bmp,assets/bmp/32/A98E0806.bmp
+A98E0807,U+1F6B7,1F6B7,🚷,No Pedestrians,交通与地点,assets/png/72/A98E0807.png,assets/bmp/16/A98E0807.bmp,assets/bmp/24/A98E0807.bmp,assets/bmp/32/A98E0807.bmp
+A98E0808,U+1F6B8,1F6B8,🚸,Children Crossing,交通与地点,assets/png/72/A98E0808.png,assets/bmp/16/A98E0808.bmp,assets/bmp/24/A98E0808.bmp,assets/bmp/32/A98E0808.bmp
+A98E0809,U+1F6B9,1F6B9,🚹,Mens Symbol,交通与地点,assets/png/72/A98E0809.png,assets/bmp/16/A98E0809.bmp,assets/bmp/24/A98E0809.bmp,assets/bmp/32/A98E0809.bmp
+A98E0810,U+1F6BA,1F6BA,🚺,Womens Symbol,交通与地点,assets/png/72/A98E0810.png,assets/bmp/16/A98E0810.bmp,assets/bmp/24/A98E0810.bmp,assets/bmp/32/A98E0810.bmp
+A98E0811,U+1F6BB,1F6BB,🚻,Restroom,交通与地点,assets/png/72/A98E0811.png,assets/bmp/16/A98E0811.bmp,assets/bmp/24/A98E0811.bmp,assets/bmp/32/A98E0811.bmp
+A98E0812,U+1F6BC,1F6BC,🚼,Baby Symbol,交通与地点,assets/png/72/A98E0812.png,assets/bmp/16/A98E0812.bmp,assets/bmp/24/A98E0812.bmp,assets/bmp/32/A98E0812.bmp
+A98E0813,U+1F6BD,1F6BD,🚽,Toilet,交通与地点,assets/png/72/A98E0813.png,assets/bmp/16/A98E0813.bmp,assets/bmp/24/A98E0813.bmp,assets/bmp/32/A98E0813.bmp
+A98E0814,U+1F6BE,1F6BE,🚾,Water Closet,交通与地点,assets/png/72/A98E0814.png,assets/bmp/16/A98E0814.bmp,assets/bmp/24/A98E0814.bmp,assets/bmp/32/A98E0814.bmp
+A98E0815,U+1F6BF,1F6BF,🚿,Shower,交通与地点,assets/png/72/A98E0815.png,assets/bmp/16/A98E0815.bmp,assets/bmp/24/A98E0815.bmp,assets/bmp/32/A98E0815.bmp
+A98E0816,U+1F6C0,1F6C0,🛀,Bath,交通与地点,assets/png/72/A98E0816.png,assets/bmp/16/A98E0816.bmp,assets/bmp/24/A98E0816.bmp,assets/bmp/32/A98E0816.bmp
+A98E0817,U+1F6C1,1F6C1,🛁,Bathtub,交通与地点,assets/png/72/A98E0817.png,assets/bmp/16/A98E0817.bmp,assets/bmp/24/A98E0817.bmp,assets/bmp/32/A98E0817.bmp
+A98E0818,U+1F6C2,1F6C2,🛂,Passport Control,交通与地点,assets/png/72/A98E0818.png,assets/bmp/16/A98E0818.bmp,assets/bmp/24/A98E0818.bmp,assets/bmp/32/A98E0818.bmp
+A98E0819,U+1F6C3,1F6C3,🛃,Customs,交通与地点,assets/png/72/A98E0819.png,assets/bmp/16/A98E0819.bmp,assets/bmp/24/A98E0819.bmp,assets/bmp/32/A98E0819.bmp
+A98E0820,U+1F6C4,1F6C4,🛄,Baggage Claim,交通与地点,assets/png/72/A98E0820.png,assets/bmp/16/A98E0820.bmp,assets/bmp/24/A98E0820.bmp,assets/bmp/32/A98E0820.bmp
+A98E0821,U+1F6C5,1F6C5,🛅,Left Luggage,交通与地点,assets/png/72/A98E0821.png,assets/bmp/16/A98E0821.bmp,assets/bmp/24/A98E0821.bmp,assets/bmp/32/A98E0821.bmp
+A98E0822,U+1F6CC,1F6CC,🛌,Sleeping Accommodation,交通与地点,assets/png/72/A98E0822.png,assets/bmp/16/A98E0822.bmp,assets/bmp/24/A98E0822.bmp,assets/bmp/32/A98E0822.bmp
+A98E0823,U+1F6D0,1F6D0,🛐,Place Of Worship,交通与地点,assets/png/72/A98E0823.png,assets/bmp/16/A98E0823.bmp,assets/bmp/24/A98E0823.bmp,assets/bmp/32/A98E0823.bmp
+A98E0824,U+1F6D1,1F6D1,🛑,Octagonal Sign,交通与地点,assets/png/72/A98E0824.png,assets/bmp/16/A98E0824.bmp,assets/bmp/24/A98E0824.bmp,assets/bmp/32/A98E0824.bmp
+A98E0825,U+1F6D2,1F6D2,🛒,Shopping Trolley,交通与地点,assets/png/72/A98E0825.png,assets/bmp/16/A98E0825.bmp,assets/bmp/24/A98E0825.bmp,assets/bmp/32/A98E0825.bmp
+A98E0826,U+1F6D5,1F6D5,🛕,Hindu Temple,交通与地点,assets/png/72/A98E0826.png,assets/bmp/16/A98E0826.bmp,assets/bmp/24/A98E0826.bmp,assets/bmp/32/A98E0826.bmp
+A98E0827,U+1F6D6,1F6D6,🛖,Hut,交通与地点,assets/png/72/A98E0827.png,assets/bmp/16/A98E0827.bmp,assets/bmp/24/A98E0827.bmp,assets/bmp/32/A98E0827.bmp
+A98E0828,U+1F6D7,1F6D7,🛗,Elevator,交通与地点,assets/png/72/A98E0828.png,assets/bmp/16/A98E0828.bmp,assets/bmp/24/A98E0828.bmp,assets/bmp/32/A98E0828.bmp
+A98E0829,U+1F6D8,1F6D8,🛘,Unicode U+1F6D8,交通与地点,assets/png/72/A98E0829.png,assets/bmp/16/A98E0829.bmp,assets/bmp/24/A98E0829.bmp,assets/bmp/32/A98E0829.bmp
+A98E0830,U+1F6DC,1F6DC,🛜,Wireless,交通与地点,assets/png/72/A98E0830.png,assets/bmp/16/A98E0830.bmp,assets/bmp/24/A98E0830.bmp,assets/bmp/32/A98E0830.bmp
+A98E0831,U+1F6DD,1F6DD,🛝,Playground Slide,交通与地点,assets/png/72/A98E0831.png,assets/bmp/16/A98E0831.bmp,assets/bmp/24/A98E0831.bmp,assets/bmp/32/A98E0831.bmp
+A98E0832,U+1F6DE,1F6DE,🛞,Wheel,交通与地点,assets/png/72/A98E0832.png,assets/bmp/16/A98E0832.bmp,assets/bmp/24/A98E0832.bmp,assets/bmp/32/A98E0832.bmp
+A98E0833,U+1F6DF,1F6DF,🛟,Ring Buoy,交通与地点,assets/png/72/A98E0833.png,assets/bmp/16/A98E0833.bmp,assets/bmp/24/A98E0833.bmp,assets/bmp/32/A98E0833.bmp
+A98E0834,U+1F6EB,1F6EB,🛫,Airplane Departure,交通与地点,assets/png/72/A98E0834.png,assets/bmp/16/A98E0834.bmp,assets/bmp/24/A98E0834.bmp,assets/bmp/32/A98E0834.bmp
+A98E0835,U+1F6EC,1F6EC,🛬,Airplane Arriving,交通与地点,assets/png/72/A98E0835.png,assets/bmp/16/A98E0835.bmp,assets/bmp/24/A98E0835.bmp,assets/bmp/32/A98E0835.bmp
+A98E0836,U+1F6F4,1F6F4,🛴,Scooter,交通与地点,assets/png/72/A98E0836.png,assets/bmp/16/A98E0836.bmp,assets/bmp/24/A98E0836.bmp,assets/bmp/32/A98E0836.bmp
+A98E0837,U+1F6F5,1F6F5,🛵,Motor Scooter,交通与地点,assets/png/72/A98E0837.png,assets/bmp/16/A98E0837.bmp,assets/bmp/24/A98E0837.bmp,assets/bmp/32/A98E0837.bmp
+A98E0838,U+1F6F6,1F6F6,🛶,Canoe,交通与地点,assets/png/72/A98E0838.png,assets/bmp/16/A98E0838.bmp,assets/bmp/24/A98E0838.bmp,assets/bmp/32/A98E0838.bmp
+A98E0839,U+1F6F7,1F6F7,🛷,Sled,交通与地点,assets/png/72/A98E0839.png,assets/bmp/16/A98E0839.bmp,assets/bmp/24/A98E0839.bmp,assets/bmp/32/A98E0839.bmp
+A98E0840,U+1F6F8,1F6F8,🛸,Flying Saucer,交通与地点,assets/png/72/A98E0840.png,assets/bmp/16/A98E0840.bmp,assets/bmp/24/A98E0840.bmp,assets/bmp/32/A98E0840.bmp
+A98E0841,U+1F6F9,1F6F9,🛹,Skateboard,交通与地点,assets/png/72/A98E0841.png,assets/bmp/16/A98E0841.bmp,assets/bmp/24/A98E0841.bmp,assets/bmp/32/A98E0841.bmp
+A98E0842,U+1F6FA,1F6FA,🛺,Auto Rickshaw,交通与地点,assets/png/72/A98E0842.png,assets/bmp/16/A98E0842.bmp,assets/bmp/24/A98E0842.bmp,assets/bmp/32/A98E0842.bmp
+A98E0843,U+1F6FB,1F6FB,🛻,Pickup Truck,交通与地点,assets/png/72/A98E0843.png,assets/bmp/16/A98E0843.bmp,assets/bmp/24/A98E0843.bmp,assets/bmp/32/A98E0843.bmp
+A98E0844,U+1F6FC,1F6FC,🛼,Roller Skate,交通与地点,assets/png/72/A98E0844.png,assets/bmp/16/A98E0844.bmp,assets/bmp/24/A98E0844.bmp,assets/bmp/32/A98E0844.bmp
+A98E0845,U+1F7E0,1F7E0,🟠,Large Orange Circle,符号与其他,assets/png/72/A98E0845.png,assets/bmp/16/A98E0845.bmp,assets/bmp/24/A98E0845.bmp,assets/bmp/32/A98E0845.bmp
+A98E0846,U+1F7E1,1F7E1,🟡,Large Yellow Circle,符号与其他,assets/png/72/A98E0846.png,assets/bmp/16/A98E0846.bmp,assets/bmp/24/A98E0846.bmp,assets/bmp/32/A98E0846.bmp
+A98E0847,U+1F7E2,1F7E2,🟢,Large Green Circle,符号与其他,assets/png/72/A98E0847.png,assets/bmp/16/A98E0847.bmp,assets/bmp/24/A98E0847.bmp,assets/bmp/32/A98E0847.bmp
+A98E0848,U+1F7E3,1F7E3,🟣,Large Purple Circle,符号与其他,assets/png/72/A98E0848.png,assets/bmp/16/A98E0848.bmp,assets/bmp/24/A98E0848.bmp,assets/bmp/32/A98E0848.bmp
+A98E0849,U+1F7E4,1F7E4,🟤,Large Brown Circle,符号与其他,assets/png/72/A98E0849.png,assets/bmp/16/A98E0849.bmp,assets/bmp/24/A98E0849.bmp,assets/bmp/32/A98E0849.bmp
+A98E0850,U+1F7E5,1F7E5,🟥,Large Red Square,符号与其他,assets/png/72/A98E0850.png,assets/bmp/16/A98E0850.bmp,assets/bmp/24/A98E0850.bmp,assets/bmp/32/A98E0850.bmp
+A98E0851,U+1F7E6,1F7E6,🟦,Large Blue Square,符号与其他,assets/png/72/A98E0851.png,assets/bmp/16/A98E0851.bmp,assets/bmp/24/A98E0851.bmp,assets/bmp/32/A98E0851.bmp
+A98E0852,U+1F7E7,1F7E7,🟧,Large Orange Square,符号与其他,assets/png/72/A98E0852.png,assets/bmp/16/A98E0852.bmp,assets/bmp/24/A98E0852.bmp,assets/bmp/32/A98E0852.bmp
+A98E0853,U+1F7E8,1F7E8,🟨,Large Yellow Square,符号与其他,assets/png/72/A98E0853.png,assets/bmp/16/A98E0853.bmp,assets/bmp/24/A98E0853.bmp,assets/bmp/32/A98E0853.bmp
+A98E0854,U+1F7E9,1F7E9,🟩,Large Green Square,符号与其他,assets/png/72/A98E0854.png,assets/bmp/16/A98E0854.bmp,assets/bmp/24/A98E0854.bmp,assets/bmp/32/A98E0854.bmp
+A98E0855,U+1F7EA,1F7EA,🟪,Large Purple Square,符号与其他,assets/png/72/A98E0855.png,assets/bmp/16/A98E0855.bmp,assets/bmp/24/A98E0855.bmp,assets/bmp/32/A98E0855.bmp
+A98E0856,U+1F7EB,1F7EB,🟫,Large Brown Square,符号与其他,assets/png/72/A98E0856.png,assets/bmp/16/A98E0856.bmp,assets/bmp/24/A98E0856.bmp,assets/bmp/32/A98E0856.bmp
+A98E0857,U+1F7F0,1F7F0,🟰,Heavy Equals Sign,符号与其他,assets/png/72/A98E0857.png,assets/bmp/16/A98E0857.bmp,assets/bmp/24/A98E0857.bmp,assets/bmp/32/A98E0857.bmp
+A98E0858,U+1F90C,1F90C,🤌,Pinched Fingers,扩展表情与物品,assets/png/72/A98E0858.png,assets/bmp/16/A98E0858.bmp,assets/bmp/24/A98E0858.bmp,assets/bmp/32/A98E0858.bmp
+A98E0859,U+1F90D,1F90D,🤍,White Heart,扩展表情与物品,assets/png/72/A98E0859.png,assets/bmp/16/A98E0859.bmp,assets/bmp/24/A98E0859.bmp,assets/bmp/32/A98E0859.bmp
+A98E0860,U+1F90E,1F90E,🤎,Brown Heart,扩展表情与物品,assets/png/72/A98E0860.png,assets/bmp/16/A98E0860.bmp,assets/bmp/24/A98E0860.bmp,assets/bmp/32/A98E0860.bmp
+A98E0861,U+1F90F,1F90F,🤏,Pinching Hand,扩展表情与物品,assets/png/72/A98E0861.png,assets/bmp/16/A98E0861.bmp,assets/bmp/24/A98E0861.bmp,assets/bmp/32/A98E0861.bmp
+A98E0862,U+1F910,1F910,🤐,Zipper-Mouth Face,物品与活动,assets/png/72/A98E0862.png,assets/bmp/16/A98E0862.bmp,assets/bmp/24/A98E0862.bmp,assets/bmp/32/A98E0862.bmp
+A98E0863,U+1F911,1F911,🤑,Money-Mouth Face,物品与活动,assets/png/72/A98E0863.png,assets/bmp/16/A98E0863.bmp,assets/bmp/24/A98E0863.bmp,assets/bmp/32/A98E0863.bmp
+A98E0864,U+1F912,1F912,🤒,Face With Thermometer,物品与活动,assets/png/72/A98E0864.png,assets/bmp/16/A98E0864.bmp,assets/bmp/24/A98E0864.bmp,assets/bmp/32/A98E0864.bmp
+A98E0865,U+1F913,1F913,🤓,Nerd Face,物品与活动,assets/png/72/A98E0865.png,assets/bmp/16/A98E0865.bmp,assets/bmp/24/A98E0865.bmp,assets/bmp/32/A98E0865.bmp
+A98E0866,U+1F914,1F914,🤔,Thinking Face,物品与活动,assets/png/72/A98E0866.png,assets/bmp/16/A98E0866.bmp,assets/bmp/24/A98E0866.bmp,assets/bmp/32/A98E0866.bmp
+A98E0867,U+1F915,1F915,🤕,Face With Head-Bandage,物品与活动,assets/png/72/A98E0867.png,assets/bmp/16/A98E0867.bmp,assets/bmp/24/A98E0867.bmp,assets/bmp/32/A98E0867.bmp
+A98E0868,U+1F916,1F916,🤖,Robot Face,物品与活动,assets/png/72/A98E0868.png,assets/bmp/16/A98E0868.bmp,assets/bmp/24/A98E0868.bmp,assets/bmp/32/A98E0868.bmp
+A98E0869,U+1F917,1F917,🤗,Hugging Face,物品与活动,assets/png/72/A98E0869.png,assets/bmp/16/A98E0869.bmp,assets/bmp/24/A98E0869.bmp,assets/bmp/32/A98E0869.bmp
+A98E0870,U+1F918,1F918,🤘,Sign Of The Horns,物品与活动,assets/png/72/A98E0870.png,assets/bmp/16/A98E0870.bmp,assets/bmp/24/A98E0870.bmp,assets/bmp/32/A98E0870.bmp
+A98E0871,U+1F919,1F919,🤙,Call Me Hand,物品与活动,assets/png/72/A98E0871.png,assets/bmp/16/A98E0871.bmp,assets/bmp/24/A98E0871.bmp,assets/bmp/32/A98E0871.bmp
+A98E0872,U+1F91A,1F91A,🤚,Raised Back Of Hand,物品与活动,assets/png/72/A98E0872.png,assets/bmp/16/A98E0872.bmp,assets/bmp/24/A98E0872.bmp,assets/bmp/32/A98E0872.bmp
+A98E0873,U+1F91B,1F91B,🤛,Left-Facing Fist,物品与活动,assets/png/72/A98E0873.png,assets/bmp/16/A98E0873.bmp,assets/bmp/24/A98E0873.bmp,assets/bmp/32/A98E0873.bmp
+A98E0874,U+1F91C,1F91C,🤜,Right-Facing Fist,物品与活动,assets/png/72/A98E0874.png,assets/bmp/16/A98E0874.bmp,assets/bmp/24/A98E0874.bmp,assets/bmp/32/A98E0874.bmp
+A98E0875,U+1F91D,1F91D,🤝,Handshake,物品与活动,assets/png/72/A98E0875.png,assets/bmp/16/A98E0875.bmp,assets/bmp/24/A98E0875.bmp,assets/bmp/32/A98E0875.bmp
+A98E0876,U+1F91E,1F91E,🤞,Hand With Index And Middle Fingers Crossed,物品与活动,assets/png/72/A98E0876.png,assets/bmp/16/A98E0876.bmp,assets/bmp/24/A98E0876.bmp,assets/bmp/32/A98E0876.bmp
+A98E0877,U+1F91F,1F91F,🤟,I Love You Hand Sign,物品与活动,assets/png/72/A98E0877.png,assets/bmp/16/A98E0877.bmp,assets/bmp/24/A98E0877.bmp,assets/bmp/32/A98E0877.bmp
+A98E0878,U+1F920,1F920,🤠,Face With Cowboy Hat,物品与活动,assets/png/72/A98E0878.png,assets/bmp/16/A98E0878.bmp,assets/bmp/24/A98E0878.bmp,assets/bmp/32/A98E0878.bmp
+A98E0879,U+1F921,1F921,🤡,Clown Face,物品与活动,assets/png/72/A98E0879.png,assets/bmp/16/A98E0879.bmp,assets/bmp/24/A98E0879.bmp,assets/bmp/32/A98E0879.bmp
+A98E0880,U+1F922,1F922,🤢,Nauseated Face,物品与活动,assets/png/72/A98E0880.png,assets/bmp/16/A98E0880.bmp,assets/bmp/24/A98E0880.bmp,assets/bmp/32/A98E0880.bmp
+A98E0881,U+1F923,1F923,🤣,Rolling On The Floor Laughing,物品与活动,assets/png/72/A98E0881.png,assets/bmp/16/A98E0881.bmp,assets/bmp/24/A98E0881.bmp,assets/bmp/32/A98E0881.bmp
+A98E0882,U+1F924,1F924,🤤,Drooling Face,物品与活动,assets/png/72/A98E0882.png,assets/bmp/16/A98E0882.bmp,assets/bmp/24/A98E0882.bmp,assets/bmp/32/A98E0882.bmp
+A98E0883,U+1F925,1F925,🤥,Lying Face,物品与活动,assets/png/72/A98E0883.png,assets/bmp/16/A98E0883.bmp,assets/bmp/24/A98E0883.bmp,assets/bmp/32/A98E0883.bmp
+A98E0884,U+1F926,1F926,🤦,Face Palm,物品与活动,assets/png/72/A98E0884.png,assets/bmp/16/A98E0884.bmp,assets/bmp/24/A98E0884.bmp,assets/bmp/32/A98E0884.bmp
+A98E0885,U+1F927,1F927,🤧,Sneezing Face,物品与活动,assets/png/72/A98E0885.png,assets/bmp/16/A98E0885.bmp,assets/bmp/24/A98E0885.bmp,assets/bmp/32/A98E0885.bmp
+A98E0886,U+1F928,1F928,🤨,Face With One Eyebrow Raised,物品与活动,assets/png/72/A98E0886.png,assets/bmp/16/A98E0886.bmp,assets/bmp/24/A98E0886.bmp,assets/bmp/32/A98E0886.bmp
+A98E0887,U+1F929,1F929,🤩,Grinning Face With Star Eyes,物品与活动,assets/png/72/A98E0887.png,assets/bmp/16/A98E0887.bmp,assets/bmp/24/A98E0887.bmp,assets/bmp/32/A98E0887.bmp
+A98E0888,U+1F92A,1F92A,🤪,Grinning Face With One Large And One Small Eye,物品与活动,assets/png/72/A98E0888.png,assets/bmp/16/A98E0888.bmp,assets/bmp/24/A98E0888.bmp,assets/bmp/32/A98E0888.bmp
+A98E0889,U+1F92B,1F92B,🤫,Face With Finger Covering Closed Lips,物品与活动,assets/png/72/A98E0889.png,assets/bmp/16/A98E0889.bmp,assets/bmp/24/A98E0889.bmp,assets/bmp/32/A98E0889.bmp
+A98E0890,U+1F92C,1F92C,🤬,Serious Face With Symbols Covering Mouth,物品与活动,assets/png/72/A98E0890.png,assets/bmp/16/A98E0890.bmp,assets/bmp/24/A98E0890.bmp,assets/bmp/32/A98E0890.bmp
+A98E0891,U+1F92D,1F92D,🤭,Smiling Face With Smiling Eyes And Hand Covering Mouth,物品与活动,assets/png/72/A98E0891.png,assets/bmp/16/A98E0891.bmp,assets/bmp/24/A98E0891.bmp,assets/bmp/32/A98E0891.bmp
+A98E0892,U+1F92E,1F92E,🤮,Face With Open Mouth Vomiting,物品与活动,assets/png/72/A98E0892.png,assets/bmp/16/A98E0892.bmp,assets/bmp/24/A98E0892.bmp,assets/bmp/32/A98E0892.bmp
+A98E0893,U+1F92F,1F92F,🤯,Shocked Face With Exploding Head,物品与活动,assets/png/72/A98E0893.png,assets/bmp/16/A98E0893.bmp,assets/bmp/24/A98E0893.bmp,assets/bmp/32/A98E0893.bmp
+A98E0894,U+1F930,1F930,🤰,Pregnant Woman,物品与活动,assets/png/72/A98E0894.png,assets/bmp/16/A98E0894.bmp,assets/bmp/24/A98E0894.bmp,assets/bmp/32/A98E0894.bmp
+A98E0895,U+1F931,1F931,🤱,Breast-Feeding,物品与活动,assets/png/72/A98E0895.png,assets/bmp/16/A98E0895.bmp,assets/bmp/24/A98E0895.bmp,assets/bmp/32/A98E0895.bmp
+A98E0896,U+1F932,1F932,🤲,Palms Up Together,物品与活动,assets/png/72/A98E0896.png,assets/bmp/16/A98E0896.bmp,assets/bmp/24/A98E0896.bmp,assets/bmp/32/A98E0896.bmp
+A98E0897,U+1F933,1F933,🤳,Selfie,物品与活动,assets/png/72/A98E0897.png,assets/bmp/16/A98E0897.bmp,assets/bmp/24/A98E0897.bmp,assets/bmp/32/A98E0897.bmp
+A98E0898,U+1F934,1F934,🤴,Prince,物品与活动,assets/png/72/A98E0898.png,assets/bmp/16/A98E0898.bmp,assets/bmp/24/A98E0898.bmp,assets/bmp/32/A98E0898.bmp
+A98E0899,U+1F935,1F935,🤵,Man In Tuxedo,物品与活动,assets/png/72/A98E0899.png,assets/bmp/16/A98E0899.bmp,assets/bmp/24/A98E0899.bmp,assets/bmp/32/A98E0899.bmp
+A98E0900,U+1F936,1F936,🤶,Mother Christmas,物品与活动,assets/png/72/A98E0900.png,assets/bmp/16/A98E0900.bmp,assets/bmp/24/A98E0900.bmp,assets/bmp/32/A98E0900.bmp
+A98E0901,U+1F937,1F937,🤷,Shrug,物品与活动,assets/png/72/A98E0901.png,assets/bmp/16/A98E0901.bmp,assets/bmp/24/A98E0901.bmp,assets/bmp/32/A98E0901.bmp
+A98E0902,U+1F938,1F938,🤸,Person Doing Cartwheel,物品与活动,assets/png/72/A98E0902.png,assets/bmp/16/A98E0902.bmp,assets/bmp/24/A98E0902.bmp,assets/bmp/32/A98E0902.bmp
+A98E0903,U+1F939,1F939,🤹,Juggling,物品与活动,assets/png/72/A98E0903.png,assets/bmp/16/A98E0903.bmp,assets/bmp/24/A98E0903.bmp,assets/bmp/32/A98E0903.bmp
+A98E0904,U+1F93A,1F93A,🤺,Fencer,物品与活动,assets/png/72/A98E0904.png,assets/bmp/16/A98E0904.bmp,assets/bmp/24/A98E0904.bmp,assets/bmp/32/A98E0904.bmp
+A98E0905,U+1F93C,1F93C,🤼,Wrestlers,物品与活动,assets/png/72/A98E0905.png,assets/bmp/16/A98E0905.bmp,assets/bmp/24/A98E0905.bmp,assets/bmp/32/A98E0905.bmp
+A98E0906,U+1F93D,1F93D,🤽,Water Polo,物品与活动,assets/png/72/A98E0906.png,assets/bmp/16/A98E0906.bmp,assets/bmp/24/A98E0906.bmp,assets/bmp/32/A98E0906.bmp
+A98E0907,U+1F93E,1F93E,🤾,Handball,物品与活动,assets/png/72/A98E0907.png,assets/bmp/16/A98E0907.bmp,assets/bmp/24/A98E0907.bmp,assets/bmp/32/A98E0907.bmp
+A98E0908,U+1F93F,1F93F,🤿,Diving Mask,物品与活动,assets/png/72/A98E0908.png,assets/bmp/16/A98E0908.bmp,assets/bmp/24/A98E0908.bmp,assets/bmp/32/A98E0908.bmp
+A98E0909,U+1F940,1F940,🥀,Wilted Flower,物品与活动,assets/png/72/A98E0909.png,assets/bmp/16/A98E0909.bmp,assets/bmp/24/A98E0909.bmp,assets/bmp/32/A98E0909.bmp
+A98E0910,U+1F941,1F941,🥁,Drum With Drumsticks,物品与活动,assets/png/72/A98E0910.png,assets/bmp/16/A98E0910.bmp,assets/bmp/24/A98E0910.bmp,assets/bmp/32/A98E0910.bmp
+A98E0911,U+1F942,1F942,🥂,Clinking Glasses,物品与活动,assets/png/72/A98E0911.png,assets/bmp/16/A98E0911.bmp,assets/bmp/24/A98E0911.bmp,assets/bmp/32/A98E0911.bmp
+A98E0912,U+1F943,1F943,🥃,Tumbler Glass,物品与活动,assets/png/72/A98E0912.png,assets/bmp/16/A98E0912.bmp,assets/bmp/24/A98E0912.bmp,assets/bmp/32/A98E0912.bmp
+A98E0913,U+1F944,1F944,🥄,Spoon,物品与活动,assets/png/72/A98E0913.png,assets/bmp/16/A98E0913.bmp,assets/bmp/24/A98E0913.bmp,assets/bmp/32/A98E0913.bmp
+A98E0914,U+1F945,1F945,🥅,Goal Net,物品与活动,assets/png/72/A98E0914.png,assets/bmp/16/A98E0914.bmp,assets/bmp/24/A98E0914.bmp,assets/bmp/32/A98E0914.bmp
+A98E0915,U+1F947,1F947,🥇,First Place Medal,物品与活动,assets/png/72/A98E0915.png,assets/bmp/16/A98E0915.bmp,assets/bmp/24/A98E0915.bmp,assets/bmp/32/A98E0915.bmp
+A98E0916,U+1F948,1F948,🥈,Second Place Medal,物品与活动,assets/png/72/A98E0916.png,assets/bmp/16/A98E0916.bmp,assets/bmp/24/A98E0916.bmp,assets/bmp/32/A98E0916.bmp
+A98E0917,U+1F949,1F949,🥉,Third Place Medal,物品与活动,assets/png/72/A98E0917.png,assets/bmp/16/A98E0917.bmp,assets/bmp/24/A98E0917.bmp,assets/bmp/32/A98E0917.bmp
+A98E0918,U+1F94A,1F94A,🥊,Boxing Glove,物品与活动,assets/png/72/A98E0918.png,assets/bmp/16/A98E0918.bmp,assets/bmp/24/A98E0918.bmp,assets/bmp/32/A98E0918.bmp
+A98E0919,U+1F94B,1F94B,🥋,Martial Arts Uniform,物品与活动,assets/png/72/A98E0919.png,assets/bmp/16/A98E0919.bmp,assets/bmp/24/A98E0919.bmp,assets/bmp/32/A98E0919.bmp
+A98E0920,U+1F94C,1F94C,🥌,Curling Stone,物品与活动,assets/png/72/A98E0920.png,assets/bmp/16/A98E0920.bmp,assets/bmp/24/A98E0920.bmp,assets/bmp/32/A98E0920.bmp
+A98E0921,U+1F94D,1F94D,🥍,Lacrosse Stick And Ball,物品与活动,assets/png/72/A98E0921.png,assets/bmp/16/A98E0921.bmp,assets/bmp/24/A98E0921.bmp,assets/bmp/32/A98E0921.bmp
+A98E0922,U+1F94E,1F94E,🥎,Softball,物品与活动,assets/png/72/A98E0922.png,assets/bmp/16/A98E0922.bmp,assets/bmp/24/A98E0922.bmp,assets/bmp/32/A98E0922.bmp
+A98E0923,U+1F94F,1F94F,🥏,Flying Disc,物品与活动,assets/png/72/A98E0923.png,assets/bmp/16/A98E0923.bmp,assets/bmp/24/A98E0923.bmp,assets/bmp/32/A98E0923.bmp
+A98E0924,U+1F950,1F950,🥐,Croissant,物品与活动,assets/png/72/A98E0924.png,assets/bmp/16/A98E0924.bmp,assets/bmp/24/A98E0924.bmp,assets/bmp/32/A98E0924.bmp
+A98E0925,U+1F951,1F951,🥑,Avocado,物品与活动,assets/png/72/A98E0925.png,assets/bmp/16/A98E0925.bmp,assets/bmp/24/A98E0925.bmp,assets/bmp/32/A98E0925.bmp
+A98E0926,U+1F952,1F952,🥒,Cucumber,物品与活动,assets/png/72/A98E0926.png,assets/bmp/16/A98E0926.bmp,assets/bmp/24/A98E0926.bmp,assets/bmp/32/A98E0926.bmp
+A98E0927,U+1F953,1F953,🥓,Bacon,物品与活动,assets/png/72/A98E0927.png,assets/bmp/16/A98E0927.bmp,assets/bmp/24/A98E0927.bmp,assets/bmp/32/A98E0927.bmp
+A98E0928,U+1F954,1F954,🥔,Potato,物品与活动,assets/png/72/A98E0928.png,assets/bmp/16/A98E0928.bmp,assets/bmp/24/A98E0928.bmp,assets/bmp/32/A98E0928.bmp
+A98E0929,U+1F955,1F955,🥕,Carrot,物品与活动,assets/png/72/A98E0929.png,assets/bmp/16/A98E0929.bmp,assets/bmp/24/A98E0929.bmp,assets/bmp/32/A98E0929.bmp
+A98E0930,U+1F956,1F956,🥖,Baguette Bread,物品与活动,assets/png/72/A98E0930.png,assets/bmp/16/A98E0930.bmp,assets/bmp/24/A98E0930.bmp,assets/bmp/32/A98E0930.bmp
+A98E0931,U+1F957,1F957,🥗,Green Salad,物品与活动,assets/png/72/A98E0931.png,assets/bmp/16/A98E0931.bmp,assets/bmp/24/A98E0931.bmp,assets/bmp/32/A98E0931.bmp
+A98E0932,U+1F958,1F958,🥘,Shallow Pan Of Food,物品与活动,assets/png/72/A98E0932.png,assets/bmp/16/A98E0932.bmp,assets/bmp/24/A98E0932.bmp,assets/bmp/32/A98E0932.bmp
+A98E0933,U+1F959,1F959,🥙,Stuffed Flatbread,物品与活动,assets/png/72/A98E0933.png,assets/bmp/16/A98E0933.bmp,assets/bmp/24/A98E0933.bmp,assets/bmp/32/A98E0933.bmp
+A98E0934,U+1F95A,1F95A,🥚,Egg,物品与活动,assets/png/72/A98E0934.png,assets/bmp/16/A98E0934.bmp,assets/bmp/24/A98E0934.bmp,assets/bmp/32/A98E0934.bmp
+A98E0935,U+1F95B,1F95B,🥛,Glass Of Milk,物品与活动,assets/png/72/A98E0935.png,assets/bmp/16/A98E0935.bmp,assets/bmp/24/A98E0935.bmp,assets/bmp/32/A98E0935.bmp
+A98E0936,U+1F95C,1F95C,🥜,Peanuts,物品与活动,assets/png/72/A98E0936.png,assets/bmp/16/A98E0936.bmp,assets/bmp/24/A98E0936.bmp,assets/bmp/32/A98E0936.bmp
+A98E0937,U+1F95D,1F95D,🥝,Kiwifruit,物品与活动,assets/png/72/A98E0937.png,assets/bmp/16/A98E0937.bmp,assets/bmp/24/A98E0937.bmp,assets/bmp/32/A98E0937.bmp
+A98E0938,U+1F95E,1F95E,🥞,Pancakes,物品与活动,assets/png/72/A98E0938.png,assets/bmp/16/A98E0938.bmp,assets/bmp/24/A98E0938.bmp,assets/bmp/32/A98E0938.bmp
+A98E0939,U+1F95F,1F95F,🥟,Dumpling,物品与活动,assets/png/72/A98E0939.png,assets/bmp/16/A98E0939.bmp,assets/bmp/24/A98E0939.bmp,assets/bmp/32/A98E0939.bmp
+A98E0940,U+1F960,1F960,🥠,Fortune Cookie,物品与活动,assets/png/72/A98E0940.png,assets/bmp/16/A98E0940.bmp,assets/bmp/24/A98E0940.bmp,assets/bmp/32/A98E0940.bmp
+A98E0941,U+1F961,1F961,🥡,Takeout Box,物品与活动,assets/png/72/A98E0941.png,assets/bmp/16/A98E0941.bmp,assets/bmp/24/A98E0941.bmp,assets/bmp/32/A98E0941.bmp
+A98E0942,U+1F962,1F962,🥢,Chopsticks,物品与活动,assets/png/72/A98E0942.png,assets/bmp/16/A98E0942.bmp,assets/bmp/24/A98E0942.bmp,assets/bmp/32/A98E0942.bmp
+A98E0943,U+1F963,1F963,🥣,Bowl With Spoon,物品与活动,assets/png/72/A98E0943.png,assets/bmp/16/A98E0943.bmp,assets/bmp/24/A98E0943.bmp,assets/bmp/32/A98E0943.bmp
+A98E0944,U+1F964,1F964,🥤,Cup With Straw,物品与活动,assets/png/72/A98E0944.png,assets/bmp/16/A98E0944.bmp,assets/bmp/24/A98E0944.bmp,assets/bmp/32/A98E0944.bmp
+A98E0945,U+1F965,1F965,🥥,Coconut,物品与活动,assets/png/72/A98E0945.png,assets/bmp/16/A98E0945.bmp,assets/bmp/24/A98E0945.bmp,assets/bmp/32/A98E0945.bmp
+A98E0946,U+1F966,1F966,🥦,Broccoli,物品与活动,assets/png/72/A98E0946.png,assets/bmp/16/A98E0946.bmp,assets/bmp/24/A98E0946.bmp,assets/bmp/32/A98E0946.bmp
+A98E0947,U+1F967,1F967,🥧,Pie,物品与活动,assets/png/72/A98E0947.png,assets/bmp/16/A98E0947.bmp,assets/bmp/24/A98E0947.bmp,assets/bmp/32/A98E0947.bmp
+A98E0948,U+1F968,1F968,🥨,Pretzel,物品与活动,assets/png/72/A98E0948.png,assets/bmp/16/A98E0948.bmp,assets/bmp/24/A98E0948.bmp,assets/bmp/32/A98E0948.bmp
+A98E0949,U+1F969,1F969,🥩,Cut Of Meat,物品与活动,assets/png/72/A98E0949.png,assets/bmp/16/A98E0949.bmp,assets/bmp/24/A98E0949.bmp,assets/bmp/32/A98E0949.bmp
+A98E0950,U+1F96A,1F96A,🥪,Sandwich,物品与活动,assets/png/72/A98E0950.png,assets/bmp/16/A98E0950.bmp,assets/bmp/24/A98E0950.bmp,assets/bmp/32/A98E0950.bmp
+A98E0951,U+1F96B,1F96B,🥫,Canned Food,物品与活动,assets/png/72/A98E0951.png,assets/bmp/16/A98E0951.bmp,assets/bmp/24/A98E0951.bmp,assets/bmp/32/A98E0951.bmp
+A98E0952,U+1F96C,1F96C,🥬,Leafy Green,物品与活动,assets/png/72/A98E0952.png,assets/bmp/16/A98E0952.bmp,assets/bmp/24/A98E0952.bmp,assets/bmp/32/A98E0952.bmp
+A98E0953,U+1F96D,1F96D,🥭,Mango,物品与活动,assets/png/72/A98E0953.png,assets/bmp/16/A98E0953.bmp,assets/bmp/24/A98E0953.bmp,assets/bmp/32/A98E0953.bmp
+A98E0954,U+1F96E,1F96E,🥮,Moon Cake,物品与活动,assets/png/72/A98E0954.png,assets/bmp/16/A98E0954.bmp,assets/bmp/24/A98E0954.bmp,assets/bmp/32/A98E0954.bmp
+A98E0955,U+1F96F,1F96F,🥯,Bagel,物品与活动,assets/png/72/A98E0955.png,assets/bmp/16/A98E0955.bmp,assets/bmp/24/A98E0955.bmp,assets/bmp/32/A98E0955.bmp
+A98E0956,U+1F970,1F970,🥰,Smiling Face With Smiling Eyes And Three Hearts,物品与活动,assets/png/72/A98E0956.png,assets/bmp/16/A98E0956.bmp,assets/bmp/24/A98E0956.bmp,assets/bmp/32/A98E0956.bmp
+A98E0957,U+1F971,1F971,🥱,Yawning Face,物品与活动,assets/png/72/A98E0957.png,assets/bmp/16/A98E0957.bmp,assets/bmp/24/A98E0957.bmp,assets/bmp/32/A98E0957.bmp
+A98E0958,U+1F972,1F972,🥲,Smiling Face With Tear,物品与活动,assets/png/72/A98E0958.png,assets/bmp/16/A98E0958.bmp,assets/bmp/24/A98E0958.bmp,assets/bmp/32/A98E0958.bmp
+A98E0959,U+1F973,1F973,🥳,Face With Party Horn And Party Hat,物品与活动,assets/png/72/A98E0959.png,assets/bmp/16/A98E0959.bmp,assets/bmp/24/A98E0959.bmp,assets/bmp/32/A98E0959.bmp
+A98E0960,U+1F974,1F974,🥴,Face With Uneven Eyes And Wavy Mouth,物品与活动,assets/png/72/A98E0960.png,assets/bmp/16/A98E0960.bmp,assets/bmp/24/A98E0960.bmp,assets/bmp/32/A98E0960.bmp
+A98E0961,U+1F975,1F975,🥵,Overheated Face,物品与活动,assets/png/72/A98E0961.png,assets/bmp/16/A98E0961.bmp,assets/bmp/24/A98E0961.bmp,assets/bmp/32/A98E0961.bmp
+A98E0962,U+1F976,1F976,🥶,Freezing Face,物品与活动,assets/png/72/A98E0962.png,assets/bmp/16/A98E0962.bmp,assets/bmp/24/A98E0962.bmp,assets/bmp/32/A98E0962.bmp
+A98E0963,U+1F977,1F977,🥷,Ninja,物品与活动,assets/png/72/A98E0963.png,assets/bmp/16/A98E0963.bmp,assets/bmp/24/A98E0963.bmp,assets/bmp/32/A98E0963.bmp
+A98E0964,U+1F978,1F978,🥸,Disguised Face,物品与活动,assets/png/72/A98E0964.png,assets/bmp/16/A98E0964.bmp,assets/bmp/24/A98E0964.bmp,assets/bmp/32/A98E0964.bmp
+A98E0965,U+1F979,1F979,🥹,Face Holding Back Tears,物品与活动,assets/png/72/A98E0965.png,assets/bmp/16/A98E0965.bmp,assets/bmp/24/A98E0965.bmp,assets/bmp/32/A98E0965.bmp
+A98E0966,U+1F97A,1F97A,🥺,Face With Pleading Eyes,物品与活动,assets/png/72/A98E0966.png,assets/bmp/16/A98E0966.bmp,assets/bmp/24/A98E0966.bmp,assets/bmp/32/A98E0966.bmp
+A98E0967,U+1F97B,1F97B,🥻,Sari,物品与活动,assets/png/72/A98E0967.png,assets/bmp/16/A98E0967.bmp,assets/bmp/24/A98E0967.bmp,assets/bmp/32/A98E0967.bmp
+A98E0968,U+1F97C,1F97C,🥼,Lab Coat,物品与活动,assets/png/72/A98E0968.png,assets/bmp/16/A98E0968.bmp,assets/bmp/24/A98E0968.bmp,assets/bmp/32/A98E0968.bmp
+A98E0969,U+1F97D,1F97D,🥽,Goggles,物品与活动,assets/png/72/A98E0969.png,assets/bmp/16/A98E0969.bmp,assets/bmp/24/A98E0969.bmp,assets/bmp/32/A98E0969.bmp
+A98E0970,U+1F97E,1F97E,🥾,Hiking Boot,物品与活动,assets/png/72/A98E0970.png,assets/bmp/16/A98E0970.bmp,assets/bmp/24/A98E0970.bmp,assets/bmp/32/A98E0970.bmp
+A98E0971,U+1F97F,1F97F,🥿,Flat Shoe,物品与活动,assets/png/72/A98E0971.png,assets/bmp/16/A98E0971.bmp,assets/bmp/24/A98E0971.bmp,assets/bmp/32/A98E0971.bmp
+A98E0972,U+1F980,1F980,🦀,Crab,物品与活动,assets/png/72/A98E0972.png,assets/bmp/16/A98E0972.bmp,assets/bmp/24/A98E0972.bmp,assets/bmp/32/A98E0972.bmp
+A98E0973,U+1F981,1F981,🦁,Lion Face,物品与活动,assets/png/72/A98E0973.png,assets/bmp/16/A98E0973.bmp,assets/bmp/24/A98E0973.bmp,assets/bmp/32/A98E0973.bmp
+A98E0974,U+1F982,1F982,🦂,Scorpion,物品与活动,assets/png/72/A98E0974.png,assets/bmp/16/A98E0974.bmp,assets/bmp/24/A98E0974.bmp,assets/bmp/32/A98E0974.bmp
+A98E0975,U+1F983,1F983,🦃,Turkey,物品与活动,assets/png/72/A98E0975.png,assets/bmp/16/A98E0975.bmp,assets/bmp/24/A98E0975.bmp,assets/bmp/32/A98E0975.bmp
+A98E0976,U+1F984,1F984,🦄,Unicorn Face,物品与活动,assets/png/72/A98E0976.png,assets/bmp/16/A98E0976.bmp,assets/bmp/24/A98E0976.bmp,assets/bmp/32/A98E0976.bmp
+A98E0977,U+1F985,1F985,🦅,Eagle,物品与活动,assets/png/72/A98E0977.png,assets/bmp/16/A98E0977.bmp,assets/bmp/24/A98E0977.bmp,assets/bmp/32/A98E0977.bmp
+A98E0978,U+1F986,1F986,🦆,Duck,物品与活动,assets/png/72/A98E0978.png,assets/bmp/16/A98E0978.bmp,assets/bmp/24/A98E0978.bmp,assets/bmp/32/A98E0978.bmp
+A98E0979,U+1F987,1F987,🦇,Bat,物品与活动,assets/png/72/A98E0979.png,assets/bmp/16/A98E0979.bmp,assets/bmp/24/A98E0979.bmp,assets/bmp/32/A98E0979.bmp
+A98E0980,U+1F988,1F988,🦈,Shark,物品与活动,assets/png/72/A98E0980.png,assets/bmp/16/A98E0980.bmp,assets/bmp/24/A98E0980.bmp,assets/bmp/32/A98E0980.bmp
+A98E0981,U+1F989,1F989,🦉,Owl,物品与活动,assets/png/72/A98E0981.png,assets/bmp/16/A98E0981.bmp,assets/bmp/24/A98E0981.bmp,assets/bmp/32/A98E0981.bmp
+A98E0982,U+1F98A,1F98A,🦊,Fox Face,物品与活动,assets/png/72/A98E0982.png,assets/bmp/16/A98E0982.bmp,assets/bmp/24/A98E0982.bmp,assets/bmp/32/A98E0982.bmp
+A98E0983,U+1F98B,1F98B,🦋,Butterfly,物品与活动,assets/png/72/A98E0983.png,assets/bmp/16/A98E0983.bmp,assets/bmp/24/A98E0983.bmp,assets/bmp/32/A98E0983.bmp
+A98E0984,U+1F98C,1F98C,🦌,Deer,物品与活动,assets/png/72/A98E0984.png,assets/bmp/16/A98E0984.bmp,assets/bmp/24/A98E0984.bmp,assets/bmp/32/A98E0984.bmp
+A98E0985,U+1F98D,1F98D,🦍,Gorilla,物品与活动,assets/png/72/A98E0985.png,assets/bmp/16/A98E0985.bmp,assets/bmp/24/A98E0985.bmp,assets/bmp/32/A98E0985.bmp
+A98E0986,U+1F98E,1F98E,🦎,Lizard,物品与活动,assets/png/72/A98E0986.png,assets/bmp/16/A98E0986.bmp,assets/bmp/24/A98E0986.bmp,assets/bmp/32/A98E0986.bmp
+A98E0987,U+1F98F,1F98F,🦏,Rhinoceros,物品与活动,assets/png/72/A98E0987.png,assets/bmp/16/A98E0987.bmp,assets/bmp/24/A98E0987.bmp,assets/bmp/32/A98E0987.bmp
+A98E0988,U+1F990,1F990,🦐,Shrimp,物品与活动,assets/png/72/A98E0988.png,assets/bmp/16/A98E0988.bmp,assets/bmp/24/A98E0988.bmp,assets/bmp/32/A98E0988.bmp
+A98E0989,U+1F991,1F991,🦑,Squid,物品与活动,assets/png/72/A98E0989.png,assets/bmp/16/A98E0989.bmp,assets/bmp/24/A98E0989.bmp,assets/bmp/32/A98E0989.bmp
+A98E0990,U+1F992,1F992,🦒,Giraffe Face,物品与活动,assets/png/72/A98E0990.png,assets/bmp/16/A98E0990.bmp,assets/bmp/24/A98E0990.bmp,assets/bmp/32/A98E0990.bmp
+A98E0991,U+1F993,1F993,🦓,Zebra Face,物品与活动,assets/png/72/A98E0991.png,assets/bmp/16/A98E0991.bmp,assets/bmp/24/A98E0991.bmp,assets/bmp/32/A98E0991.bmp
+A98E0992,U+1F994,1F994,🦔,Hedgehog,物品与活动,assets/png/72/A98E0992.png,assets/bmp/16/A98E0992.bmp,assets/bmp/24/A98E0992.bmp,assets/bmp/32/A98E0992.bmp
+A98E0993,U+1F995,1F995,🦕,Sauropod,物品与活动,assets/png/72/A98E0993.png,assets/bmp/16/A98E0993.bmp,assets/bmp/24/A98E0993.bmp,assets/bmp/32/A98E0993.bmp
+A98E0994,U+1F996,1F996,🦖,T-Rex,物品与活动,assets/png/72/A98E0994.png,assets/bmp/16/A98E0994.bmp,assets/bmp/24/A98E0994.bmp,assets/bmp/32/A98E0994.bmp
+A98E0995,U+1F997,1F997,🦗,Cricket,物品与活动,assets/png/72/A98E0995.png,assets/bmp/16/A98E0995.bmp,assets/bmp/24/A98E0995.bmp,assets/bmp/32/A98E0995.bmp
+A98E0996,U+1F998,1F998,🦘,Kangaroo,物品与活动,assets/png/72/A98E0996.png,assets/bmp/16/A98E0996.bmp,assets/bmp/24/A98E0996.bmp,assets/bmp/32/A98E0996.bmp
+A98E0997,U+1F999,1F999,🦙,Llama,物品与活动,assets/png/72/A98E0997.png,assets/bmp/16/A98E0997.bmp,assets/bmp/24/A98E0997.bmp,assets/bmp/32/A98E0997.bmp
+A98E0998,U+1F99A,1F99A,🦚,Peacock,物品与活动,assets/png/72/A98E0998.png,assets/bmp/16/A98E0998.bmp,assets/bmp/24/A98E0998.bmp,assets/bmp/32/A98E0998.bmp
+A98E0999,U+1F99B,1F99B,🦛,Hippopotamus,物品与活动,assets/png/72/A98E0999.png,assets/bmp/16/A98E0999.bmp,assets/bmp/24/A98E0999.bmp,assets/bmp/32/A98E0999.bmp
+A98E1000,U+1F99C,1F99C,🦜,Parrot,物品与活动,assets/png/72/A98E1000.png,assets/bmp/16/A98E1000.bmp,assets/bmp/24/A98E1000.bmp,assets/bmp/32/A98E1000.bmp
+A98E1001,U+1F99D,1F99D,🦝,Raccoon,物品与活动,assets/png/72/A98E1001.png,assets/bmp/16/A98E1001.bmp,assets/bmp/24/A98E1001.bmp,assets/bmp/32/A98E1001.bmp
+A98E1002,U+1F99E,1F99E,🦞,Lobster,物品与活动,assets/png/72/A98E1002.png,assets/bmp/16/A98E1002.bmp,assets/bmp/24/A98E1002.bmp,assets/bmp/32/A98E1002.bmp
+A98E1003,U+1F99F,1F99F,🦟,Mosquito,物品与活动,assets/png/72/A98E1003.png,assets/bmp/16/A98E1003.bmp,assets/bmp/24/A98E1003.bmp,assets/bmp/32/A98E1003.bmp
+A98E1004,U+1F9A0,1F9A0,🦠,Microbe,物品与活动,assets/png/72/A98E1004.png,assets/bmp/16/A98E1004.bmp,assets/bmp/24/A98E1004.bmp,assets/bmp/32/A98E1004.bmp
+A98E1005,U+1F9A1,1F9A1,🦡,Badger,物品与活动,assets/png/72/A98E1005.png,assets/bmp/16/A98E1005.bmp,assets/bmp/24/A98E1005.bmp,assets/bmp/32/A98E1005.bmp
+A98E1006,U+1F9A2,1F9A2,🦢,Swan,物品与活动,assets/png/72/A98E1006.png,assets/bmp/16/A98E1006.bmp,assets/bmp/24/A98E1006.bmp,assets/bmp/32/A98E1006.bmp
+A98E1007,U+1F9A3,1F9A3,🦣,Mammoth,物品与活动,assets/png/72/A98E1007.png,assets/bmp/16/A98E1007.bmp,assets/bmp/24/A98E1007.bmp,assets/bmp/32/A98E1007.bmp
+A98E1008,U+1F9A4,1F9A4,🦤,Dodo,物品与活动,assets/png/72/A98E1008.png,assets/bmp/16/A98E1008.bmp,assets/bmp/24/A98E1008.bmp,assets/bmp/32/A98E1008.bmp
+A98E1009,U+1F9A5,1F9A5,🦥,Sloth,物品与活动,assets/png/72/A98E1009.png,assets/bmp/16/A98E1009.bmp,assets/bmp/24/A98E1009.bmp,assets/bmp/32/A98E1009.bmp
+A98E1010,U+1F9A6,1F9A6,🦦,Otter,物品与活动,assets/png/72/A98E1010.png,assets/bmp/16/A98E1010.bmp,assets/bmp/24/A98E1010.bmp,assets/bmp/32/A98E1010.bmp
+A98E1011,U+1F9A7,1F9A7,🦧,Orangutan,物品与活动,assets/png/72/A98E1011.png,assets/bmp/16/A98E1011.bmp,assets/bmp/24/A98E1011.bmp,assets/bmp/32/A98E1011.bmp
+A98E1012,U+1F9A8,1F9A8,🦨,Skunk,物品与活动,assets/png/72/A98E1012.png,assets/bmp/16/A98E1012.bmp,assets/bmp/24/A98E1012.bmp,assets/bmp/32/A98E1012.bmp
+A98E1013,U+1F9A9,1F9A9,🦩,Flamingo,物品与活动,assets/png/72/A98E1013.png,assets/bmp/16/A98E1013.bmp,assets/bmp/24/A98E1013.bmp,assets/bmp/32/A98E1013.bmp
+A98E1014,U+1F9AA,1F9AA,🦪,Oyster,物品与活动,assets/png/72/A98E1014.png,assets/bmp/16/A98E1014.bmp,assets/bmp/24/A98E1014.bmp,assets/bmp/32/A98E1014.bmp
+A98E1015,U+1F9AB,1F9AB,🦫,Beaver,物品与活动,assets/png/72/A98E1015.png,assets/bmp/16/A98E1015.bmp,assets/bmp/24/A98E1015.bmp,assets/bmp/32/A98E1015.bmp
+A98E1016,U+1F9AC,1F9AC,🦬,Bison,物品与活动,assets/png/72/A98E1016.png,assets/bmp/16/A98E1016.bmp,assets/bmp/24/A98E1016.bmp,assets/bmp/32/A98E1016.bmp
+A98E1017,U+1F9AD,1F9AD,🦭,Seal,物品与活动,assets/png/72/A98E1017.png,assets/bmp/16/A98E1017.bmp,assets/bmp/24/A98E1017.bmp,assets/bmp/32/A98E1017.bmp
+A98E1018,U+1F9AE,1F9AE,🦮,Guide Dog,物品与活动,assets/png/72/A98E1018.png,assets/bmp/16/A98E1018.bmp,assets/bmp/24/A98E1018.bmp,assets/bmp/32/A98E1018.bmp
+A98E1019,U+1F9AF,1F9AF,🦯,Probing Cane,物品与活动,assets/png/72/A98E1019.png,assets/bmp/16/A98E1019.bmp,assets/bmp/24/A98E1019.bmp,assets/bmp/32/A98E1019.bmp
+A98E1020,U+1F9B0,1F9B0,🦰,Emoji Component Red Hair,物品与活动,assets/png/72/A98E1020.png,assets/bmp/16/A98E1020.bmp,assets/bmp/24/A98E1020.bmp,assets/bmp/32/A98E1020.bmp
+A98E1021,U+1F9B1,1F9B1,🦱,Emoji Component Curly Hair,物品与活动,assets/png/72/A98E1021.png,assets/bmp/16/A98E1021.bmp,assets/bmp/24/A98E1021.bmp,assets/bmp/32/A98E1021.bmp
+A98E1022,U+1F9B2,1F9B2,🦲,Emoji Component Bald,物品与活动,assets/png/72/A98E1022.png,assets/bmp/16/A98E1022.bmp,assets/bmp/24/A98E1022.bmp,assets/bmp/32/A98E1022.bmp
+A98E1023,U+1F9B3,1F9B3,🦳,Emoji Component White Hair,物品与活动,assets/png/72/A98E1023.png,assets/bmp/16/A98E1023.bmp,assets/bmp/24/A98E1023.bmp,assets/bmp/32/A98E1023.bmp
+A98E1024,U+1F9B4,1F9B4,🦴,Bone,物品与活动,assets/png/72/A98E1024.png,assets/bmp/16/A98E1024.bmp,assets/bmp/24/A98E1024.bmp,assets/bmp/32/A98E1024.bmp
+A98E1025,U+1F9B5,1F9B5,🦵,Leg,物品与活动,assets/png/72/A98E1025.png,assets/bmp/16/A98E1025.bmp,assets/bmp/24/A98E1025.bmp,assets/bmp/32/A98E1025.bmp
+A98E1026,U+1F9B6,1F9B6,🦶,Foot,物品与活动,assets/png/72/A98E1026.png,assets/bmp/16/A98E1026.bmp,assets/bmp/24/A98E1026.bmp,assets/bmp/32/A98E1026.bmp
+A98E1027,U+1F9B7,1F9B7,🦷,Tooth,物品与活动,assets/png/72/A98E1027.png,assets/bmp/16/A98E1027.bmp,assets/bmp/24/A98E1027.bmp,assets/bmp/32/A98E1027.bmp
+A98E1028,U+1F9B8,1F9B8,🦸,Superhero,物品与活动,assets/png/72/A98E1028.png,assets/bmp/16/A98E1028.bmp,assets/bmp/24/A98E1028.bmp,assets/bmp/32/A98E1028.bmp
+A98E1029,U+1F9B9,1F9B9,🦹,Supervillain,物品与活动,assets/png/72/A98E1029.png,assets/bmp/16/A98E1029.bmp,assets/bmp/24/A98E1029.bmp,assets/bmp/32/A98E1029.bmp
+A98E1030,U+1F9BA,1F9BA,🦺,Safety Vest,物品与活动,assets/png/72/A98E1030.png,assets/bmp/16/A98E1030.bmp,assets/bmp/24/A98E1030.bmp,assets/bmp/32/A98E1030.bmp
+A98E1031,U+1F9BB,1F9BB,🦻,Ear With Hearing Aid,物品与活动,assets/png/72/A98E1031.png,assets/bmp/16/A98E1031.bmp,assets/bmp/24/A98E1031.bmp,assets/bmp/32/A98E1031.bmp
+A98E1032,U+1F9BC,1F9BC,🦼,Motorized Wheelchair,物品与活动,assets/png/72/A98E1032.png,assets/bmp/16/A98E1032.bmp,assets/bmp/24/A98E1032.bmp,assets/bmp/32/A98E1032.bmp
+A98E1033,U+1F9BD,1F9BD,🦽,Manual Wheelchair,物品与活动,assets/png/72/A98E1033.png,assets/bmp/16/A98E1033.bmp,assets/bmp/24/A98E1033.bmp,assets/bmp/32/A98E1033.bmp
+A98E1034,U+1F9BE,1F9BE,🦾,Mechanical Arm,物品与活动,assets/png/72/A98E1034.png,assets/bmp/16/A98E1034.bmp,assets/bmp/24/A98E1034.bmp,assets/bmp/32/A98E1034.bmp
+A98E1035,U+1F9BF,1F9BF,🦿,Mechanical Leg,物品与活动,assets/png/72/A98E1035.png,assets/bmp/16/A98E1035.bmp,assets/bmp/24/A98E1035.bmp,assets/bmp/32/A98E1035.bmp
+A98E1036,U+1F9C0,1F9C0,🧀,Cheese Wedge,物品与活动,assets/png/72/A98E1036.png,assets/bmp/16/A98E1036.bmp,assets/bmp/24/A98E1036.bmp,assets/bmp/32/A98E1036.bmp
+A98E1037,U+1F9C1,1F9C1,🧁,Cupcake,物品与活动,assets/png/72/A98E1037.png,assets/bmp/16/A98E1037.bmp,assets/bmp/24/A98E1037.bmp,assets/bmp/32/A98E1037.bmp
+A98E1038,U+1F9C2,1F9C2,🧂,Salt Shaker,物品与活动,assets/png/72/A98E1038.png,assets/bmp/16/A98E1038.bmp,assets/bmp/24/A98E1038.bmp,assets/bmp/32/A98E1038.bmp
+A98E1039,U+1F9C3,1F9C3,🧃,Beverage Box,物品与活动,assets/png/72/A98E1039.png,assets/bmp/16/A98E1039.bmp,assets/bmp/24/A98E1039.bmp,assets/bmp/32/A98E1039.bmp
+A98E1040,U+1F9C4,1F9C4,🧄,Garlic,物品与活动,assets/png/72/A98E1040.png,assets/bmp/16/A98E1040.bmp,assets/bmp/24/A98E1040.bmp,assets/bmp/32/A98E1040.bmp
+A98E1041,U+1F9C5,1F9C5,🧅,Onion,物品与活动,assets/png/72/A98E1041.png,assets/bmp/16/A98E1041.bmp,assets/bmp/24/A98E1041.bmp,assets/bmp/32/A98E1041.bmp
+A98E1042,U+1F9C6,1F9C6,🧆,Falafel,物品与活动,assets/png/72/A98E1042.png,assets/bmp/16/A98E1042.bmp,assets/bmp/24/A98E1042.bmp,assets/bmp/32/A98E1042.bmp
+A98E1043,U+1F9C7,1F9C7,🧇,Waffle,物品与活动,assets/png/72/A98E1043.png,assets/bmp/16/A98E1043.bmp,assets/bmp/24/A98E1043.bmp,assets/bmp/32/A98E1043.bmp
+A98E1044,U+1F9C8,1F9C8,🧈,Butter,物品与活动,assets/png/72/A98E1044.png,assets/bmp/16/A98E1044.bmp,assets/bmp/24/A98E1044.bmp,assets/bmp/32/A98E1044.bmp
+A98E1045,U+1F9C9,1F9C9,🧉,Mate Drink,物品与活动,assets/png/72/A98E1045.png,assets/bmp/16/A98E1045.bmp,assets/bmp/24/A98E1045.bmp,assets/bmp/32/A98E1045.bmp
+A98E1046,U+1F9CA,1F9CA,🧊,Ice Cube,物品与活动,assets/png/72/A98E1046.png,assets/bmp/16/A98E1046.bmp,assets/bmp/24/A98E1046.bmp,assets/bmp/32/A98E1046.bmp
+A98E1047,U+1F9CB,1F9CB,🧋,Bubble Tea,物品与活动,assets/png/72/A98E1047.png,assets/bmp/16/A98E1047.bmp,assets/bmp/24/A98E1047.bmp,assets/bmp/32/A98E1047.bmp
+A98E1048,U+1F9CC,1F9CC,🧌,Troll,物品与活动,assets/png/72/A98E1048.png,assets/bmp/16/A98E1048.bmp,assets/bmp/24/A98E1048.bmp,assets/bmp/32/A98E1048.bmp
+A98E1049,U+1F9CD,1F9CD,🧍,Standing Person,物品与活动,assets/png/72/A98E1049.png,assets/bmp/16/A98E1049.bmp,assets/bmp/24/A98E1049.bmp,assets/bmp/32/A98E1049.bmp
+A98E1050,U+1F9CE,1F9CE,🧎,Kneeling Person,物品与活动,assets/png/72/A98E1050.png,assets/bmp/16/A98E1050.bmp,assets/bmp/24/A98E1050.bmp,assets/bmp/32/A98E1050.bmp
+A98E1051,U+1F9CF,1F9CF,🧏,Deaf Person,物品与活动,assets/png/72/A98E1051.png,assets/bmp/16/A98E1051.bmp,assets/bmp/24/A98E1051.bmp,assets/bmp/32/A98E1051.bmp
+A98E1052,U+1F9D0,1F9D0,🧐,Face With Monocle,物品与活动,assets/png/72/A98E1052.png,assets/bmp/16/A98E1052.bmp,assets/bmp/24/A98E1052.bmp,assets/bmp/32/A98E1052.bmp
+A98E1053,U+1F9D1,1F9D1,🧑,Adult,物品与活动,assets/png/72/A98E1053.png,assets/bmp/16/A98E1053.bmp,assets/bmp/24/A98E1053.bmp,assets/bmp/32/A98E1053.bmp
+A98E1054,U+1F9D2,1F9D2,🧒,Child,物品与活动,assets/png/72/A98E1054.png,assets/bmp/16/A98E1054.bmp,assets/bmp/24/A98E1054.bmp,assets/bmp/32/A98E1054.bmp
+A98E1055,U+1F9D3,1F9D3,🧓,Older Adult,物品与活动,assets/png/72/A98E1055.png,assets/bmp/16/A98E1055.bmp,assets/bmp/24/A98E1055.bmp,assets/bmp/32/A98E1055.bmp
+A98E1056,U+1F9D4,1F9D4,🧔,Bearded Person,物品与活动,assets/png/72/A98E1056.png,assets/bmp/16/A98E1056.bmp,assets/bmp/24/A98E1056.bmp,assets/bmp/32/A98E1056.bmp
+A98E1057,U+1F9D5,1F9D5,🧕,Person With Headscarf,物品与活动,assets/png/72/A98E1057.png,assets/bmp/16/A98E1057.bmp,assets/bmp/24/A98E1057.bmp,assets/bmp/32/A98E1057.bmp
+A98E1058,U+1F9D6,1F9D6,🧖,Person In Steamy Room,物品与活动,assets/png/72/A98E1058.png,assets/bmp/16/A98E1058.bmp,assets/bmp/24/A98E1058.bmp,assets/bmp/32/A98E1058.bmp
+A98E1059,U+1F9D7,1F9D7,🧗,Person Climbing,物品与活动,assets/png/72/A98E1059.png,assets/bmp/16/A98E1059.bmp,assets/bmp/24/A98E1059.bmp,assets/bmp/32/A98E1059.bmp
+A98E1060,U+1F9D8,1F9D8,🧘,Person In Lotus Position,物品与活动,assets/png/72/A98E1060.png,assets/bmp/16/A98E1060.bmp,assets/bmp/24/A98E1060.bmp,assets/bmp/32/A98E1060.bmp
+A98E1061,U+1F9D9,1F9D9,🧙,Mage,物品与活动,assets/png/72/A98E1061.png,assets/bmp/16/A98E1061.bmp,assets/bmp/24/A98E1061.bmp,assets/bmp/32/A98E1061.bmp
+A98E1062,U+1F9DA,1F9DA,🧚,Fairy,物品与活动,assets/png/72/A98E1062.png,assets/bmp/16/A98E1062.bmp,assets/bmp/24/A98E1062.bmp,assets/bmp/32/A98E1062.bmp
+A98E1063,U+1F9DB,1F9DB,🧛,Vampire,物品与活动,assets/png/72/A98E1063.png,assets/bmp/16/A98E1063.bmp,assets/bmp/24/A98E1063.bmp,assets/bmp/32/A98E1063.bmp
+A98E1064,U+1F9DC,1F9DC,🧜,Merperson,物品与活动,assets/png/72/A98E1064.png,assets/bmp/16/A98E1064.bmp,assets/bmp/24/A98E1064.bmp,assets/bmp/32/A98E1064.bmp
+A98E1065,U+1F9DD,1F9DD,🧝,Elf,物品与活动,assets/png/72/A98E1065.png,assets/bmp/16/A98E1065.bmp,assets/bmp/24/A98E1065.bmp,assets/bmp/32/A98E1065.bmp
+A98E1066,U+1F9DE,1F9DE,🧞,Genie,物品与活动,assets/png/72/A98E1066.png,assets/bmp/16/A98E1066.bmp,assets/bmp/24/A98E1066.bmp,assets/bmp/32/A98E1066.bmp
+A98E1067,U+1F9DF,1F9DF,🧟,Zombie,物品与活动,assets/png/72/A98E1067.png,assets/bmp/16/A98E1067.bmp,assets/bmp/24/A98E1067.bmp,assets/bmp/32/A98E1067.bmp
+A98E1068,U+1F9E0,1F9E0,🧠,Brain,物品与活动,assets/png/72/A98E1068.png,assets/bmp/16/A98E1068.bmp,assets/bmp/24/A98E1068.bmp,assets/bmp/32/A98E1068.bmp
+A98E1069,U+1F9E1,1F9E1,🧡,Orange Heart,物品与活动,assets/png/72/A98E1069.png,assets/bmp/16/A98E1069.bmp,assets/bmp/24/A98E1069.bmp,assets/bmp/32/A98E1069.bmp
+A98E1070,U+1F9E2,1F9E2,🧢,Billed Cap,物品与活动,assets/png/72/A98E1070.png,assets/bmp/16/A98E1070.bmp,assets/bmp/24/A98E1070.bmp,assets/bmp/32/A98E1070.bmp
+A98E1071,U+1F9E3,1F9E3,🧣,Scarf,物品与活动,assets/png/72/A98E1071.png,assets/bmp/16/A98E1071.bmp,assets/bmp/24/A98E1071.bmp,assets/bmp/32/A98E1071.bmp
+A98E1072,U+1F9E4,1F9E4,🧤,Gloves,物品与活动,assets/png/72/A98E1072.png,assets/bmp/16/A98E1072.bmp,assets/bmp/24/A98E1072.bmp,assets/bmp/32/A98E1072.bmp
+A98E1073,U+1F9E5,1F9E5,🧥,Coat,物品与活动,assets/png/72/A98E1073.png,assets/bmp/16/A98E1073.bmp,assets/bmp/24/A98E1073.bmp,assets/bmp/32/A98E1073.bmp
+A98E1074,U+1F9E6,1F9E6,🧦,Socks,物品与活动,assets/png/72/A98E1074.png,assets/bmp/16/A98E1074.bmp,assets/bmp/24/A98E1074.bmp,assets/bmp/32/A98E1074.bmp
+A98E1075,U+1F9E7,1F9E7,🧧,Red Gift Envelope,物品与活动,assets/png/72/A98E1075.png,assets/bmp/16/A98E1075.bmp,assets/bmp/24/A98E1075.bmp,assets/bmp/32/A98E1075.bmp
+A98E1076,U+1F9E8,1F9E8,🧨,Firecracker,物品与活动,assets/png/72/A98E1076.png,assets/bmp/16/A98E1076.bmp,assets/bmp/24/A98E1076.bmp,assets/bmp/32/A98E1076.bmp
+A98E1077,U+1F9E9,1F9E9,🧩,Jigsaw Puzzle Piece,物品与活动,assets/png/72/A98E1077.png,assets/bmp/16/A98E1077.bmp,assets/bmp/24/A98E1077.bmp,assets/bmp/32/A98E1077.bmp
+A98E1078,U+1F9EA,1F9EA,🧪,Test Tube,物品与活动,assets/png/72/A98E1078.png,assets/bmp/16/A98E1078.bmp,assets/bmp/24/A98E1078.bmp,assets/bmp/32/A98E1078.bmp
+A98E1079,U+1F9EB,1F9EB,🧫,Petri Dish,物品与活动,assets/png/72/A98E1079.png,assets/bmp/16/A98E1079.bmp,assets/bmp/24/A98E1079.bmp,assets/bmp/32/A98E1079.bmp
+A98E1080,U+1F9EC,1F9EC,🧬,Dna Double Helix,物品与活动,assets/png/72/A98E1080.png,assets/bmp/16/A98E1080.bmp,assets/bmp/24/A98E1080.bmp,assets/bmp/32/A98E1080.bmp
+A98E1081,U+1F9ED,1F9ED,🧭,Compass,物品与活动,assets/png/72/A98E1081.png,assets/bmp/16/A98E1081.bmp,assets/bmp/24/A98E1081.bmp,assets/bmp/32/A98E1081.bmp
+A98E1082,U+1F9EE,1F9EE,🧮,Abacus,物品与活动,assets/png/72/A98E1082.png,assets/bmp/16/A98E1082.bmp,assets/bmp/24/A98E1082.bmp,assets/bmp/32/A98E1082.bmp
+A98E1083,U+1F9EF,1F9EF,🧯,Fire Extinguisher,物品与活动,assets/png/72/A98E1083.png,assets/bmp/16/A98E1083.bmp,assets/bmp/24/A98E1083.bmp,assets/bmp/32/A98E1083.bmp
+A98E1084,U+1F9F0,1F9F0,🧰,Toolbox,物品与活动,assets/png/72/A98E1084.png,assets/bmp/16/A98E1084.bmp,assets/bmp/24/A98E1084.bmp,assets/bmp/32/A98E1084.bmp
+A98E1085,U+1F9F1,1F9F1,🧱,Brick,物品与活动,assets/png/72/A98E1085.png,assets/bmp/16/A98E1085.bmp,assets/bmp/24/A98E1085.bmp,assets/bmp/32/A98E1085.bmp
+A98E1086,U+1F9F2,1F9F2,🧲,Magnet,物品与活动,assets/png/72/A98E1086.png,assets/bmp/16/A98E1086.bmp,assets/bmp/24/A98E1086.bmp,assets/bmp/32/A98E1086.bmp
+A98E1087,U+1F9F3,1F9F3,🧳,Luggage,物品与活动,assets/png/72/A98E1087.png,assets/bmp/16/A98E1087.bmp,assets/bmp/24/A98E1087.bmp,assets/bmp/32/A98E1087.bmp
+A98E1088,U+1F9F4,1F9F4,🧴,Lotion Bottle,物品与活动,assets/png/72/A98E1088.png,assets/bmp/16/A98E1088.bmp,assets/bmp/24/A98E1088.bmp,assets/bmp/32/A98E1088.bmp
+A98E1089,U+1F9F5,1F9F5,🧵,Spool Of Thread,物品与活动,assets/png/72/A98E1089.png,assets/bmp/16/A98E1089.bmp,assets/bmp/24/A98E1089.bmp,assets/bmp/32/A98E1089.bmp
+A98E1090,U+1F9F6,1F9F6,🧶,Ball Of Yarn,物品与活动,assets/png/72/A98E1090.png,assets/bmp/16/A98E1090.bmp,assets/bmp/24/A98E1090.bmp,assets/bmp/32/A98E1090.bmp
+A98E1091,U+1F9F7,1F9F7,🧷,Safety Pin,物品与活动,assets/png/72/A98E1091.png,assets/bmp/16/A98E1091.bmp,assets/bmp/24/A98E1091.bmp,assets/bmp/32/A98E1091.bmp
+A98E1092,U+1F9F8,1F9F8,🧸,Teddy Bear,物品与活动,assets/png/72/A98E1092.png,assets/bmp/16/A98E1092.bmp,assets/bmp/24/A98E1092.bmp,assets/bmp/32/A98E1092.bmp
+A98E1093,U+1F9F9,1F9F9,🧹,Broom,物品与活动,assets/png/72/A98E1093.png,assets/bmp/16/A98E1093.bmp,assets/bmp/24/A98E1093.bmp,assets/bmp/32/A98E1093.bmp
+A98E1094,U+1F9FA,1F9FA,🧺,Basket,物品与活动,assets/png/72/A98E1094.png,assets/bmp/16/A98E1094.bmp,assets/bmp/24/A98E1094.bmp,assets/bmp/32/A98E1094.bmp
+A98E1095,U+1F9FB,1F9FB,🧻,Roll Of Paper,物品与活动,assets/png/72/A98E1095.png,assets/bmp/16/A98E1095.bmp,assets/bmp/24/A98E1095.bmp,assets/bmp/32/A98E1095.bmp
+A98E1096,U+1F9FC,1F9FC,🧼,Bar Of Soap,物品与活动,assets/png/72/A98E1096.png,assets/bmp/16/A98E1096.bmp,assets/bmp/24/A98E1096.bmp,assets/bmp/32/A98E1096.bmp
+A98E1097,U+1F9FD,1F9FD,🧽,Sponge,物品与活动,assets/png/72/A98E1097.png,assets/bmp/16/A98E1097.bmp,assets/bmp/24/A98E1097.bmp,assets/bmp/32/A98E1097.bmp
+A98E1098,U+1F9FE,1F9FE,🧾,Receipt,物品与活动,assets/png/72/A98E1098.png,assets/bmp/16/A98E1098.bmp,assets/bmp/24/A98E1098.bmp,assets/bmp/32/A98E1098.bmp
+A98E1099,U+1F9FF,1F9FF,🧿,Nazar Amulet,物品与活动,assets/png/72/A98E1099.png,assets/bmp/16/A98E1099.bmp,assets/bmp/24/A98E1099.bmp,assets/bmp/32/A98E1099.bmp
+A98E1100,U+1FA70,1FA70,🩰,Ballet Shoes,物品与活动,assets/png/72/A98E1100.png,assets/bmp/16/A98E1100.bmp,assets/bmp/24/A98E1100.bmp,assets/bmp/32/A98E1100.bmp
+A98E1101,U+1FA71,1FA71,🩱,One-Piece Swimsuit,物品与活动,assets/png/72/A98E1101.png,assets/bmp/16/A98E1101.bmp,assets/bmp/24/A98E1101.bmp,assets/bmp/32/A98E1101.bmp
+A98E1102,U+1FA72,1FA72,🩲,Briefs,物品与活动,assets/png/72/A98E1102.png,assets/bmp/16/A98E1102.bmp,assets/bmp/24/A98E1102.bmp,assets/bmp/32/A98E1102.bmp
+A98E1103,U+1FA73,1FA73,🩳,Shorts,物品与活动,assets/png/72/A98E1103.png,assets/bmp/16/A98E1103.bmp,assets/bmp/24/A98E1103.bmp,assets/bmp/32/A98E1103.bmp
+A98E1104,U+1FA74,1FA74,🩴,Thong Sandal,物品与活动,assets/png/72/A98E1104.png,assets/bmp/16/A98E1104.bmp,assets/bmp/24/A98E1104.bmp,assets/bmp/32/A98E1104.bmp
+A98E1105,U+1FA75,1FA75,🩵,Light Blue Heart,物品与活动,assets/png/72/A98E1105.png,assets/bmp/16/A98E1105.bmp,assets/bmp/24/A98E1105.bmp,assets/bmp/32/A98E1105.bmp
+A98E1106,U+1FA76,1FA76,🩶,Grey Heart,物品与活动,assets/png/72/A98E1106.png,assets/bmp/16/A98E1106.bmp,assets/bmp/24/A98E1106.bmp,assets/bmp/32/A98E1106.bmp
+A98E1107,U+1FA77,1FA77,🩷,Pink Heart,物品与活动,assets/png/72/A98E1107.png,assets/bmp/16/A98E1107.bmp,assets/bmp/24/A98E1107.bmp,assets/bmp/32/A98E1107.bmp
+A98E1108,U+1FA78,1FA78,🩸,Drop Of Blood,物品与活动,assets/png/72/A98E1108.png,assets/bmp/16/A98E1108.bmp,assets/bmp/24/A98E1108.bmp,assets/bmp/32/A98E1108.bmp
+A98E1109,U+1FA79,1FA79,🩹,Adhesive Bandage,物品与活动,assets/png/72/A98E1109.png,assets/bmp/16/A98E1109.bmp,assets/bmp/24/A98E1109.bmp,assets/bmp/32/A98E1109.bmp
+A98E1110,U+1FA7A,1FA7A,🩺,Stethoscope,物品与活动,assets/png/72/A98E1110.png,assets/bmp/16/A98E1110.bmp,assets/bmp/24/A98E1110.bmp,assets/bmp/32/A98E1110.bmp
+A98E1111,U+1FA7B,1FA7B,🩻,X-Ray,物品与活动,assets/png/72/A98E1111.png,assets/bmp/16/A98E1111.bmp,assets/bmp/24/A98E1111.bmp,assets/bmp/32/A98E1111.bmp
+A98E1112,U+1FA7C,1FA7C,🩼,Crutch,物品与活动,assets/png/72/A98E1112.png,assets/bmp/16/A98E1112.bmp,assets/bmp/24/A98E1112.bmp,assets/bmp/32/A98E1112.bmp
+A98E1113,U+1FA80,1FA80,🪀,Yo-Yo,物品与活动,assets/png/72/A98E1113.png,assets/bmp/16/A98E1113.bmp,assets/bmp/24/A98E1113.bmp,assets/bmp/32/A98E1113.bmp
+A98E1114,U+1FA81,1FA81,🪁,Kite,物品与活动,assets/png/72/A98E1114.png,assets/bmp/16/A98E1114.bmp,assets/bmp/24/A98E1114.bmp,assets/bmp/32/A98E1114.bmp
+A98E1115,U+1FA82,1FA82,🪂,Parachute,物品与活动,assets/png/72/A98E1115.png,assets/bmp/16/A98E1115.bmp,assets/bmp/24/A98E1115.bmp,assets/bmp/32/A98E1115.bmp
+A98E1116,U+1FA83,1FA83,🪃,Boomerang,物品与活动,assets/png/72/A98E1116.png,assets/bmp/16/A98E1116.bmp,assets/bmp/24/A98E1116.bmp,assets/bmp/32/A98E1116.bmp
+A98E1117,U+1FA84,1FA84,🪄,Magic Wand,物品与活动,assets/png/72/A98E1117.png,assets/bmp/16/A98E1117.bmp,assets/bmp/24/A98E1117.bmp,assets/bmp/32/A98E1117.bmp
+A98E1118,U+1FA85,1FA85,🪅,Pinata,物品与活动,assets/png/72/A98E1118.png,assets/bmp/16/A98E1118.bmp,assets/bmp/24/A98E1118.bmp,assets/bmp/32/A98E1118.bmp
+A98E1119,U+1FA86,1FA86,🪆,Nesting Dolls,物品与活动,assets/png/72/A98E1119.png,assets/bmp/16/A98E1119.bmp,assets/bmp/24/A98E1119.bmp,assets/bmp/32/A98E1119.bmp
+A98E1120,U+1FA87,1FA87,🪇,Maracas,物品与活动,assets/png/72/A98E1120.png,assets/bmp/16/A98E1120.bmp,assets/bmp/24/A98E1120.bmp,assets/bmp/32/A98E1120.bmp
+A98E1121,U+1FA88,1FA88,🪈,Flute,物品与活动,assets/png/72/A98E1121.png,assets/bmp/16/A98E1121.bmp,assets/bmp/24/A98E1121.bmp,assets/bmp/32/A98E1121.bmp
+A98E1122,U+1FA89,1FA89,🪉,Unicode U+1Fa89,物品与活动,assets/png/72/A98E1122.png,assets/bmp/16/A98E1122.bmp,assets/bmp/24/A98E1122.bmp,assets/bmp/32/A98E1122.bmp
+A98E1123,U+1FA8A,1FA8A,🪊,Unicode U+1Fa8A,物品与活动,assets/png/72/A98E1123.png,assets/bmp/16/A98E1123.bmp,assets/bmp/24/A98E1123.bmp,assets/bmp/32/A98E1123.bmp
+A98E1124,U+1FA8E,1FA8E,🪎,Unicode U+1Fa8E,物品与活动,assets/png/72/A98E1124.png,assets/bmp/16/A98E1124.bmp,assets/bmp/24/A98E1124.bmp,assets/bmp/32/A98E1124.bmp
+A98E1125,U+1FA8F,1FA8F,🪏,Unicode U+1Fa8F,物品与活动,assets/png/72/A98E1125.png,assets/bmp/16/A98E1125.bmp,assets/bmp/24/A98E1125.bmp,assets/bmp/32/A98E1125.bmp
+A98E1126,U+1FA90,1FA90,🪐,Ringed Planet,物品与活动,assets/png/72/A98E1126.png,assets/bmp/16/A98E1126.bmp,assets/bmp/24/A98E1126.bmp,assets/bmp/32/A98E1126.bmp
+A98E1127,U+1FA91,1FA91,🪑,Chair,物品与活动,assets/png/72/A98E1127.png,assets/bmp/16/A98E1127.bmp,assets/bmp/24/A98E1127.bmp,assets/bmp/32/A98E1127.bmp
+A98E1128,U+1FA92,1FA92,🪒,Razor,物品与活动,assets/png/72/A98E1128.png,assets/bmp/16/A98E1128.bmp,assets/bmp/24/A98E1128.bmp,assets/bmp/32/A98E1128.bmp
+A98E1129,U+1FA93,1FA93,🪓,Axe,物品与活动,assets/png/72/A98E1129.png,assets/bmp/16/A98E1129.bmp,assets/bmp/24/A98E1129.bmp,assets/bmp/32/A98E1129.bmp
+A98E1130,U+1FA94,1FA94,🪔,Diya Lamp,物品与活动,assets/png/72/A98E1130.png,assets/bmp/16/A98E1130.bmp,assets/bmp/24/A98E1130.bmp,assets/bmp/32/A98E1130.bmp
+A98E1131,U+1FA95,1FA95,🪕,Banjo,物品与活动,assets/png/72/A98E1131.png,assets/bmp/16/A98E1131.bmp,assets/bmp/24/A98E1131.bmp,assets/bmp/32/A98E1131.bmp
+A98E1132,U+1FA96,1FA96,🪖,Military Helmet,物品与活动,assets/png/72/A98E1132.png,assets/bmp/16/A98E1132.bmp,assets/bmp/24/A98E1132.bmp,assets/bmp/32/A98E1132.bmp
+A98E1133,U+1FA97,1FA97,🪗,Accordion,物品与活动,assets/png/72/A98E1133.png,assets/bmp/16/A98E1133.bmp,assets/bmp/24/A98E1133.bmp,assets/bmp/32/A98E1133.bmp
+A98E1134,U+1FA98,1FA98,🪘,Long Drum,物品与活动,assets/png/72/A98E1134.png,assets/bmp/16/A98E1134.bmp,assets/bmp/24/A98E1134.bmp,assets/bmp/32/A98E1134.bmp
+A98E1135,U+1FA99,1FA99,🪙,Coin,物品与活动,assets/png/72/A98E1135.png,assets/bmp/16/A98E1135.bmp,assets/bmp/24/A98E1135.bmp,assets/bmp/32/A98E1135.bmp
+A98E1136,U+1FA9A,1FA9A,🪚,Carpentry Saw,物品与活动,assets/png/72/A98E1136.png,assets/bmp/16/A98E1136.bmp,assets/bmp/24/A98E1136.bmp,assets/bmp/32/A98E1136.bmp
+A98E1137,U+1FA9B,1FA9B,🪛,Screwdriver,物品与活动,assets/png/72/A98E1137.png,assets/bmp/16/A98E1137.bmp,assets/bmp/24/A98E1137.bmp,assets/bmp/32/A98E1137.bmp
+A98E1138,U+1FA9C,1FA9C,🪜,Ladder,物品与活动,assets/png/72/A98E1138.png,assets/bmp/16/A98E1138.bmp,assets/bmp/24/A98E1138.bmp,assets/bmp/32/A98E1138.bmp
+A98E1139,U+1FA9D,1FA9D,🪝,Hook,物品与活动,assets/png/72/A98E1139.png,assets/bmp/16/A98E1139.bmp,assets/bmp/24/A98E1139.bmp,assets/bmp/32/A98E1139.bmp
+A98E1140,U+1FA9E,1FA9E,🪞,Mirror,物品与活动,assets/png/72/A98E1140.png,assets/bmp/16/A98E1140.bmp,assets/bmp/24/A98E1140.bmp,assets/bmp/32/A98E1140.bmp
+A98E1141,U+1FA9F,1FA9F,🪟,Window,物品与活动,assets/png/72/A98E1141.png,assets/bmp/16/A98E1141.bmp,assets/bmp/24/A98E1141.bmp,assets/bmp/32/A98E1141.bmp
+A98E1142,U+1FAA0,1FAA0,🪠,Plunger,物品与活动,assets/png/72/A98E1142.png,assets/bmp/16/A98E1142.bmp,assets/bmp/24/A98E1142.bmp,assets/bmp/32/A98E1142.bmp
+A98E1143,U+1FAA1,1FAA1,🪡,Sewing Needle,物品与活动,assets/png/72/A98E1143.png,assets/bmp/16/A98E1143.bmp,assets/bmp/24/A98E1143.bmp,assets/bmp/32/A98E1143.bmp
+A98E1144,U+1FAA2,1FAA2,🪢,Knot,物品与活动,assets/png/72/A98E1144.png,assets/bmp/16/A98E1144.bmp,assets/bmp/24/A98E1144.bmp,assets/bmp/32/A98E1144.bmp
+A98E1145,U+1FAA3,1FAA3,🪣,Bucket,物品与活动,assets/png/72/A98E1145.png,assets/bmp/16/A98E1145.bmp,assets/bmp/24/A98E1145.bmp,assets/bmp/32/A98E1145.bmp
+A98E1146,U+1FAA4,1FAA4,🪤,Mouse Trap,物品与活动,assets/png/72/A98E1146.png,assets/bmp/16/A98E1146.bmp,assets/bmp/24/A98E1146.bmp,assets/bmp/32/A98E1146.bmp
+A98E1147,U+1FAA5,1FAA5,🪥,Toothbrush,物品与活动,assets/png/72/A98E1147.png,assets/bmp/16/A98E1147.bmp,assets/bmp/24/A98E1147.bmp,assets/bmp/32/A98E1147.bmp
+A98E1148,U+1FAA6,1FAA6,🪦,Headstone,物品与活动,assets/png/72/A98E1148.png,assets/bmp/16/A98E1148.bmp,assets/bmp/24/A98E1148.bmp,assets/bmp/32/A98E1148.bmp
+A98E1149,U+1FAA7,1FAA7,🪧,Placard,物品与活动,assets/png/72/A98E1149.png,assets/bmp/16/A98E1149.bmp,assets/bmp/24/A98E1149.bmp,assets/bmp/32/A98E1149.bmp
+A98E1150,U+1FAA8,1FAA8,🪨,Rock,物品与活动,assets/png/72/A98E1150.png,assets/bmp/16/A98E1150.bmp,assets/bmp/24/A98E1150.bmp,assets/bmp/32/A98E1150.bmp
+A98E1151,U+1FAA9,1FAA9,🪩,Mirror Ball,物品与活动,assets/png/72/A98E1151.png,assets/bmp/16/A98E1151.bmp,assets/bmp/24/A98E1151.bmp,assets/bmp/32/A98E1151.bmp
+A98E1152,U+1FAAA,1FAAA,🪪,Identification Card,物品与活动,assets/png/72/A98E1152.png,assets/bmp/16/A98E1152.bmp,assets/bmp/24/A98E1152.bmp,assets/bmp/32/A98E1152.bmp
+A98E1153,U+1FAAB,1FAAB,🪫,Low Battery,物品与活动,assets/png/72/A98E1153.png,assets/bmp/16/A98E1153.bmp,assets/bmp/24/A98E1153.bmp,assets/bmp/32/A98E1153.bmp
+A98E1154,U+1FAAC,1FAAC,🪬,Hamsa,物品与活动,assets/png/72/A98E1154.png,assets/bmp/16/A98E1154.bmp,assets/bmp/24/A98E1154.bmp,assets/bmp/32/A98E1154.bmp
+A98E1155,U+1FAAD,1FAAD,🪭,Folding Hand Fan,物品与活动,assets/png/72/A98E1155.png,assets/bmp/16/A98E1155.bmp,assets/bmp/24/A98E1155.bmp,assets/bmp/32/A98E1155.bmp
+A98E1156,U+1FAAE,1FAAE,🪮,Hair Pick,物品与活动,assets/png/72/A98E1156.png,assets/bmp/16/A98E1156.bmp,assets/bmp/24/A98E1156.bmp,assets/bmp/32/A98E1156.bmp
+A98E1157,U+1FAAF,1FAAF,🪯,Khanda,物品与活动,assets/png/72/A98E1157.png,assets/bmp/16/A98E1157.bmp,assets/bmp/24/A98E1157.bmp,assets/bmp/32/A98E1157.bmp
+A98E1158,U+1FAB0,1FAB0,🪰,Fly,物品与活动,assets/png/72/A98E1158.png,assets/bmp/16/A98E1158.bmp,assets/bmp/24/A98E1158.bmp,assets/bmp/32/A98E1158.bmp
+A98E1159,U+1FAB1,1FAB1,🪱,Worm,物品与活动,assets/png/72/A98E1159.png,assets/bmp/16/A98E1159.bmp,assets/bmp/24/A98E1159.bmp,assets/bmp/32/A98E1159.bmp
+A98E1160,U+1FAB2,1FAB2,🪲,Beetle,物品与活动,assets/png/72/A98E1160.png,assets/bmp/16/A98E1160.bmp,assets/bmp/24/A98E1160.bmp,assets/bmp/32/A98E1160.bmp
+A98E1161,U+1FAB3,1FAB3,🪳,Cockroach,物品与活动,assets/png/72/A98E1161.png,assets/bmp/16/A98E1161.bmp,assets/bmp/24/A98E1161.bmp,assets/bmp/32/A98E1161.bmp
+A98E1162,U+1FAB4,1FAB4,🪴,Potted Plant,物品与活动,assets/png/72/A98E1162.png,assets/bmp/16/A98E1162.bmp,assets/bmp/24/A98E1162.bmp,assets/bmp/32/A98E1162.bmp
+A98E1163,U+1FAB5,1FAB5,🪵,Wood,物品与活动,assets/png/72/A98E1163.png,assets/bmp/16/A98E1163.bmp,assets/bmp/24/A98E1163.bmp,assets/bmp/32/A98E1163.bmp
+A98E1164,U+1FAB6,1FAB6,🪶,Feather,物品与活动,assets/png/72/A98E1164.png,assets/bmp/16/A98E1164.bmp,assets/bmp/24/A98E1164.bmp,assets/bmp/32/A98E1164.bmp
+A98E1165,U+1FAB7,1FAB7,🪷,Lotus,物品与活动,assets/png/72/A98E1165.png,assets/bmp/16/A98E1165.bmp,assets/bmp/24/A98E1165.bmp,assets/bmp/32/A98E1165.bmp
+A98E1166,U+1FAB8,1FAB8,🪸,Coral,物品与活动,assets/png/72/A98E1166.png,assets/bmp/16/A98E1166.bmp,assets/bmp/24/A98E1166.bmp,assets/bmp/32/A98E1166.bmp
+A98E1167,U+1FAB9,1FAB9,🪹,Empty Nest,物品与活动,assets/png/72/A98E1167.png,assets/bmp/16/A98E1167.bmp,assets/bmp/24/A98E1167.bmp,assets/bmp/32/A98E1167.bmp
+A98E1168,U+1FABA,1FABA,🪺,Nest With Eggs,物品与活动,assets/png/72/A98E1168.png,assets/bmp/16/A98E1168.bmp,assets/bmp/24/A98E1168.bmp,assets/bmp/32/A98E1168.bmp
+A98E1169,U+1FABB,1FABB,🪻,Hyacinth,物品与活动,assets/png/72/A98E1169.png,assets/bmp/16/A98E1169.bmp,assets/bmp/24/A98E1169.bmp,assets/bmp/32/A98E1169.bmp
+A98E1170,U+1FABC,1FABC,🪼,Jellyfish,物品与活动,assets/png/72/A98E1170.png,assets/bmp/16/A98E1170.bmp,assets/bmp/24/A98E1170.bmp,assets/bmp/32/A98E1170.bmp
+A98E1171,U+1FABD,1FABD,🪽,Wing,物品与活动,assets/png/72/A98E1171.png,assets/bmp/16/A98E1171.bmp,assets/bmp/24/A98E1171.bmp,assets/bmp/32/A98E1171.bmp
+A98E1172,U+1FABE,1FABE,🪾,Unicode U+1Fabe,物品与活动,assets/png/72/A98E1172.png,assets/bmp/16/A98E1172.bmp,assets/bmp/24/A98E1172.bmp,assets/bmp/32/A98E1172.bmp
+A98E1173,U+1FABF,1FABF,🪿,Goose,物品与活动,assets/png/72/A98E1173.png,assets/bmp/16/A98E1173.bmp,assets/bmp/24/A98E1173.bmp,assets/bmp/32/A98E1173.bmp
+A98E1174,U+1FAC0,1FAC0,🫀,Anatomical Heart,物品与活动,assets/png/72/A98E1174.png,assets/bmp/16/A98E1174.bmp,assets/bmp/24/A98E1174.bmp,assets/bmp/32/A98E1174.bmp
+A98E1175,U+1FAC1,1FAC1,🫁,Lungs,物品与活动,assets/png/72/A98E1175.png,assets/bmp/16/A98E1175.bmp,assets/bmp/24/A98E1175.bmp,assets/bmp/32/A98E1175.bmp
+A98E1176,U+1FAC2,1FAC2,🫂,People Hugging,物品与活动,assets/png/72/A98E1176.png,assets/bmp/16/A98E1176.bmp,assets/bmp/24/A98E1176.bmp,assets/bmp/32/A98E1176.bmp
+A98E1177,U+1FAC3,1FAC3,🫃,Pregnant Man,物品与活动,assets/png/72/A98E1177.png,assets/bmp/16/A98E1177.bmp,assets/bmp/24/A98E1177.bmp,assets/bmp/32/A98E1177.bmp
+A98E1178,U+1FAC4,1FAC4,🫄,Pregnant Person,物品与活动,assets/png/72/A98E1178.png,assets/bmp/16/A98E1178.bmp,assets/bmp/24/A98E1178.bmp,assets/bmp/32/A98E1178.bmp
+A98E1179,U+1FAC5,1FAC5,🫅,Person With Crown,物品与活动,assets/png/72/A98E1179.png,assets/bmp/16/A98E1179.bmp,assets/bmp/24/A98E1179.bmp,assets/bmp/32/A98E1179.bmp
+A98E1180,U+1FAC6,1FAC6,🫆,Unicode U+1Fac6,物品与活动,assets/png/72/A98E1180.png,assets/bmp/16/A98E1180.bmp,assets/bmp/24/A98E1180.bmp,assets/bmp/32/A98E1180.bmp
+A98E1181,U+1FAC8,1FAC8,🫈,Unicode U+1Fac8,物品与活动,assets/png/72/A98E1181.png,assets/bmp/16/A98E1181.bmp,assets/bmp/24/A98E1181.bmp,assets/bmp/32/A98E1181.bmp
+A98E1182,U+1FACD,1FACD,🫍,Unicode U+1Facd,物品与活动,assets/png/72/A98E1182.png,assets/bmp/16/A98E1182.bmp,assets/bmp/24/A98E1182.bmp,assets/bmp/32/A98E1182.bmp
+A98E1183,U+1FACE,1FACE,🫎,Moose,物品与活动,assets/png/72/A98E1183.png,assets/bmp/16/A98E1183.bmp,assets/bmp/24/A98E1183.bmp,assets/bmp/32/A98E1183.bmp
+A98E1184,U+1FACF,1FACF,🫏,Donkey,物品与活动,assets/png/72/A98E1184.png,assets/bmp/16/A98E1184.bmp,assets/bmp/24/A98E1184.bmp,assets/bmp/32/A98E1184.bmp
+A98E1185,U+1FAD0,1FAD0,🫐,Blueberries,物品与活动,assets/png/72/A98E1185.png,assets/bmp/16/A98E1185.bmp,assets/bmp/24/A98E1185.bmp,assets/bmp/32/A98E1185.bmp
+A98E1186,U+1FAD1,1FAD1,🫑,Bell Pepper,物品与活动,assets/png/72/A98E1186.png,assets/bmp/16/A98E1186.bmp,assets/bmp/24/A98E1186.bmp,assets/bmp/32/A98E1186.bmp
+A98E1187,U+1FAD2,1FAD2,🫒,Olive,物品与活动,assets/png/72/A98E1187.png,assets/bmp/16/A98E1187.bmp,assets/bmp/24/A98E1187.bmp,assets/bmp/32/A98E1187.bmp
+A98E1188,U+1FAD3,1FAD3,🫓,Flatbread,物品与活动,assets/png/72/A98E1188.png,assets/bmp/16/A98E1188.bmp,assets/bmp/24/A98E1188.bmp,assets/bmp/32/A98E1188.bmp
+A98E1189,U+1FAD4,1FAD4,🫔,Tamale,物品与活动,assets/png/72/A98E1189.png,assets/bmp/16/A98E1189.bmp,assets/bmp/24/A98E1189.bmp,assets/bmp/32/A98E1189.bmp
+A98E1190,U+1FAD5,1FAD5,🫕,Fondue,物品与活动,assets/png/72/A98E1190.png,assets/bmp/16/A98E1190.bmp,assets/bmp/24/A98E1190.bmp,assets/bmp/32/A98E1190.bmp
+A98E1191,U+1FAD6,1FAD6,🫖,Teapot,物品与活动,assets/png/72/A98E1191.png,assets/bmp/16/A98E1191.bmp,assets/bmp/24/A98E1191.bmp,assets/bmp/32/A98E1191.bmp
+A98E1192,U+1FAD7,1FAD7,🫗,Pouring Liquid,物品与活动,assets/png/72/A98E1192.png,assets/bmp/16/A98E1192.bmp,assets/bmp/24/A98E1192.bmp,assets/bmp/32/A98E1192.bmp
+A98E1193,U+1FAD8,1FAD8,🫘,Beans,物品与活动,assets/png/72/A98E1193.png,assets/bmp/16/A98E1193.bmp,assets/bmp/24/A98E1193.bmp,assets/bmp/32/A98E1193.bmp
+A98E1194,U+1FAD9,1FAD9,🫙,Jar,物品与活动,assets/png/72/A98E1194.png,assets/bmp/16/A98E1194.bmp,assets/bmp/24/A98E1194.bmp,assets/bmp/32/A98E1194.bmp
+A98E1195,U+1FADA,1FADA,🫚,Ginger Root,物品与活动,assets/png/72/A98E1195.png,assets/bmp/16/A98E1195.bmp,assets/bmp/24/A98E1195.bmp,assets/bmp/32/A98E1195.bmp
+A98E1196,U+1FADB,1FADB,🫛,Pea Pod,物品与活动,assets/png/72/A98E1196.png,assets/bmp/16/A98E1196.bmp,assets/bmp/24/A98E1196.bmp,assets/bmp/32/A98E1196.bmp
+A98E1197,U+1FADC,1FADC,🫜,Unicode U+1Fadc,物品与活动,assets/png/72/A98E1197.png,assets/bmp/16/A98E1197.bmp,assets/bmp/24/A98E1197.bmp,assets/bmp/32/A98E1197.bmp
+A98E1198,U+1FADF,1FADF,🫟,Unicode U+1Fadf,物品与活动,assets/png/72/A98E1198.png,assets/bmp/16/A98E1198.bmp,assets/bmp/24/A98E1198.bmp,assets/bmp/32/A98E1198.bmp
+A98E1199,U+1FAE0,1FAE0,🫠,Melting Face,物品与活动,assets/png/72/A98E1199.png,assets/bmp/16/A98E1199.bmp,assets/bmp/24/A98E1199.bmp,assets/bmp/32/A98E1199.bmp
+A98E1200,U+1FAE1,1FAE1,🫡,Saluting Face,物品与活动,assets/png/72/A98E1200.png,assets/bmp/16/A98E1200.bmp,assets/bmp/24/A98E1200.bmp,assets/bmp/32/A98E1200.bmp
+A98E1201,U+1FAE2,1FAE2,🫢,Face With Open Eyes And Hand Over Mouth,物品与活动,assets/png/72/A98E1201.png,assets/bmp/16/A98E1201.bmp,assets/bmp/24/A98E1201.bmp,assets/bmp/32/A98E1201.bmp
+A98E1202,U+1FAE3,1FAE3,🫣,Face With Peeking Eye,物品与活动,assets/png/72/A98E1202.png,assets/bmp/16/A98E1202.bmp,assets/bmp/24/A98E1202.bmp,assets/bmp/32/A98E1202.bmp
+A98E1203,U+1FAE4,1FAE4,🫤,Face With Diagonal Mouth,物品与活动,assets/png/72/A98E1203.png,assets/bmp/16/A98E1203.bmp,assets/bmp/24/A98E1203.bmp,assets/bmp/32/A98E1203.bmp
+A98E1204,U+1FAE5,1FAE5,🫥,Dotted Line Face,物品与活动,assets/png/72/A98E1204.png,assets/bmp/16/A98E1204.bmp,assets/bmp/24/A98E1204.bmp,assets/bmp/32/A98E1204.bmp
+A98E1205,U+1FAE6,1FAE6,🫦,Biting Lip,物品与活动,assets/png/72/A98E1205.png,assets/bmp/16/A98E1205.bmp,assets/bmp/24/A98E1205.bmp,assets/bmp/32/A98E1205.bmp
+A98E1206,U+1FAE7,1FAE7,🫧,Bubbles,物品与活动,assets/png/72/A98E1206.png,assets/bmp/16/A98E1206.bmp,assets/bmp/24/A98E1206.bmp,assets/bmp/32/A98E1206.bmp
+A98E1207,U+1FAE8,1FAE8,🫨,Shaking Face,物品与活动,assets/png/72/A98E1207.png,assets/bmp/16/A98E1207.bmp,assets/bmp/24/A98E1207.bmp,assets/bmp/32/A98E1207.bmp
+A98E1208,U+1FAE9,1FAE9,🫩,Unicode U+1Fae9,物品与活动,assets/png/72/A98E1208.png,assets/bmp/16/A98E1208.bmp,assets/bmp/24/A98E1208.bmp,assets/bmp/32/A98E1208.bmp
+A98E1209,U+1FAEA,1FAEA,🫪,Unicode U+1Faea,物品与活动,assets/png/72/A98E1209.png,assets/bmp/16/A98E1209.bmp,assets/bmp/24/A98E1209.bmp,assets/bmp/32/A98E1209.bmp
+A98E1210,U+1FAEF,1FAEF,🫯,Unicode U+1Faef,物品与活动,assets/png/72/A98E1210.png,assets/bmp/16/A98E1210.bmp,assets/bmp/24/A98E1210.bmp,assets/bmp/32/A98E1210.bmp
+A98E1211,U+1FAF0,1FAF0,🫰,Hand With Index Finger And Thumb Crossed,物品与活动,assets/png/72/A98E1211.png,assets/bmp/16/A98E1211.bmp,assets/bmp/24/A98E1211.bmp,assets/bmp/32/A98E1211.bmp
+A98E1212,U+1FAF1,1FAF1,🫱,Rightwards Hand,物品与活动,assets/png/72/A98E1212.png,assets/bmp/16/A98E1212.bmp,assets/bmp/24/A98E1212.bmp,assets/bmp/32/A98E1212.bmp
+A98E1213,U+1FAF2,1FAF2,🫲,Leftwards Hand,物品与活动,assets/png/72/A98E1213.png,assets/bmp/16/A98E1213.bmp,assets/bmp/24/A98E1213.bmp,assets/bmp/32/A98E1213.bmp
+A98E1214,U+1FAF3,1FAF3,🫳,Palm Down Hand,物品与活动,assets/png/72/A98E1214.png,assets/bmp/16/A98E1214.bmp,assets/bmp/24/A98E1214.bmp,assets/bmp/32/A98E1214.bmp
+A98E1215,U+1FAF4,1FAF4,🫴,Palm Up Hand,物品与活动,assets/png/72/A98E1215.png,assets/bmp/16/A98E1215.bmp,assets/bmp/24/A98E1215.bmp,assets/bmp/32/A98E1215.bmp
+A98E1216,U+1FAF5,1FAF5,🫵,Index Pointing At The Viewer,物品与活动,assets/png/72/A98E1216.png,assets/bmp/16/A98E1216.bmp,assets/bmp/24/A98E1216.bmp,assets/bmp/32/A98E1216.bmp
+A98E1217,U+1FAF6,1FAF6,🫶,Heart Hands,物品与活动,assets/png/72/A98E1217.png,assets/bmp/16/A98E1217.bmp,assets/bmp/24/A98E1217.bmp,assets/bmp/32/A98E1217.bmp
+A98E1218,U+1FAF7,1FAF7,🫷,Leftwards Pushing Hand,物品与活动,assets/png/72/A98E1218.png,assets/bmp/16/A98E1218.bmp,assets/bmp/24/A98E1218.bmp,assets/bmp/32/A98E1218.bmp
+A98E1219,U+1FAF8,1FAF8,🫸,Rightwards Pushing Hand,物品与活动,assets/png/72/A98E1219.png,assets/bmp/16/A98E1219.bmp,assets/bmp/24/A98E1219.bmp,assets/bmp/32/A98E1219.bmp

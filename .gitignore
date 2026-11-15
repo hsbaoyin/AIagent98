@@ -29,8 +29,8 @@ tools/openwatcom/
 Thumbs.db
 desktop.ini
 
-# Untracked local asset pack kept out of the repository (README points at
-# the shipped dist/ files instead)
+# The full optional emoji pack stays local: the 24 px artwork the GUI needs is
+# tracked under assets/emoji, the 16/32 px BMP and 72 px PNG copies are not.
 /AIagent98-Emoji-Pack-v2.0/
 /dist/新建*.txt
 

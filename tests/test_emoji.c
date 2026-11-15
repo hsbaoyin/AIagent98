@@ -6,7 +6,7 @@
  *     keeps emoji out of the ANSI edit controls
  *   - asset location: the same search the picker runs, starting from this
  *     executable's directory (build\cmake or build\host), which is how a build
- *     tree finds the pack at the repository root
+ *     tree finds the tracked artwork in the repository's assets\emoji
  *   - the release layout (<dir>\emoji\bmp\24) via a tiny fixture
  *   - the degradation path when no artwork exists at all
  *   - IDD_EMOJI itself: created with CreateDialogParam, populated, destroyed
@@ -173,6 +173,31 @@ static void test_text_pipeline(void)
     }
 }
 
+/* One BMP per table entry is what makes the artwork complete; counting the
+ * folder proves a fresh clone ships the whole pack subset and not a sample. */
+static int count_bmps(const char *dir)
+{
+    char pattern[A98_MAX_PATH];
+    WIN32_FIND_DATAA fd;
+    HANDLE h;
+    int n = 0;
+
+    if (a98_path_join(pattern, sizeof(pattern), dir, "*.bmp") != 0) {
+        return -1;
+    }
+    h = FindFirstFileA(pattern, &fd);
+    if (h == INVALID_HANDLE_VALUE) {
+        return -1;
+    }
+    do {
+        if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+            n++;
+        }
+    } while (FindNextFileA(h, &fd));
+    FindClose(h);
+    return n;
+}
+
 /* The asset search as the running GUI performs it, from this build directory
  * with the real working directory. */
 static void test_asset_location(char *dir_out, size_t cap)
@@ -190,10 +215,18 @@ static void test_asset_location(char *dir_out, size_t cap)
        "asset directory found from the build tree");
     ok(a98_path_is_dir(dir), "the reported asset directory exists");
     printf("  assets : %s\n", dir);
-    /* Guard against a false positive: it has to be the 24 px folder with the
-     * pack's id-named BMPs, not just any directory. */
-    ok(strstr(dir, "bmp") != NULL && strstr(dir, "24") != NULL,
-       "asset directory is the pack's bmp/24 folder");
+    /* Guard against a false positive: it has to be the tracked 24 px folder,
+     * not just any directory that happens to hold bitmaps. */
+    ok(strstr(dir, "assets\\emoji\\bmp\\24") != NULL,
+       "asset directory is the repository's assets\\emoji\\bmp\\24");
+    {
+        int n = count_bmps(dir);
+
+        printf("  files  : %d BMPs, table has %d entries\n", n,
+               a98_emoji_count());
+        ok(n > 0 && n == a98_emoji_count(),
+           "the asset directory holds exactly one BMP per table entry");
+    }
 
     e = a98_emoji_by_codepoint(0x1F600UL);
     ok(e != NULL &&

@@ -12,13 +12,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   expands shortcodes back to the real character, so Win9x (no color emoji font,
   CP_ACP) never shows `?` boxes. New **Emoji** button and **Tools -> Insert
   emoji...** (`Ctrl+J`) picker that renders the optional AIagent98 Emoji Pack
-  v2.0 BMP artwork (1219 icons) behind a filter box. Artwork is located
-  automatically: `emoji\bmp\24` or `assets\bmp\24` beside the EXE, the pack
-  folder itself, and then the same three for each parent of the EXE directory and
-  of the working directory (five levels up) - so a `build\cmake` or `build\ow`
-  EXE uses the pack at the repository root without copying 25 MB of BMPs. With
-  no artwork the picker lists shortcodes only. `src/gui/emoji_table.h` is
-  generated from the pack mapping by `tools/gen_emoji_table.ps1`.
+  v2.0 BMP artwork (1219 icons) behind a filter box. The 24 px artwork is
+  tracked in `assets/emoji/bmp/24` (1219 BMPs, about 2 MiB, with
+  `LICENSE-NOTO.txt` and the source `mapping/emoji.csv`), so a fresh clone needs
+  no Git LFS, download step or network access; the pack's larger sizes stay
+  ignored. Artwork is located automatically: `assets\emoji\bmp\24`,
+  `emoji\bmp\24` or `assets\bmp\24` beside the EXE, the pack folder itself,
+  and then the same four for each parent of the EXE directory and of the working
+  directory (five levels up) - so a `build\cmake` or `build\ow` EXE uses the
+  repository's own artwork without copying anything. With no artwork the picker
+  lists shortcodes only. `src/gui/emoji_table.h` is generated from
+  `assets/emoji/mapping/emoji.csv` by `tools/gen_emoji_table.ps1`.
 - 26 new tools (31 total): `mkdir`, `delete_file`, `rmdir`, `rmdir_force`,
   `move_file`, `copy_file`, `append_file`, `edit`, `apply_patch`, `touch`,
   `set_attr`, `file_info`, `head`, `tail`, `grep`, `glob`, `tree`, `wc`,

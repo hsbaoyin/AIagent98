@@ -172,10 +172,13 @@ char *a98_emoji_fold(const char *utf8)
  * root where the pack folder sits; a release install is depth 0. */
 #define A98_EMOJI_SEARCH_UP 5
 
+/* Tried in order for each base directory; the repository's own copy wins so a
+ * fresh clone is complete without the optional pack beside it. */
 static const char *const g_emoji_subdirs[] = {
+    "assets\\emoji\\bmp\\24",                /* this repository's copy */
     "emoji\\bmp\\24",                        /* release install */
     "assets\\bmp\\24",                       /* pack unzipped beside the EXE */
-    "AIagent98-Emoji-Pack-v2.0\\assets\\bmp\\24", /* source/build tree */
+    "AIagent98-Emoji-Pack-v2.0\\assets\\bmp\\24", /* optional pack checkout */
     "emoji"
 };
 
