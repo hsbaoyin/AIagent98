@@ -31,9 +31,14 @@ function chunk(delta, finish) {
   };
 }
 
-/* Counters for the retry tests: the first request fails on purpose, the
- * second one succeeds. */
-const flakyCounters = {};
+/* Attempt counters for the retry tests.  The first attempt of a conversation
+ * fails on purpose, the retry succeeds.  Counting *attempts* per scenario
+ * (odd = fail, even = succeed) instead of a one-shot process-lifetime flag
+ * keeps the retry path covered when the same mock server is reused for a
+ * second run, e.g. when re-running retry_smoke.ps1 or pointing another script
+ * at an already-listening mock.  The client retries exactly once, so pairs
+ * stay in step. */
+const flakyAttempts = {};
 
 const server = http.createServer((req, res) => {
   let body = '';
@@ -87,8 +92,8 @@ const server = http.createServer((req, res) => {
 
     if (wantsRetry503 || wantsRetryDrop) {
       const key = wantsRetry503 ? '503' : 'drop';
-      flakyCounters[key] = (flakyCounters[key] || 0) + 1;
-      if (flakyCounters[key] === 1) {
+      flakyAttempts[key] = (flakyAttempts[key] || 0) + 1;
+      if (flakyAttempts[key] % 2 === 1) {
         if (wantsRetry503) {
           res.writeHead(503, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({

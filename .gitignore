@@ -29,5 +29,10 @@ tools/openwatcom/
 Thumbs.db
 desktop.ini
 
+# Untracked local asset pack kept out of the repository (README points at
+# the shipped dist/ files instead)
+/Agent98-Emoji-Pack-v2.0/
+/dist/新建*.txt
+
 # The release binaries in dist/ are tracked on purpose
 !dist/*.exe

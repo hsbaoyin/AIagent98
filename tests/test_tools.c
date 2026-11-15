@@ -92,6 +92,49 @@ static int read_bytes(const char *path, char *buf, size_t cap, size_t *out_len)
     return 0;
 }
 
+/* The sandbox is the README's headline safety feature (allow_outside=0), so
+ * it must have assertions, not just a manual review.  Every escape shape the
+ * resolver has to reject is tried here; each must fail *and* leave no file
+ * behind (the canary path is outside the workspace on purpose). */
+static void test_sandbox_escape(Agent *a, const char *tool, const char *path)
+{
+    char args[1024];
+    char captured[512];
+    int rc;
+    const char *canary = "build/agent98_escape_canary.txt";
+
+    /* Double every backslash so the path survives JSON decoding. */
+    char json_path[2 * A98_MAX_PATH];
+    size_t j = 0, i = 0;
+
+    for (; path[i] != '\0' && j + 1 < sizeof(json_path); i++) {
+        if (path[i] == '\\') {
+            json_path[j++] = '\\';
+        }
+        json_path[j++] = path[i];
+    }
+    json_path[j] = '\0';
+    if (j + 32 >= sizeof(json_path)) {
+        printf("SKIP: path too long to build a JSON fixture: %s\n", path);
+        return;
+    }
+
+    snprintf(args, sizeof(args),
+             "{\"path\":\"%s\",\"content\":\"x\",\"confirm\":true}",
+             json_path);
+    rc = run_capture(a, tool, args, captured, sizeof(captured));
+    if (rc == 0) {
+        printf("FAIL: sandbox let %s through: %s\n", tool, path);
+        failures++;
+    } else if (a98_path_exists(canary)) {
+        printf("FAIL: sandbox escape wrote the canary file: %s\n", path);
+        remove(canary);
+        failures++;
+    } else {
+        printf("PASS: sandbox refuses %s (%s)\n", path, tool);
+    }
+}
+
 int main(void)
 {
     Config cfg;
@@ -278,6 +321,45 @@ int main(void)
 
         strcpy(a.workspace, saved_ws);
         strcpy(cfg.workspace, saved_ws);
+    }
+
+    /* The sandbox is the README's headline safety feature, so it gets real
+     * assertions: every escape shape the resolver must reject, including the
+     * ones that only differ in separators, absolute forms, device paths and
+     * 8.3 short names. */
+    {
+        char abs_ws[A98_MAX_PATH];
+        char short_ws[A98_MAX_PATH];
+        char abs_escape[A98_MAX_PATH + 64];
+
+        test_sandbox_escape(&a, "write_file",
+                            "../../agent98_escape_canary.txt");
+        test_sandbox_escape(&a, "write_file",
+                            "..\\..\\agent98_escape_canary.txt");
+        test_sandbox_escape(&a, "read_file",
+                            "..\\..\\CMakeLists.txt");
+        test_sandbox_escape(&a, "read_file",
+                            "C:\\Windows\\system.ini");
+        test_sandbox_escape(&a, "write_file",
+                            "\\\\.\\pipe\\agent98_escape");
+
+        /* Absolute workspace path with .. traversal ("C:/ws/../.." shape). */
+        if (GetFullPathNameA(".", A98_MAX_PATH, abs_ws, NULL) > 0) {
+            snprintf(abs_escape, sizeof(abs_escape),
+                     "%s\\..\\..\\agent98_escape_canary.txt", abs_ws);
+            test_sandbox_escape(&a, "write_file", abs_escape);
+            /* 8.3 short names of the workspace itself must not slip past
+             * the prefix comparison either; short names only exist for
+             * long components, so ask for the full absolute path. */
+            if (GetShortPathNameA(abs_ws, short_ws, sizeof(short_ws)) > 0 &&
+                strcmp(short_ws, abs_ws) != 0) {
+                snprintf(abs_escape, sizeof(abs_escape),
+                         "%s\\..\\..\\agent98_escape_canary.txt", short_ws);
+                test_sandbox_escape(&a, "write_file", abs_escape);
+            } else {
+                printf("SKIP: 8.3 short-name escape (no short names here)\n");
+            }
+        }
     }
 
     if (failures != 0) {

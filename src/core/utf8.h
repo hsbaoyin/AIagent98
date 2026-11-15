@@ -26,9 +26,6 @@ unsigned short *a98_utf8_to_utf16(const char *s, size_t *out_units);
 /* Convert UTF-16 to UTF-8. Returns malloc'ed NUL-terminated string. */
 char *a98_utf16_to_utf8(const unsigned short *w, size_t units);
 
-/* Replace invalid sequences with '?'. Operates in place. */
-void a98_utf8_sanitize(char *s);
-
 #ifdef _WIN32
 /* UTF-8 <-> local ANSI code page, for Win32 text APIs. */
 char *a98_utf8_to_acp(const char *s);

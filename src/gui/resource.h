@@ -11,6 +11,8 @@
 #define IDD_SETTINGS       200
 #define IDD_CONFIRM        201
 #define IDD_ABOUT          202
+#define IDD_FIRSTRUN       203
+#define IDD_INPUTLINE      204
 
 #define IDC_TRANSCRIPT     1000
 #define IDC_INPUT          1001
@@ -32,6 +34,10 @@
 #define IDM_EXPORT         40007
 #define IDM_WORKSPACE      40008
 #define IDM_TOOLS_LIST     40009
+#define IDM_RESEND         40010
+#define IDM_SESSION_DELETE 40011
+#define IDM_SESSION_RENAME 40012
+#define IDM_OPENLOG        40013
 
 #define IDC_PROVIDER       2000
 #define IDC_API_BASE       2001
@@ -51,5 +57,8 @@
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101
+
+#define IDC_INPUTLINE_LABEL 2102
+#define IDC_INPUTLINE_EDIT  2103
 
 #endif /* A98_GUI_RESOURCE_H */

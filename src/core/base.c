@@ -136,39 +136,3 @@ char *a98_strfmt(const char *fmt, ...)
     va_end(ap);
     return out;
 }
-
-int a98_str_replace_all(char *s, size_t cap, const char *from, const char *to)
-{
-    size_t from_len;
-    size_t to_len;
-    size_t len;
-    size_t pos;
-    int replaced = 0;
-
-    if (s == NULL || from == NULL || to == NULL) {
-        return 0;
-    }
-    from_len = strlen(from);
-    to_len = strlen(to);
-    if (from_len == 0) {
-        return 0;
-    }
-    len = strlen(s);
-    pos = 0;
-    while (pos + from_len <= len) {
-        if (memcmp(s + pos, from, from_len) == 0) {
-            size_t tail = len - pos - from_len;
-            if (len - from_len + to_len >= cap) {
-                break;
-            }
-            memmove(s + pos + to_len, s + pos + from_len, tail + 1);
-            memcpy(s + pos, to, to_len);
-            len = len - from_len + to_len;
-            pos += to_len;
-            replaced = 1;
-        } else {
-            pos++;
-        }
-    }
-    return replaced;
-}

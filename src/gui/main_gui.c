@@ -66,6 +66,29 @@
 #define A98_WM_DONE    (WM_APP + 2)
 #define A98_WM_CONFIRM (WM_APP + 3)
 
+/* RichEdit-only messages used for the auto-scroll pin.  EM_EXLINEFROMCHAR
+ * turns RichEdit's character-based EM_GETFIRSTVISIBLELINE into a line
+ * number; both are understood by RichEdit 1.0 and 2.0. */
+#ifndef EM_EXLINEFROMCHAR
+#define EM_EXLINEFROMCHAR (WM_USER + 106)
+#endif
+#ifndef EM_SETEVENTMASK
+#define EM_SETEVENTMASK (WM_USER + 69)
+#endif
+#ifndef ENM_SCROLL
+#define ENM_SCROLL 0x0004
+#endif
+/* Background colour band for fenced code (RichEdit 2.0+ only). */
+#ifndef CFM_BACKCOLOR
+#define CFM_BACKCOLOR 0x04000000
+#endif
+
+/* DM_SETDEFID: Win9x's dialog manager honours it, MinGW and the Watcom
+ * headers both carry it; keep the guard for old headers. */
+#ifndef DM_SETDEFID
+#define DM_SETDEFID (WM_USER + 1)
+#endif
+
 #define A98_CLASS_NAME "Agent98Window"
 
 #define RICH_CLASS20 "RichEdit20A"
@@ -75,6 +98,23 @@
 
 /* Timer used for the retro spinner in the status bar. */
 #define IDT_SPINNER 1
+/* Forced-destroy timer: while closing, WM_CLOSE only arms this timer so a
+ * hung worker can still never leave the user with an unclosable window. */
+#define IDT_FORCE_DESTROY 2
+/* Coalesces streamed deltas: queued text is flushed to the transcript at
+ * this interval instead of once per network chunk. */
+#define IDT_EVENT_FLUSH 3
+#define A98_EVENT_FLUSH_MS 80
+
+/* Once the transcript grows past the soft cap the oldest lines are dropped
+ * (the full history lives in the session .json).  On a 9x box with 64 MB of
+ * RAM a multi-megabyte RichEdit buffer gets painful fast. */
+#define A98_TRANSCRIPT_MAX_LINES 4000
+
+/* How long WM_DESTROY / WinMain wait for the worker before abandoning it. */
+#define A98_WORKER_WAIT_MS 3000
+/* Grace period between "Stop it and exit?" consent and the forced destroy. */
+#define A98_CLOSE_GRACE_MS 10000
 
 #define A98_MAX_SESSIONS 64
 #define A98_MAX_HISTORY  64
@@ -90,6 +130,11 @@
 #define COL_RESULT RGB(0, 120, 0)
 #define COL_ERROR  RGB(200, 0, 0)
 #define COL_AI     RGB(0, 0, 0)
+/* Markdown: fenced code blocks get a grey background band, inline code a
+ * muted magenta, bold text keeps black but bold. */
+#define COL_CODE_BG RGB(228, 228, 228)
+#define COL_CODE_FG RGB(30, 30, 30)
+#define COL_INLINE  RGB(150, 0, 150)
 
 typedef struct {
     int type;
@@ -129,6 +174,9 @@ typedef struct {
     HINSTANCE rich_dll;
     char mono_face[LF_FACESIZE];
     BYTE mono_charset;
+    int line_h;             /* transcript line height in pixels */
+    int stick_bottom;       /* auto-scroll: 1 while the view is pinned at
+                             * the bottom, 0 once the user scrolled up */
 
     Config cfg;
     char ini_path[A98_MAX_PATH];
@@ -141,7 +189,11 @@ typedef struct {
 
     HANDLE thread;
     DWORD thread_id;
+    HANDLE shutdown_event;      /* set on WM_DESTROY so gui_confirm unblocks */
+    HANDLE single_mutex;        /* #11 one instance at a time */
+    int leaked_worker;          /* worker did not stop: skip all teardown */
     char *pending_input;
+    char *last_input;           /* most recent sent message, for Ctrl+R */
     volatile int cancel;
     volatile int running;
     int closing;
@@ -153,6 +205,15 @@ typedef struct {
     char *input_history[A98_MAX_HISTORY];
     int input_history_count;
     int input_history_pos;
+
+    /* Streamed deltas are buffered and flushed on IDT_EVENT_FLUSH so a fast
+     * model does not flood the 9x message queue with one message per chunk. */
+    Str ev_text_buf;
+
+    /* Markdown rendering state.  A trailing line without its newline is kept
+     * back so a token split across two deltas is never half-rendered. */
+    Str md_pending;
+    int md_in_code;
 } App;
 
 static App g_app;
@@ -160,6 +221,12 @@ static WNDPROC g_input_oldproc;
 static App *g_dlg_app;
 static const char *g_confirm_tool;
 static const char *g_confirm_args;
+
+/* Scratch state for the generic single-line input dialog. */
+static char g_inputline_title[96];
+static char g_inputline_label[128];
+static char g_inputline_result[A98_MAX_PATH];
+static int g_inputline_ok;
 
 typedef struct {
     const char *name;
@@ -182,6 +249,10 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
+static INT_PTR CALLBACK firstrun_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
+static INT_PTR CALLBACK inputline_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
+static int input_line_box(HWND parent, const char *title, const char *label,
+                          const char *initial, char *out, size_t cap);
 static DWORD WINAPI worker_proc(void *param);
 /* ------------------------------------------------------------------ */
 /* Small helpers                                                       */
@@ -255,12 +326,13 @@ static void center_window(HWND hwnd)
                w, h, FALSE);
 }
 
-static void msgbox_utf8(HWND owner, const char *utf8, UINT flags)
+static int msgbox_utf8(HWND owner, const char *utf8, UINT flags)
 {
     char *acp = a98_utf8_to_acp(utf8 ? utf8 : "");
+    int rc = MessageBoxA(owner, acp != NULL ? acp : "", "Agent98", flags);
 
-    MessageBoxA(owner, acp != NULL ? acp : "", "Agent98", flags);
     a98_free(acp);
+    return rc;
 }
 
 static char *window_text_utf8(HWND h)
@@ -323,7 +395,7 @@ static char *absolute_path_utf8(const char *utf8)
 /* ------------------------------------------------------------------ */
 
 static void transcript_apply_format(App *app, LONG start, LONG end,
-                                    COLORREF color, int bold)
+                                    COLORREF color, int bold, COLORREF back)
 {
     CHARRANGE cr;
 
@@ -344,6 +416,12 @@ static void transcript_apply_format(App *app, LONG start, LONG end,
         memset(&cf, 0, sizeof(cf));
         cf.cbSize = sizeof(cf);
         cf.dwMask = CFM_COLOR | CFM_BOLD | CFM_FACE | CFM_CHARSET;
+        if (back != 0) {
+            /* RichEdit 2.0 paints a background band; RichEdit 1.0 has no
+             * CFM_BACKCOLOR and falls back to the colour-only variant. */
+            cf.dwMask |= CFM_BACKCOLOR;
+            cf.crBackColor = back;
+        }
         cf.dwEffects = bold ? CFE_BOLD : 0;
         cf.crTextColor = color;
         cf.bCharSet = app->mono_charset;
@@ -356,7 +434,12 @@ static void transcript_apply_format(App *app, LONG start, LONG end,
         cf.cbSize = sizeof(cf);
         cf.dwMask = CFM_COLOR | CFM_BOLD | CFM_FACE | CFM_CHARSET;
         cf.dwEffects = bold ? CFE_BOLD : 0;
-        cf.crTextColor = color;
+        if (back != 0 && color == COL_AI) {
+            /* Stand-in for the background band on RichEdit 1.0. */
+            cf.crTextColor = COL_CODE_FG;
+        } else {
+            cf.crTextColor = color;
+        }
         cf.bCharSet = app->mono_charset;
         copy_str(cf.szFaceName, sizeof(cf.szFaceName), app->mono_face);
         SendMessageA(app->transcript, EM_SETCHARFORMAT, SCF_SELECTION,
@@ -364,10 +447,54 @@ static void transcript_apply_format(App *app, LONG start, LONG end,
     }
 }
 
+/* True while the last visible line is the final line of the buffer, i.e.
+ * the view is pinned to the bottom.  Used to stop the auto-scroll from
+ * yanking the view back down while the user reads older output. */
+static int transcript_at_bottom(App *app)
+{
+    HWND t;
+    RECT rc;
+    int total;
+    int first;
+    int vis;
+
+    if (app == NULL || app->transcript == NULL || app->line_h <= 0) {
+        return 1;
+    }
+    t = app->transcript;
+    GetClientRect(t, &rc);
+    vis = (rc.bottom - rc.top) / app->line_h;
+    total = (int)SendMessageA(t, EM_GETLINECOUNT, 0, 0);
+    if (app->rich == 0) {
+        /* EDIT reports a line index directly. */
+        first = (int)SendMessageA(t, EM_GETFIRSTVISIBLELINE, 0, 0);
+    } else {
+        /* RichEdit reports the first visible *character*; map it back. */
+        LONG fc = (LONG)SendMessageA(t, EM_GETFIRSTVISIBLELINE, 0, 0);
+        first = (int)SendMessageA(t, EM_EXLINEFROMCHAR, 0, fc);
+        if (first < 0) {
+            first = 0;
+        }
+    }
+    return first + vis >= total;
+}
+
+/* Only follow the tail while the user has not scrolled away from it. */
+static void transcript_scroll_after_append(App *app)
+{
+    if (app == NULL || app->transcript == NULL) {
+        return;
+    }
+    if (app->stick_bottom) {
+        SendMessageA(app->transcript, EM_SCROLLCARET, 0, 0);
+    }
+}
+
 /* Append UTF-8 text, normalising LF to CRLF, and give the inserted range a
  * character format.  On plain EDIT controls the text is appended uncoloured. */
-static void transcript_append_colored(App *app, const char *utf8,
-                                      COLORREF color, int bold)
+static void transcript_append_colored_bg(App *app, const char *utf8,
+                                         COLORREF color, int bold,
+                                         COLORREF back)
 {
     Str s;
     size_t i;
@@ -400,7 +527,7 @@ static void transcript_append_colored(App *app, const char *utf8,
         SendMessageA(app->transcript, EM_SETSEL, (WPARAM)len, (LPARAM)len);
         SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE,
                      (LPARAM)acp);
-        SendMessageA(app->transcript, EM_SCROLLCARET, 0, 0);
+        transcript_scroll_after_append(app);
         a98_free(acp);
         return;
     }
@@ -420,26 +547,32 @@ static void transcript_append_colored(App *app, const char *utf8,
          * character of a DBCS run keep the previous run's ANSI charset, so
          * GDI substitutes a font that has no Chinese glyphs and only that
          * first character comes out as a box. */
-        transcript_apply_format(app, start, start, color, bold);
+        transcript_apply_format(app, start, start, color, bold, 0);
 
         SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE,
                      (LPARAM)acp);
         SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
         end = cr.cpMax;
 
-        transcript_apply_format(app, start, end, color, bold);
+        transcript_apply_format(app, start, end, color, bold, 0);
 
         cr.cpMin = end;
         cr.cpMax = end;
         SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
-        SendMessageA(app->transcript, EM_SCROLLCARET, 0, 0);
+        transcript_scroll_after_append(app);
     }
     a98_free(acp);
 }
 
+static void transcript_append_colored(App *app, const char *utf8,
+                                      COLORREF color, int bold)
+{
+    transcript_append_colored_bg(app, utf8, color, bold, 0);
+}
+
 static void transcript_append(App *app, const char *utf8)
 {
-    transcript_append_colored(app, utf8, COL_AI, 0);
+    transcript_append_colored_bg(app, utf8, COL_AI, 0, 0);
 }
 
 static void transcript_line_colored(App *app, const char *prefix,
@@ -457,6 +590,210 @@ static void transcript_line_colored(App *app, const char *prefix,
 static void transcript_line(App *app, const char *prefix, const char *text)
 {
     transcript_line_colored(app, prefix, COL_AI, 0, text, COL_AI, 0);
+}
+
+/* ------------------------------------------------------------------ */
+/* Lightweight markdown colouring: fenced code blocks get a grey band,
+ * inline code magenta, **bold** bold.  Only colours change, never the
+ * text itself.  A trailing line without its newline is buffered so a
+ * token split across two stream deltas is never half-rendered.       */
+/* ------------------------------------------------------------------ */
+
+static void md_seg(App *app, const char *utf8, size_t from, size_t to,
+                   COLORREF color, int bold, COLORREF back)
+{
+    Str s;
+
+    if (to <= from) {
+        return;
+    }
+    str_init(&s);
+    str_append(&s, utf8 + from, to - from);
+    if (s.len > 0) {
+        transcript_append_colored_bg(app, str_cstr(&s), color, bold, back);
+    }
+    str_free(&s);
+}
+
+static void md_emit(App *app, const char *utf8)
+{
+    size_t i, seg;
+    const char *p;
+
+    if (app == NULL || utf8 == NULL) {
+        return;
+    }
+    p = utf8;
+    while (*p == ' ' || *p == '\t') {
+        p++;
+    }
+
+    if (app->md_in_code) {
+        if (strncmp(p, "```", 3) == 0) {
+            app->md_in_code = 0;
+            transcript_append_colored(app, utf8, COL_ROUND, 0);
+        } else {
+            transcript_append_colored_bg(app, utf8, COL_CODE_FG, 0,
+                                         COL_CODE_BG);
+        }
+        return;
+    }
+    if (strncmp(p, "```", 3) == 0) {
+        app->md_in_code = 1;
+        transcript_append_colored(app, utf8, COL_ROUND, 0);
+        return;
+    }
+
+    seg = 0;
+    i = 0;
+    while (utf8[i] != '\0') {
+        if (utf8[i] == '`') {
+            size_t j = i + 1;
+            while (utf8[j] != '\0' && utf8[j] != '`') {
+                j++;
+            }
+            if (utf8[j] == '`' && j > i + 1) {
+                md_seg(app, utf8, seg, i, COL_AI, 0, 0);
+                md_seg(app, utf8, i + 1, j, COL_INLINE, 0, 0);
+                i = j + 1;
+                seg = i;
+                continue;
+            }
+            i = j;
+            continue;
+        }
+        if (utf8[i] == '*' && utf8[i + 1] == '*') {
+            size_t j = i + 2;
+            while (utf8[j] != '\0' &&
+                   !(utf8[j] == '*' && utf8[j + 1] == '*')) {
+                j++;
+            }
+            if (utf8[j] == '*' && j > i + 2) {
+                md_seg(app, utf8, seg, i, COL_AI, 0, 0);
+                md_seg(app, utf8, i + 2, j, COL_AI, 1, 0);
+                i = j + 2;
+                seg = i;
+                continue;
+            }
+            i += 2;
+            continue;
+        }
+        i++;
+    }
+    md_seg(app, utf8, seg, strlen(utf8), COL_AI, 0, 0);
+}
+
+static void transcript_md_append(App *app, const char *utf8)
+{
+    Str all;
+    const char *p;
+    size_t len, i, start = 0;
+
+    if (app == NULL) {
+        return;
+    }
+    str_init(&all);
+    str_append_cstr(&all, str_cstr(&app->md_pending));
+    str_clear(&app->md_pending);
+    str_append_cstr(&all, utf8 != NULL ? utf8 : "");
+    p = str_cstr(&all);
+    len = all.len;
+
+    for (i = 0; i < len; i++) {
+        if (p[i] != '\n') {
+            continue;
+        }
+        {
+            Str line;
+            size_t k;
+
+            str_init(&line);
+            for (k = start; k < i; k++) {
+                if (p[k] != '\r') {
+                    str_append_char(&line, p[k]);
+                }
+            }
+            md_emit(app, str_cstr(&line));
+            str_free(&line);
+        }
+        start = i + 1;
+    }
+    if (start < len) {
+        str_append(&app->md_pending, p + start, len - start);
+    }
+    str_free(&all);
+}
+
+/* Show any half-received line (session end, save, export).  drop=1 throws
+ * the buffered fragment away instead (new/load, where history is redrawn). */
+static void md_reset(App *app, int flush)
+{
+    if (app == NULL) {
+        return;
+    }
+    if (flush && app->md_pending.len > 0) {
+        md_emit(app, str_cstr(&app->md_pending));
+        str_clear(&app->md_pending);
+    }
+    app->md_in_code = 0;
+}
+
+/* Drop the oldest lines once the buffer outgrows the soft cap: on a 9x
+ * machine a multi-megabyte RichEdit buffer slows every append down.  The
+ * complete history remains available in the session .json file. */
+static void transcript_trim(App *app)
+{
+    int total;
+    LONG cut;
+    CHARRANGE cr;
+
+    if (app == NULL || app->transcript == NULL || app->rich == 0) {
+        return;
+    }
+    total = (int)SendMessageA(app->transcript, EM_GETLINECOUNT, 0, 0);
+    if (total <= A98_TRANSCRIPT_MAX_LINES) {
+        return;
+    }
+    cut = (LONG)SendMessageA(app->transcript, EM_LINEINDEX,
+                             (WPARAM)(A98_TRANSCRIPT_MAX_LINES / 2), 0);
+    if (cut <= 0) {
+        return;
+    }
+    cr.cpMin = 0;
+    cr.cpMax = cut;
+    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
+    SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"");
+    /* A fenced block may have been cut in half; never leave the renderer
+     * stuck in code mode, and drop the half line too. */
+    app->md_in_code = 0;
+    str_clear(&app->md_pending);
+    /* Fold the caret back onto the (new) end of the buffer. */
+    SendMessageA(app->transcript, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
+    SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
+    cr.cpMin = cr.cpMax;
+    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
+    transcript_line_colored(app, "\r\n[info] ", COL_ROUND, 0,
+                            "older lines were trimmed to save memory; the "
+                            "full history stays in the session file",
+                            COL_ROUND, 0);
+}
+
+/* Paint everything buffered so far: the coalesced stream deltas go through
+ * the markdown renderer, then the transcript is trimmed.  A trailing line
+ * without its newline stays buffered until the next delta completes it. */
+static void event_flush(App *app)
+{
+    if (app == NULL) {
+        return;
+    }
+    if (app->hwnd != NULL) {
+        KillTimer(app->hwnd, IDT_EVENT_FLUSH);
+    }
+    if (app->ev_text_buf.len > 0) {
+        transcript_md_append(app, str_cstr(&app->ev_text_buf));
+        str_clear(&app->ev_text_buf);
+        transcript_trim(app);
+    }
 }
 
 static void transcript_set_default_format(App *app)
@@ -502,6 +839,9 @@ static void transcript_clear(App *app)
     if (app != NULL && app->transcript != NULL) {
         SetWindowTextA(app->transcript, "");
         transcript_set_default_format(app);
+        app->md_in_code = 0;
+        str_clear(&app->md_pending);
+        app->stick_bottom = 1;
     }
 }
 
@@ -614,6 +954,7 @@ static char *path_to_utf8(const char *s)
 static void status_update(App *app)
 {
     char buf[512];
+    char tail[64];
     char *acp;
     static const char spin[] = "|/-\\";
     char c;
@@ -633,9 +974,21 @@ static void status_update(App *app)
     SendMessageA(app->statusbar, SB_SETTEXT, 0, (LPARAM)(acp != NULL ? acp : ""));
     a98_free(acp);
 
+    /* Conversation scale: the current round and how much text the view
+     * holds.  A rough cue for "this session is getting long" long before
+     * the context window fills up. */
+    if (app->round_no > 0) {
+        int kb = GetWindowTextLengthA(app->transcript);
+        snprintf(tail, sizeof(tail), "Round %d  -  %d.%d k chars",
+                 app->round_no, kb / 1024, (kb % 1024) * 10 / 1024);
+    } else {
+        copy_str(tail, sizeof(tail), "Round 0");
+    }
+    SendMessageA(app->statusbar, SB_SETTEXT, 1, (LPARAM)tail);
+
     acp = path_to_acp(app->cfg.workspace);
     snprintf(buf, sizeof(buf), "Workspace: %s", acp != NULL ? acp : "");
-    SendMessageA(app->statusbar, SB_SETTEXT, 1, (LPARAM)buf);
+    SendMessageA(app->statusbar, SB_SETTEXT, 2, (LPARAM)buf);
     a98_free(acp);
 }
 
@@ -797,9 +1150,13 @@ static void session_scan(App *app)
                            ".json") == 0) {
             app->sessions[app->session_count].name[len - 5] = '\0';
         }
-        a98_path_join(app->sessions[app->session_count].path,
-                      sizeof(app->sessions[app->session_count].path),
-                      app->sessions_dir, fd.cFileName);
+        if (a98_path_join(app->sessions[app->session_count].path,
+                          sizeof(app->sessions[app->session_count].path),
+                          app->sessions_dir, fd.cFileName) != 0) {
+            /* A failed join would put an empty path into the list; selecting
+             * that entry would be a no-op or worse.  Skip the file. */
+            continue;
+        }
         app->session_count++;
     } while (FindNextFileA(h, &fd));
     FindClose(h);
@@ -941,6 +1298,13 @@ static int build_session_path(App *app)
                 break;
             }
         }
+        if (a98_path_exists(candidate)) {
+            /* Every numbered name is taken.  Returning the last candidate
+             * would silently overwrite an older session file; refuse
+             * instead so auto-save just skips this round. */
+            log_warn("auto-save: no free session name for %s", stamp);
+            return -1;
+        }
     }
     copy_str(app->session_path, sizeof(app->session_path), candidate);
     return 0;
@@ -1022,10 +1386,34 @@ static int gui_confirm(void *ctx, const char *tool, const char *args_json)
     }
     /* The UI thread keeps using `req` (a stack frame of this thread) and
      * req.args until it signals this event, so the wait must never be
-     * abandoned early: doing so let a modal dialog read freed memory and set
-     * an event on a closed handle.  Cancellation is handled before the dialog
-     * is shown (see A98_WM_CONFIRM) and immediately after it closes. */
-    WaitForSingleObject(req.event, INFINITE);
+     * abandoned while the window is alive.  But the wait may not be infinite:
+     * only the UI thread can signal the event, and it stops pumping messages
+     * during WM_DESTROY -- a plain INFINITE wait there hung the worker forever
+     * and turned the 3 s teardown timeout into a deadlock.  The shutdown event
+     * is set first in WM_DESTROY, so a confirm that will never be dispatched
+     * (window gone) wakes up here and is denied. */
+    {
+        HANDLE waits[2];
+        DWORD w;
+
+        waits[0] = req.event;
+        waits[1] = app->shutdown_event;
+        for (;;) {
+            w = WaitForMultipleObjects(2, waits, FALSE, INFINITE);
+            if (w == WAIT_OBJECT_0) {
+                break;              /* answered by the UI thread */
+            }
+            if (w == WAIT_OBJECT_0 + 1) {
+                req.result = 0;     /* teardown: deny and move on */
+                break;
+            }
+            /* WAIT_FAILED (event handle lost) or an unexpected code: deny
+             * rather than hang.  The UI thread can no longer be inside the
+             * dialog here -- it shares this thread's view of app->cancel. */
+            req.result = 0;
+            break;
+        }
+    }
     CloseHandle(req.event);
     a98_free(req.args);
     return req.result;
@@ -1055,11 +1443,62 @@ static DWORD WINAPI worker_proc(void *param)
 /* Commands                                                            */
 /* ------------------------------------------------------------------ */
 
+/* Shared tail of do_send / do_resend: display the message, remember it for
+ * Ctrl+R, then start the worker thread.  `text` is owned by the caller. */
+static void start_request(App *app, const char *text)
+{
+    DWORD tid;
+
+    transcript_append(app, "\r\n");
+    transcript_line_colored(app, "You: ", COL_YOU, 1, text, COL_AI, 0);
+    transcript_append(app, "\r\n");
+
+    a98_free(app->last_input);
+    app->last_input = a98_strdup(text);
+
+    app->pending_input = a98_strdup(text);
+    if (app->pending_input == NULL) {
+        msgbox_utf8(app->hwnd, "Out of memory.", MB_OK | MB_ICONERROR);
+        return;
+    }
+    app->cancel = 0;
+    app->closing = 0;
+    app->round_no = 0;
+    app->spin_frame = 0;
+    set_running(app, 1);
+    status_set(app, "Connecting...");
+
+#ifdef __WATCOMC__
+    {
+        unsigned crt_tid = 0;
+        unsigned long h = _beginthreadex(NULL, 0,
+                                         (unsigned (__stdcall *)(void *))
+                                         worker_proc,
+                                         app, 0, &crt_tid);
+        app->thread = (HANDLE)h;
+        tid = (DWORD)crt_tid;
+    }
+#else
+    app->thread = CreateThread(NULL, 0, worker_proc, app, 0, &tid);
+#endif
+    if (app->thread == NULL) {
+        char buf[128];
+        snprintf(buf, sizeof(buf), "Cannot start the worker thread (error %lu).",
+                 (unsigned long)GetLastError());
+        a98_free(app->pending_input);
+        app->pending_input = NULL;
+        set_running(app, 0);
+        update_status(app);
+        msgbox_utf8(app->hwnd, buf, MB_OK | MB_ICONERROR);
+        return;
+    }
+    app->thread_id = tid;
+}
+
 static void do_send(App *app)
 {
     char *text;
     char *trimmed;
-    DWORD tid;
 
     if (app == NULL || app->running) {
         return;
@@ -1103,43 +1542,30 @@ static void do_send(App *app)
     input_history_add(app, text);
     SetWindowTextA(app->input, "");
     app->input_history_pos = app->input_history_count;
-    transcript_append(app, "\r\n");
-    transcript_line_colored(app, "You: ", COL_YOU, 1, text, COL_AI, 0);
-    transcript_append(app, "\r\n");
+    start_request(app, text);
+    a98_free(text);
+}
 
-    app->pending_input = text;
-    app->cancel = 0;
-    app->closing = 0;
-    app->round_no = 0;
-    app->spin_frame = 0;
-    set_running(app, 1);
-    status_set(app, "Connecting...");
-
-#ifdef __WATCOMC__
-    {
-        unsigned crt_tid = 0;
-        unsigned long h = _beginthreadex(NULL, 0,
-                                         (unsigned (__stdcall *)(void *))
-                                         worker_proc,
-                                         app, 0, &crt_tid);
-        app->thread = (HANDLE)h;
-        tid = (DWORD)crt_tid;
-    }
-#else
-    app->thread = CreateThread(NULL, 0, worker_proc, app, 0, &tid);
-#endif
-    if (app->thread == NULL) {
-        char buf[128];
-        snprintf(buf, sizeof(buf), "Cannot start the worker thread (error %lu).",
-                 (unsigned long)GetLastError());
-        a98_free(app->pending_input);
-        app->pending_input = NULL;
-        set_running(app, 0);
-        update_status(app);
-        msgbox_utf8(app->hwnd, buf, MB_OK | MB_ICONERROR);
+/* Ctrl+R / File > Resend last message. */
+static void do_resend(App *app)
+{
+    if (app == NULL || app->running) {
         return;
     }
-    app->thread_id = tid;
+    if (app->last_input == NULL || app->last_input[0] == '\0') {
+        msgbox_utf8(app->hwnd,
+                    "Nothing to resend yet: send a message first.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    if (app->cfg.api_key[0] == '\0') {
+        msgbox_utf8(app->hwnd,
+                    "No API key is configured.\n\n"
+                    "Open Tools > Settings and enter one.",
+                    MB_OK | MB_ICONWARNING);
+        return;
+    }
+    start_request(app, app->last_input);
 }
 
 static void do_stop(App *app)
@@ -1204,6 +1630,7 @@ static void do_save(App *app)
     char path[A98_MAX_PATH];
     char err[512];
 
+    md_reset(app, 1);
     if (app->running) {
         msgbox_utf8(app->hwnd, "Stop the current request first.",
                     MB_OK | MB_ICONINFORMATION);
@@ -1237,6 +1664,7 @@ static void do_load(App *app)
     char path[A98_MAX_PATH];
     char err[512];
 
+    md_reset(app, 1);
     if (app->running) {
         msgbox_utf8(app->hwnd, "Stop the current request first.",
                     MB_OK | MB_ICONINFORMATION);
@@ -1271,6 +1699,7 @@ static void do_session_select(App *app, int idx)
     char err[512];
     char *u;
 
+    md_reset(app, 1);
     if (app == NULL) {
         return;
     }
@@ -1308,6 +1737,143 @@ static void do_session_select(App *app, int idx)
     }
 }
 
+/* ------------------------------------------------------------------ */
+/* Session maintenance: rename / delete the current .json              */
+/* ------------------------------------------------------------------ */
+
+static int name_has_bad_chars(const char *s)
+{
+    size_t i;
+
+    for (i = 0; s[i] != '\0'; i++) {
+        switch (s[i]) {
+        case '\\': case '/': case ':': case '*': case '?': case '"':
+        case '<': case '>': case '|':
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static void do_session_rename(App *app)
+{
+    char name[80];
+    char newname[80];
+    char newpath[A98_MAX_PATH];
+    const char *fn;
+    DWORD attrs;
+
+    md_reset(app, 1);
+    if (app == NULL) {
+        return;
+    }
+    if (app->running) {
+        msgbox_utf8(app->hwnd, "Stop the current request first.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    if (app->session_path[0] == '\0') {
+        msgbox_utf8(app->hwnd,
+                    "No session file to rename yet.\n\n"
+                    "Send a message first (it auto-saves), or use "
+                    "File > Save session.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    /* Suggest the current file name, e.g. 20261115_1510_summary.json. */
+    fn = strrchr(app->session_path, '\\');
+    fn = (fn != NULL) ? fn + 1 : app->session_path;
+    copy_str(name, sizeof(name), fn);
+    if (!input_line_box(app->hwnd, "Rename session",
+                        "New file name:", name,
+                        newname, sizeof(newname))) {
+        return;
+    }
+    {
+        size_t n = strlen(newname);
+        while (n > 0 && (newname[n - 1] == ' ' || newname[n - 1] == '\t')) {
+            newname[--n] = '\0';
+        }
+    }
+    if (newname[0] == '\0') {
+        return;
+    }
+    if (name_has_bad_chars(newname)) {
+        msgbox_utf8(app->hwnd,
+                    "The name contains characters that are not allowed "
+                    "in file names (\\ / : * ? \" < > |).",
+                    MB_OK | MB_ICONWARNING);
+        return;
+    }
+    if (strlen(newname) < 5 ||
+        a98_strcasecmp(newname + strlen(newname) - 5, ".json") != 0) {
+        size_t n = strlen(newname);
+        if (n + 5 >= sizeof(newname)) {
+            msgbox_utf8(app->hwnd, "The name is too long.",
+                        MB_OK | MB_ICONWARNING);
+            return;
+        }
+        strcat(newname, ".json");
+    }
+    a98_path_join(newpath, sizeof(newpath), app->sessions_dir, newname);
+    attrs = GetFileAttributesA(newpath);
+    if (attrs != INVALID_FILE_ATTRIBUTES) {
+        msgbox_utf8(app->hwnd, "A session with that name already exists.",
+                    MB_OK | MB_ICONWARNING);
+        return;
+    }
+    if (!MoveFileA(app->session_path, newpath)) {
+        char msg[512];
+        snprintf(msg, sizeof(msg),
+                 "Cannot rename the file (error %lu).",
+                 (unsigned long)GetLastError());
+        msgbox_utf8(app->hwnd, msg, MB_OK | MB_ICONERROR);
+        return;
+    }
+    copy_str(app->session_path, sizeof(app->session_path), newpath);
+    session_scan(app);
+    session_combo_fill(app, app->session_path);
+    status_set(app, "Session renamed");
+}
+
+static void do_session_delete(App *app)
+{
+    char msg[600];
+    char *u;
+
+    md_reset(app, 1);
+    if (app == NULL) {
+        return;
+    }
+    if (app->running) {
+        msgbox_utf8(app->hwnd, "Stop the current request first.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    if (app->session_path[0] == '\0') {
+        msgbox_utf8(app->hwnd,
+                    "No session file to delete yet.\n\n"
+                    "The file only appears once a message has been sent "
+                    "(auto-save) or after File > Save session.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    u = a98_acp_to_utf8(app->session_path);
+    snprintf(msg, sizeof(msg), "Delete this session file?\n\n%s",
+             u != NULL ? u : app->session_path);
+    a98_free(u);
+    if (msgbox_utf8(app->hwnd, msg,
+                    MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2) != IDYES) {
+        return;
+    }
+    DeleteFileA(app->session_path);
+    /* The in-memory conversation stays; only the file is gone. */
+    app->session_path[0] = '\0';
+    session_scan(app);
+    session_combo_fill(app, NULL);
+    status_set(app, "Session deleted");
+}
+
 static void do_export(App *app)
 {
     OPENFILENAMEA ofn;
@@ -1319,6 +1885,7 @@ static void do_export(App *app)
     Str s;
     size_t i;
 
+    md_reset(app, 1);
     if (app == NULL) {
         return;
     }
@@ -1599,7 +2166,13 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         dlg_set_utf8(dlg, IDC_EXTRA_HEADERS, app->cfg.extra_headers);
         sprintf(tmp, "%.2f", app->cfg.temperature);
         SetDlgItemTextA(dlg, IDC_TEMPERATURE, tmp);
-        dlg_set_utf8(dlg, IDC_WORKSPACE, app->cfg.workspace);
+        /* cfg.workspace may be raw ACP when it came from the INI; show it in
+         * UTF-8 like every other dialog string. */
+        {
+            char *u = path_to_utf8(app->cfg.workspace);
+            dlg_set_utf8(dlg, IDC_WORKSPACE, u != NULL ? u : "");
+            a98_free(u);
+        }
         SetDlgItemInt(dlg, IDC_MAX_STEPS, (UINT)app->cfg.max_steps, FALSE);
         SetDlgItemInt(dlg, IDC_MAX_TOKENS, (UINT)app->cfg.max_tokens, FALSE);
         CheckDlgButton(dlg, IDC_TLS_VERIFY,
@@ -1706,6 +2279,21 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                      headers);
             copy_str(app->cfg.workspace, sizeof(app->cfg.workspace),
                      workspace);
+            /* cfg.workspace stays UTF-8 (INI + dialog), but everything the
+             * ANSI file APIs touch must be ACP: CreateDirectoryA,
+             * GetFullPathNameA, the sandbox prefix checks and the run_command
+             * workdir all consume agent.workspace verbatim.  A UTF-8 string
+             * typed on a CJK code page used to create a mojibake directory
+             * and poisoned the sandbox root comparison with it. */
+            {
+                char *ws_acp = path_to_acp(workspace);
+                if (ws_acp != NULL) {
+                    copy_str(app->agent.workspace,
+                             sizeof(app->agent.workspace), ws_acp);
+                    a98_path_mkdirs(ws_acp);
+                    a98_free(ws_acp);
+                }
+            }
             t = temp[0] != '\0' ? atof(temp) : app->cfg.temperature;
             if (t < 0.0) {
                 t = 0.0;
@@ -1737,9 +2325,6 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             app->cfg.stream =
                 IsDlgButtonChecked(dlg, IDC_STREAM) == BST_CHECKED;
 
-            copy_str(app->agent.workspace, sizeof(app->agent.workspace),
-                     app->cfg.workspace);
-            a98_path_mkdirs(app->cfg.workspace);
             if (config_save(&app->cfg, app->ini_path) != 0) {
                 msgbox_utf8(dlg, "Settings could not be saved to the INI file.",
                             MB_OK | MB_ICONWARNING);
@@ -1790,12 +2375,16 @@ static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             center_window(dlg);
             if (danger >= 2) {
                 /* Destructive tools default to Deny: Cancel becomes the
-                 * default button.  Return TRUE so the dialog manager keeps
-                 * this focus instead of resetting it to the first control. */
+                 * default button.  BM_SETSTYLE alone is unreliable on Win9x --
+                 * the dialog manager keeps its own default id, so also tell it
+                 * explicitly with DM_SETDEFID or Enter could still trigger
+                 * "Allow".  Return TRUE so the dialog manager keeps this
+                 * focus instead of resetting it to the first control. */
                 SendMessageA(GetDlgItem(dlg, IDCANCEL), BM_SETSTYLE,
                              (WPARAM)BS_DEFPUSHBUTTON, TRUE);
                 SendMessageA(GetDlgItem(dlg, IDOK), BM_SETSTYLE,
                              (WPARAM)BS_PUSHBUTTON, TRUE);
+                SendMessageA(dlg, DM_SETDEFID, IDCANCEL, 0);
                 SetFocus(GetDlgItem(dlg, IDCANCEL));
             } else {
                 SetFocus(GetDlgItem(dlg, IDOK));
@@ -1847,6 +2436,176 @@ static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 }
 
 /* ------------------------------------------------------------------ */
+/* First-run wizard: shown when no API key is configured yet.  "Later"
+ * keeps the previous behaviour (an empty config, prompted at send).   */
+/* ------------------------------------------------------------------ */
+
+static INT_PTR CALLBACK firstrun_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+    App *app = g_dlg_app;
+
+    (void)lp;
+    switch (msg) {
+    case WM_INITDIALOG: {
+        int i;
+
+        if (app == NULL) {
+            EndDialog(dlg, IDCANCEL);
+            return TRUE;
+        }
+        for (i = 0; i < PRESET_COUNT; i++) {
+            SendDlgItemMessageA(dlg, IDC_PROVIDER, CB_ADDSTRING, 0,
+                                (LPARAM)g_presets[i].name);
+        }
+        SendDlgItemMessageA(dlg, IDC_PROVIDER, CB_SETCURSEL,
+                            (WPARAM)preset_from_base(app->cfg.api_base), 0);
+        dlg_set_utf8(dlg, IDC_API_BASE, app->cfg.api_base);
+        dlg_set_utf8(dlg, IDC_MODEL, app->cfg.model);
+        CheckDlgButton(dlg, IDC_STREAM,
+                       app->cfg.stream ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_ALLOW_SHELL, BST_UNCHECKED);
+        center_window(dlg);
+        return TRUE;
+    }
+
+    case WM_COMMAND:
+        switch (LOWORD(wp)) {
+        case IDC_PROVIDER:
+            if (HIWORD(wp) == CBN_SELCHANGE) {
+                int idx = (int)SendDlgItemMessageA(dlg, IDC_PROVIDER,
+                                                   CB_GETCURSEL, 0, 0);
+                if (idx >= 0 && idx < PRESET_COUNT - 1) {
+                    dlg_set_utf8(dlg, IDC_API_BASE, g_presets[idx].base);
+                    dlg_set_utf8(dlg, IDC_MODEL, g_presets[idx].model);
+                }
+            }
+            return TRUE;
+        case IDOK: {
+            char *base = dlg_text_utf8(dlg, IDC_API_BASE);
+            char *key = dlg_text_utf8(dlg, IDC_API_KEY);
+            char *model = dlg_text_utf8(dlg, IDC_MODEL);
+
+            if (base == NULL || key == NULL || model == NULL) {
+                a98_free(base);
+                a98_free(key);
+                a98_free(model);
+                msgbox_utf8(dlg, "Out of memory.", MB_OK | MB_ICONERROR);
+                return TRUE;
+            }
+            config_trim(base);
+            config_trim(key);
+            config_trim(model);
+            if (base[0] == '\0' || model[0] == '\0') {
+                msgbox_utf8(dlg,
+                            "Both the API base and a model are required.",
+                            MB_OK | MB_ICONWARNING);
+                a98_free(base);
+                a98_free(key);
+                a98_free(model);
+                return TRUE;
+            }
+            copy_str(app->cfg.api_base, sizeof(app->cfg.api_base), base);
+            copy_str(app->cfg.api_key, sizeof(app->cfg.api_key), key);
+            copy_str(app->cfg.model, sizeof(app->cfg.model), model);
+            app->cfg.stream =
+                IsDlgButtonChecked(dlg, IDC_STREAM) == BST_CHECKED;
+            app->cfg.allow_shell =
+                IsDlgButtonChecked(dlg, IDC_ALLOW_SHELL) == BST_CHECKED;
+            if (config_save(&app->cfg, app->ini_path) != 0) {
+                msgbox_utf8(dlg,
+                            "Settings could not be saved to the INI file.",
+                            MB_OK | MB_ICONWARNING);
+            }
+            update_status(app);
+            a98_free(base);
+            a98_free(key);
+            a98_free(model);
+            EndDialog(dlg, IDOK);
+            return TRUE;
+        }
+        case IDCANCEL:
+            EndDialog(dlg, IDCANCEL);
+            return TRUE;
+        default:
+            break;
+        }
+        break;
+
+    case WM_CLOSE:
+        EndDialog(dlg, IDCANCEL);
+        return TRUE;
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+/* Generic single-line prompt (used by session rename).  The caller seeds
+ * g_inputline_result with the initial text and reads back the answer. */
+static INT_PTR CALLBACK inputline_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+    (void)lp;
+    switch (msg) {
+    case WM_INITDIALOG:
+        SetWindowTextA(dlg, g_inputline_title);
+        SetDlgItemTextA(dlg, IDC_INPUTLINE_LABEL, g_inputline_label);
+        SetDlgItemTextA(dlg, IDC_INPUTLINE_EDIT, g_inputline_result);
+        SendDlgItemMessageA(dlg, IDC_INPUTLINE_EDIT, EM_SETSEL,
+                            0, (LPARAM)-1);
+        center_window(dlg);
+        return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wp)) {
+        case IDOK: {
+            char *t = dlg_text_utf8(dlg, IDC_INPUTLINE_EDIT);
+            char *acp = (t != NULL) ? a98_utf8_to_acp(t) : NULL;
+
+            a98_free(t);
+            if (acp != NULL) {
+                copy_str(g_inputline_result, sizeof(g_inputline_result), acp);
+                g_inputline_ok = 1;
+            }
+            a98_free(acp);
+            EndDialog(dlg, IDOK);
+            return TRUE;
+        }
+        case IDCANCEL:
+            g_inputline_ok = 0;
+            EndDialog(dlg, IDCANCEL);
+            return TRUE;
+        default:
+            break;
+        }
+        break;
+
+    case WM_CLOSE:
+        g_inputline_ok = 0;
+        EndDialog(dlg, IDCANCEL);
+        return TRUE;
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+static int input_line_box(HWND parent, const char *title, const char *label,
+                          const char *initial, char *out, size_t cap)
+{
+    copy_str(g_inputline_title, sizeof(g_inputline_title), title);
+    copy_str(g_inputline_label, sizeof(g_inputline_label), label);
+    copy_str(g_inputline_result, sizeof(g_inputline_result), initial);
+    g_inputline_ok = 0;
+    DialogBoxParamA(g_app.hinst, MAKEINTRESOURCEA(IDD_INPUTLINE), parent,
+                    inputline_proc, 0);
+    if (!g_inputline_ok) {
+        return 0;
+    }
+    copy_str(out, cap, g_inputline_result);
+    return 1;
+}
+
+/* ------------------------------------------------------------------ */
 /* Input subclass: Enter sends, Ctrl+Enter inserts a newline           */
 /* ------------------------------------------------------------------ */
 
@@ -1886,19 +2645,21 @@ static LRESULT CALLBACK input_proc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 static void layout_status_parts(App *app)
 {
-    int edges[2];
+    int edges[3];
     RECT rc;
 
     if (app == NULL || app->statusbar == NULL) {
         return;
     }
     GetClientRect(app->statusbar, &rc);
-    edges[0] = rc.right - 260;
-    if (edges[0] < 120) {
-        edges[0] = 120;
+    /* part 0: status (flex), part 1: round/chars (fixed), part 2: workspace */
+    edges[0] = rc.right - 390;
+    if (edges[0] < 160) {
+        edges[0] = 160;
     }
-    edges[1] = -1;
-    SendMessageA(app->statusbar, SB_SETPARTS, 2, (LPARAM)edges);
+    edges[1] = edges[0] + 150;
+    edges[2] = -1;
+    SendMessageA(app->statusbar, SB_SETPARTS, 3, (LPARAM)edges);
 }
 
 static void layout(App *app)
@@ -1948,6 +2709,98 @@ static void layout(App *app)
 
     MoveWindow(app->transcript, margin, ty + top_h + 4,
                w - 2 * margin, iy - 4 - (ty + top_h + 4), TRUE);
+}
+
+/* ------------------------------------------------------------------ */
+/* Window placement persistence ([window] section of the INI)          */
+/* ------------------------------------------------------------------ */
+
+static void save_window_placement(App *app)
+{
+    WINDOWPLACEMENT wp;
+    char num[32];
+
+    if (app == NULL || app->hwnd == NULL || app->ini_path[0] == '\0') {
+        return;
+    }
+    memset(&wp, 0, sizeof(wp));
+    wp.length = sizeof(wp);
+    if (!GetWindowPlacement(app->hwnd, &wp)) {
+        return;
+    }
+    WritePrivateProfileStringA("window", "saved", "1", app->ini_path);
+    sprintf(num, "%ld", (long)wp.rcNormalPosition.left);
+    WritePrivateProfileStringA("window", "left", num, app->ini_path);
+    sprintf(num, "%ld", (long)wp.rcNormalPosition.top);
+    WritePrivateProfileStringA("window", "top", num, app->ini_path);
+    sprintf(num, "%ld",
+            (long)(wp.rcNormalPosition.right - wp.rcNormalPosition.left));
+    WritePrivateProfileStringA("window", "width", num, app->ini_path);
+    sprintf(num, "%ld",
+            (long)(wp.rcNormalPosition.bottom - wp.rcNormalPosition.top));
+    WritePrivateProfileStringA("window", "height", num, app->ini_path);
+    WritePrivateProfileStringA("window", "maximized",
+                               IsZoomed(app->hwnd) ? "1" : "0",
+                               app->ini_path);
+}
+
+/* Restore x/y/w/h/maximized from the INI.  Missing or implausible values
+ * fall back to the previous defaults; the rect is kept at least partly on
+ * the (primary) screen so a moved monitor cannot strand the window. */
+static void load_window_placement(App *app, int *x, int *y, int *w, int *h,
+                                  int *maximized)
+{
+    int cx = GetSystemMetrics(SM_CXSCREEN);
+    int cy = GetSystemMetrics(SM_CYSCREEN);
+
+    *x = CW_USEDEFAULT;
+    *y = CW_USEDEFAULT;
+    *w = 800;
+    *h = 620;
+    *maximized = 0;
+    if (app->ini_path[0] == '\0' ||
+        GetPrivateProfileIntA("window", "saved", 0, app->ini_path) == 0) {
+        return;
+    }
+    {
+        int l = (int)GetPrivateProfileIntA("window", "left", 0, app->ini_path);
+        int t = (int)GetPrivateProfileIntA("window", "top", 0, app->ini_path);
+        int rw = (int)GetPrivateProfileIntA("window", "width", 800,
+                                            app->ini_path);
+        int rh = (int)GetPrivateProfileIntA("window", "height", 620,
+                                            app->ini_path);
+
+        if (rw < 520) {
+            rw = 520;               /* matches WM_GETMINMAXINFO */
+        }
+        if (rh < 380) {
+            rh = 380;
+        }
+        if (rw > cx) {
+            rw = cx;
+        }
+        if (rh > cy) {
+            rh = cy;
+        }
+        if (l < -rw + 80) {
+            l = -rw + 80;
+        }
+        if (l > cx - 80) {
+            l = cx - 80;
+        }
+        if (t < 0) {
+            t = 0;
+        }
+        if (t > cy - 60) {
+            t = cy - 60;
+        }
+        *x = l;
+        *y = t;
+        *w = rw;
+        *h = rh;
+        *maximized =
+            GetPrivateProfileIntA("window", "maximized", 0, app->ini_path) != 0;
+    }
 }
 
 static int load_rich_edit(App *app)
@@ -2048,9 +2901,32 @@ static void create_controls(App *app, HWND hwnd)
         SendMessageA(app->transcript, EM_SETBKGNDCOLOR, 0,
                      (LPARAM)GetSysColor(COLOR_WINDOW));
     } else {
-        SendMessageA(app->transcript, EM_SETLIMITTEXT, 0, (LPARAM)0x7FFFFFFE);
+        /* EM_SETLIMITTEXT takes the limit in wParam (0 = default ~32 KiB,
+         * which truncated long conversations on machines without RichEdit). */
+        SendMessageA(app->transcript, EM_SETLIMITTEXT,
+                     (WPARAM)0x7FFFFFFE, 0);
+    }
+    /* EN_VSCROLL lets us notice when the user scrolls away from the tail;
+     * EDIT keeps it always-on. */
+    if (app->rich != 0) {
+        SendMessageA(app->transcript, EM_SETEVENTMASK, 0, ENM_SCROLL);
     }
     transcript_set_default_format(app);
+    app->stick_bottom = 1;
+
+    /* Measure the transcript line height once; mono font, so it never
+     * changes and "am I at the bottom?" needs no recalculation. */
+    if (app->transcript != NULL) {
+        HDC dc = GetDC(app->transcript);
+        HFONT old = (HFONT)SelectObject(dc, app->mono_font);
+        TEXTMETRICA tm;
+
+        if (GetTextMetricsA(dc, &tm)) {
+            app->line_h = tm.tmHeight;
+        }
+        SelectObject(dc, old);
+        ReleaseDC(app->transcript, dc);
+    }
 
     g_input_oldproc = (WNDPROC)SetWindowLongA(app->input, GWL_WNDPROC,
                                              (LONG)input_proc);
@@ -2088,6 +2964,21 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             app->spin_frame = (app->spin_frame + 1) & 3;
             status_update(app);
         }
+        if (wp == IDT_EVENT_FLUSH) {
+            /* Coalesced streamed deltas: flush whatever accumulated since
+             * the last tick. */
+            event_flush(app);
+        }
+        if (wp == IDT_FORCE_DESTROY) {
+            /* The user consented to stop-and-exit, but the worker is still
+             * running (long request with no data, or a confirm dialog the
+             * worker already abandoned).  Without this timer the only
+             * DestroyWindow path was A98_WM_DONE, leaving a "Cancelling..."
+             * window that only Task Manager could kill -- and killing the
+             * process skipped the whole close orchestration. */
+            KillTimer(hwnd, IDT_FORCE_DESTROY);
+            DestroyWindow(hwnd);
+        }
         return 0;
 
     case WM_GETMINMAXINFO:
@@ -2113,6 +3004,12 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         }
         break;
     case WM_COMMAND:
+        if (HIWORD(wp) == EN_VSCROLL && LOWORD(wp) == IDC_TRANSCRIPT) {
+            /* The user scrolled (or we scrolled back to the tail): re-pin
+             * only if the view really is at the bottom again. */
+            app->stick_bottom = transcript_at_bottom(app);
+            return 0;
+        }
         switch (LOWORD(wp)) {
         case IDC_SEND:
             do_send(app);
@@ -2123,6 +3020,32 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         case IDC_NEW:
         case IDM_NEW:
             do_new(app);
+            return 0;
+        case IDM_RESEND:
+            do_resend(app);
+            return 0;
+        case IDM_SESSION_RENAME:
+            do_session_rename(app);
+            return 0;
+        case IDM_SESSION_DELETE:
+            do_session_delete(app);
+            return 0;
+        case IDM_OPENLOG:
+            {
+                char log_path[A98_MAX_PATH];
+                HINSTANCE r;
+
+                a98_path_join(log_path, sizeof(log_path), app->exe_dir,
+                              "agent98.log");
+                r = ShellExecuteA(hwnd, "open", log_path, NULL, NULL,
+                                  SW_SHOWNORMAL);
+                if ((INT_PTR)r <= 32) {
+                    msgbox_utf8(app->hwnd,
+                                "No log file to open yet (agent98.log next "
+                                "to the executable).",
+                                MB_OK | MB_ICONINFORMATION);
+                }
+            }
             return 0;
         case IDC_SETTINGS:
         case IDM_SETTINGS:
@@ -2192,9 +3115,13 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                              "Running (Round %d, replying)", app->round_no);
                     status_update(app);
                 }
-                transcript_append(app, ev->text);
+                /* Buffer the delta; IDT_EVENT_FLUSH paints it in one go so
+                 * a fast stream does not flood the message queue. */
+                str_append_cstr(&app->ev_text_buf, ev->text);
+                SetTimer(hwnd, IDT_EVENT_FLUSH, A98_EVENT_FLUSH_MS, NULL);
                 break;
             case AGENT_EV_ROUND:
+                event_flush(app);   /* keep [round] after the text */
                 app->round_no++;
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d)", app->round_no);
@@ -2203,6 +3130,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_ROUND, 0);
                 break;
             case AGENT_EV_TOOL_START:
+                event_flush(app);
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d, tool)", app->round_no);
                 status_update(app);
@@ -2210,6 +3138,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_TOOL, 0);
                 break;
             case AGENT_EV_TOOL_RESULT:
+                event_flush(app);
                 snprintf(app->status_line, sizeof(app->status_line),
                          "Running (Round %d)", app->round_no);
                 status_update(app);
@@ -2217,10 +3146,12 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                                         ev->text, COL_RESULT, 0);
                 break;
             case AGENT_EV_INFO:
+                event_flush(app);
                 transcript_line_colored(app, "[info] ", COL_ROUND, 0,
                                         ev->text, COL_ROUND, 0);
                 break;
             default:
+                event_flush(app);
                 transcript_line(app, "", ev->text);
                 break;
             }
@@ -2234,6 +3165,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         char *err = (char *)lp;
         int ok = (int)wp;
 
+        event_flush(app);
         if (app->thread != NULL) {
             CloseHandle(app->thread);
             app->thread = NULL;
@@ -2265,6 +3197,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case A98_WM_CONFIRM: {
         ConfirmReq *req = (ConfirmReq *)lp;
         if (req != NULL) {
+            event_flush(app);
             if (app->cancel) {
                 /* Stop was pressed before the dialog appeared; deny without
                  * bothering the user. */
@@ -2272,9 +3205,12 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             } else {
                 g_confirm_tool = req->tool;
                 g_confirm_args = req->args;
-                req->result = (int)DialogBoxParamA(app->hinst,
-                                                   MAKEINTRESOURCEA(IDD_CONFIRM),
-                                                   hwnd, confirm_proc, 0);
+                /* DialogBoxParamA returns -1 when it cannot create the dialog
+                 * (resource/loading failure); anything but an explicit
+                 * IDOK-style 1 must count as "denied", never "allowed". */
+                req->result = (DialogBoxParamA(app->hinst,
+                                               MAKEINTRESOURCEA(IDD_CONFIRM),
+                                               hwnd, confirm_proc, 0) == 1);
                 g_confirm_tool = NULL;
                 g_confirm_args = NULL;
             }
@@ -2295,18 +3231,88 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             app->closing = 1;
             app->cancel = 1;
             status_set(app, "Cancelling...");
+            SetTimer(hwnd, IDT_FORCE_DESTROY, A98_CLOSE_GRACE_MS, NULL);
             return 0;
         }
         DestroyWindow(hwnd);
         return 0;
 
+    case WM_QUERYENDSESSION:
+        /* System shutdown / logoff.  No interactive prompt here: during
+         * logoff a MessageBox can hang the whole shutdown.  Just cancel the
+         * worker and let the close path run. */
+        app->closing = 1;
+        app->cancel = 1;
+        return TRUE;
+
+    case WM_ENDSESSION:
+        if (wp != 0) {
+            /* The session is really going away; without an explicit destroy
+             * the default handling would bypass our close orchestration
+             * entirely and kill the process with the worker mid-flight. */
+            if (app->running) {
+                app->closing = 1;
+                app->cancel = 1;
+            }
+            DestroyWindow(hwnd);
+        } else {
+            /* Shutdown was vetoed elsewhere; back to normal operation. */
+            app->closing = 0;
+        }
+        return 0;
+
     case WM_DESTROY:
         KillTimer(hwnd, IDT_SPINNER);
+        KillTimer(hwnd, IDT_FORCE_DESTROY);
+        KillTimer(hwnd, IDT_EVENT_FLUSH);
         app->cancel = 1;
+        save_window_placement(app);
+        str_free(&app->ev_text_buf);
+        str_free(&app->md_pending);
+        /* Wake a worker blocked in gui_confirm *before* waiting: its event
+         * can only be signalled from the UI thread, which is busy right now.
+         * The worker sees the shutdown event and denies the pending tool. */
+        if (app->shutdown_event != NULL) {
+            SetEvent(app->shutdown_event);
+        }
         if (app->thread != NULL) {
-            WaitForSingleObject(app->thread, 3000);
-            CloseHandle(app->thread);
+            /* Close orchestration: give the worker a bounded grace period.
+             * If it does not stop (stuck in an un-cancellable socket call),
+             * do NOT free agent/net/log state under its feet -- agent_free
+             * would release the message list it is traversing, net_cleanup
+             * would WSACleanup under an active recv, log_shutdown would
+             * close the FILE* and critical section it writes to.  The
+             * worker is deliberately left running and the process exit
+             * reclaims everything. */
+            if (WaitForSingleObject(app->thread, A98_WORKER_WAIT_MS) ==
+                WAIT_OBJECT_0) {
+                CloseHandle(app->thread);
+            } else {
+                app->leaked_worker = 1;
+                log_warn("worker still running at destroy; abandoning it "
+                         "without freeing shared state");
+            }
             app->thread = NULL;
+        }
+        /* Posted payloads for messages that will never be dispatched (the
+         * window is going away) are leaked unless drained here. */
+        {
+            MSG drain;
+            while (PeekMessageA(&drain, hwnd, A98_WM_EVENT, A98_WM_CONFIRM,
+                                PM_REMOVE)) {
+                if (drain.message == A98_WM_EVENT) {
+                    UiEvent *ev = (UiEvent *)drain.lParam;
+                    if (ev != NULL) {
+                        a98_free(ev->text);
+                        a98_free(ev);
+                    }
+                } else if (drain.message == A98_WM_DONE) {
+                    a98_free((char *)drain.lParam);
+                }
+                /* A98_WM_CONFIRM: req lives on the worker's stack; the
+                 * worker cleans it up itself once the shutdown event wakes
+                 * it.  Never touch it from here. */
+            }
         }
         PostQuitMessage(0);
         return 0;
@@ -2395,12 +3401,35 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     char log_path[A98_MAX_PATH];
     int rich;
     int i;
+    int win_x, win_y, win_w, win_h, win_max;
 
     (void)prev;
     (void)cmdline;
 
     memset(app, 0, sizeof(*app));
     app->hinst = hinst;
+
+    /* One instance at a time: two processes would race the INI writes and
+     * the session auto-save.  A second launch just raises the first one. */
+    app->single_mutex = CreateMutexA(NULL, FALSE, "Agent98SingleInstance");
+    if (app->single_mutex == NULL ||
+        GetLastError() == ERROR_ALREADY_EXISTS) {
+        HWND prevwnd = FindWindowA(A98_CLASS_NAME, NULL);
+
+        if (prevwnd != NULL) {
+            ShowWindow(prevwnd, IsIconic(prevwnd) ? SW_RESTORE
+                                                  : SW_SHOWNORMAL);
+            SetForegroundWindow(prevwnd);
+        } else {
+            MessageBoxA(NULL, "Agent98 is already running.", "Agent98",
+                        MB_OK | MB_ICONINFORMATION);
+        }
+        if (app->single_mutex != NULL) {
+            CloseHandle(app->single_mutex);
+            app->single_mutex = NULL;
+        }
+        return 0;
+    }
 
     if (a98_path_exe_dir(app->exe_dir, sizeof(app->exe_dir)) != 0) {
         strcpy(app->exe_dir, ".");
@@ -2430,6 +3459,17 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         return 1;
     }
 
+    /* Set from WM_DESTROY; lets gui_confirm unblock when the UI thread stops
+     * pumping messages.  Created before the window so a confirm request can
+     * never race it. */
+    app->shutdown_event = CreateEventA(NULL, TRUE, FALSE, NULL);
+    if (app->shutdown_event == NULL) {
+        msgbox_utf8(NULL, "Out of resources while starting up.",
+                    MB_OK | MB_ICONERROR);
+        net_cleanup();
+        return 1;
+    }
+
     /* The status bar is one of the original Win95 common controls. */
     InitCommonControls();
 
@@ -2447,6 +3487,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     app->font = make_ui_font();
     app->mono_font = make_mono_font(app);
     app->accel = LoadAcceleratorsA(hinst, MAKEINTRESOURCEA(IDR_ACCEL));
+    load_window_placement(app, &win_x, &win_y, &win_w, &win_h, &win_max);
 
     memset(&wc, 0, sizeof(wc));
     wc.cbSize = sizeof(wc);
@@ -2470,7 +3511,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
 
     app->hwnd = CreateWindowExA(0, A98_CLASS_NAME, "Agent98",
                                 WS_OVERLAPPEDWINDOW,
-                                CW_USEDEFAULT, CW_USEDEFAULT, 800, 620,
+                                win_x, win_y, win_w, win_h,
                                 NULL,
                                 LoadMenuA(hinst, MAKEINTRESOURCEA(IDR_MAINMENU)),
                                 hinst, app);
@@ -2481,15 +3522,18 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         return 1;
     }
 
-    ShowWindow(app->hwnd, show == 0 ? SW_SHOWNORMAL : show);
+    ShowWindow(app->hwnd, win_max ? SW_MAXIMIZE
+                                  : (show == 0 ? SW_SHOWNORMAL : show));
     UpdateWindow(app->hwnd);
 
     if (app->cfg.api_key[0] == '\0') {
-        msgbox_utf8(app->hwnd,
-                    "No API key is configured yet.\n\n"
-                    "Open Tools > Settings, enter your API key and model, "
-                    "then press OK.",
-                    MB_OK | MB_ICONINFORMATION);
+        /* First launch without configuration: walk through the minimum
+         * (base, key, model) instead of a plain message box. */
+        g_dlg_app = app;
+        DialogBoxParamA(hinst, MAKEINTRESOURCEA(IDD_FIRSTRUN), app->hwnd,
+                        firstrun_proc, 0);
+        g_dlg_app = NULL;
+        update_status(app);
     }
 
     while (GetMessageA(&msg, NULL, 0, 0) > 0) {
@@ -2502,15 +3546,36 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     }
 
     app->cancel = 1;
+    if (app->shutdown_event != NULL) {
+        SetEvent(app->shutdown_event);
+    }
     if (app->thread != NULL) {
-        WaitForSingleObject(app->thread, 3000);
-        CloseHandle(app->thread);
+        /* WM_DESTROY already waited once; this is the no-window fallback. */
+        if (WaitForSingleObject(app->thread, A98_WORKER_WAIT_MS) ==
+            WAIT_OBJECT_0) {
+            CloseHandle(app->thread);
+        } else {
+            app->leaked_worker = 1;
+            log_warn("worker still running at exit; abandoning it without "
+                     "freeing shared state");
+        }
         app->thread = NULL;
     }
-    agent_free(&app->agent);
-    net_cleanup();
-    log_info("Agent98 GUI stopped");
-    log_shutdown();
+    if (!app->leaked_worker) {
+        agent_free(&app->agent);
+        net_cleanup();
+        log_info("Agent98 GUI stopped");
+        log_shutdown();
+    } else {
+        /* The worker is still alive and may be touching the agent state,
+         * sockets and log file: do not free/close any of it.  Deliberate
+         * leak; the process exit reclaims everything. */
+        log_info("Agent98 GUI stopped with the worker abandoned");
+    }
+    if (app->shutdown_event != NULL) {
+        CloseHandle(app->shutdown_event);
+        app->shutdown_event = NULL;
+    }
     if (app->font != NULL) {
         DeleteObject(app->font);
     }
@@ -2521,8 +3586,15 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         a98_free(app->input_history[i]);
         app->input_history[i] = NULL;
     }
+    a98_free(app->last_input);
+    app->last_input = NULL;
     if (app->rich_dll != NULL) {
         FreeLibrary(app->rich_dll);
+    }
+    if (app->single_mutex != NULL) {
+        /* Releases the named mutex so a new instance can start right away. */
+        CloseHandle(app->single_mutex);
+        app->single_mutex = NULL;
     }
     return (int)msg.wParam;
 }

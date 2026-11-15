@@ -8,7 +8,6 @@
 
 int a98_path_exe_dir(char *out, size_t cap);
 int a98_path_join(char *out, size_t cap, const char *a, const char *b);
-int a98_path_normalize(char *out, size_t cap, const char *in);
 int a98_path_is_absolute(const char *p);
 int a98_path_exists(const char *p);
 int a98_path_is_dir(const char *p);

@@ -285,6 +285,14 @@ static const char *tls_error_name(int err)
     }
 }
 
+/*
+ * Entropy for the TLS client random and session keys.  Windows 9x offers no
+ * cryptographic PRNG, so time, cursor position, QPC, PID/TID and a stack
+ * address are hashed together.  This is a deliberate trade-off for the
+ * project's threat model ("a dial-up 9x box talking to an HTTPS API"): no
+ * attacker without local code execution can realistically predict it, but it
+ * is far from a modern CSPRNG seed.  Known and accepted; see the README.
+ */
 static void entropy_seed(unsigned char *seed, size_t len)
 {
     br_sha256_context sha;

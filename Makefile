@@ -1,8 +1,10 @@
 # Agent98 - OpenWatcom wmake build for 32-bit Windows 9x/NT.
 #
 # Prerequisites:
-#   * OpenWatcom 2.0 extracted to tools\openwatcom\ow (or set WATCOM_ROOT)
-#   * WATCOM and INCLUDE environment variables set (build_ow.cmd does this)
+#   * OpenWatcom 2.0 extracted to tools\openwatcom\ow
+#   * The location is picked up from (first match wins):
+#       1. WATCOM_ROOT, 2. WATCOM, 3. the bundled tools\openwatcom\ow copy
+#     (build_ow.cmd sets both variables)
 #
 # Usage:
 #   build_ow.cmd            (recommended; sets up the environment)
@@ -13,13 +15,24 @@
 # source files.
 
 !ifndef WATCOM_ROOT
+!ifdef WATCOM
+WATCOM_ROOT = $(WATCOM)
+!else
 WATCOM_ROOT = tools\openwatcom\ow
+!endif
 !endif
 CC   = $(WATCOM_ROOT)\binnt\wcl386.exe
 LINK = $(WATCOM_ROOT)\binnt\wlink.exe
 RC   = $(WATCOM_ROOT)\binnt\wrc.exe
 
-all: build\ow\a98.exe build\ow\agent98.exe .SYMBOLIC
+all: makeobjdir build\ow\a98.exe build\ow\agent98.exe .SYMBOLIC
+
+# The object directories used to be created only by build_ow.cmd, so a clean
+# tree with the environment already configured failed on the first wmake,
+# and "clean" (which deletes build\ow\obj) made it fail again afterwards.
+makeobjdir: .SYMBOLIC
+	-@cmd /c if not exist build\ow\obj mkdir build\ow\obj
+	-@cmd /c if not exist build\ow\obj\bearssl mkdir build\ow\obj\bearssl
 
 !include ow\rules.mk
 
@@ -32,9 +45,9 @@ build\ow\gui.res: src\gui\gui.rc src\gui\resource.h
 build\ow\agent98.exe: $(GUI_OBJS) build\ow\gui.res
 	$(LINK) @ow\link_gui.rsp
 
-gui: build\ow\agent98.exe .SYMBOLIC
+gui: makeobjdir build\ow\agent98.exe .SYMBOLIC
 
-probe: build\ow\tlsprobe.exe .SYMBOLIC
+probe: makeobjdir build\ow\tlsprobe.exe .SYMBOLIC
 
 build\ow\tlsprobe.exe: $(PROBE_OBJS)
 	$(LINK) @ow\link_tlsprobe.rsp

@@ -20,9 +20,10 @@ SiliconFlow、Ollama 等 OpenAI 兼容接口），不需要局域网中转机，也不需要
 1. 把整个文件夹复制到本地硬盘，例如 C:\AGENT98
    注意：不要直接在光盘或只读目录里运行，程序需要在 exe 同目录写
    配置、日志和 workspace。
-2. 首次运行会自动生成 AGENT98.INI。
-3. 用记事本打开 AGENT98.INI，填写 [api] 下的 key / base / model，
-   或者运行 AGENT98.EXE，在 Tools -> Settings... 里填写。
+2. 首次运行 AGENT98.EXE 会弹出配置向导，填好 Provider / API key / Model
+   后点 Save，自动生成 AGENT98.INI；点 Later 可跳过。
+3. 也可以用记事本打开 AGENT98.INI，填写 [api] 下的 key / base / model，
+   或之后在 Tools -> Settings... 里修改。
 
 
 文件说明
@@ -38,7 +39,7 @@ AGENT98.LOG    运行日志，出问题时请看这个文件
 快速开始
 --------
 1. 运行 AGENT98.EXE
-2. Tools -> Settings...
+2. 首次启动按弹出的向导填写；或打开 Tools -> Settings...
 3. Provider 选择服务商，填入 API key；本机 Ollama 选 Ollama 并留空 key
 4. 点 Test connection，看到 HTTP 200 即表示地址和密钥可用
 5. 回到主窗口，在下方输入框提问
@@ -55,7 +56,18 @@ GUI 功能
 - 输入框中 Alt+Up / Alt+Down 按 DOSKEY 方式翻阅本次运行的提示历史。
 - File -> Export transcript...（Ctrl+E）把当前对话导出为 GBK 编码、
   CRLF 换行的文本，可直接用记事本打开。
-- 原生状态栏在请求运行期间显示旋转指示和当前轮数，并显示 workspace。
+- 原生状态栏显示旋转指示、当前轮数和 Round n - x.y k chars 计数，并显示
+  workspace。
+- 助手回复按轻量 Markdown 着色：``` 围栏代码块灰底、`行内代码` 紫红、
+  **加粗**生效；只改颜色不改文本。
+- 对话区自动跟随最新内容；向上滚动阅读时暂停跟随，回到底部后恢复。超过
+  约 4000 行后自动裁掉最老的行（完整历史仍在会话 json 文件中）。
+- File -> Resend last message（Ctrl+R）不重新输入即可重发最近一条提问。
+- File -> Rename / Delete current session... 重命名或删除当前会话的 json
+  文件；删除不影响内存中的对话。
+- Tools -> Open log file 打开 exe 同目录的 AGENT98.LOG。
+- 窗口位置和最大化状态保存在 AGENT98.INI 的 [window] 段。
+- 同一时间只允许运行一个 AGENT98.EXE；再次启动会把已运行的窗口提到前台。
 - Tools -> Open workspace（或 Workspace 按钮）打开 workspace 目录。
 
 命令行版

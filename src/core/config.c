@@ -98,7 +98,29 @@ static void read_str(const char *ini, const char *section, const char *key,
 
 static int read_int(const char *ini, const char *section, const char *key, int def)
 {
-    return (int)GetPrivateProfileIntA(section, key, def, ini);
+    /* GetPrivateProfileIntA returns 0 for every unparsable value, which would
+     * turn a typo like max_steps=abc into "unlimited".  Read the string and
+     * only accept something strtol can fully consume. */
+    char tmp[64];
+    char *end;
+    long v;
+    DWORD n;
+
+    n = GetPrivateProfileStringA(section, key, "", tmp, sizeof(tmp), ini);
+    if (n == 0) {
+        return def;
+    }
+    config_trim(tmp);
+    if (tmp[0] == '\0') {
+        return def;
+    }
+    v = strtol(tmp, &end, 10);
+    if (end == tmp || *end != '\0') {
+        log_warn("configuration [%s] %s = \"%s\" is not a number; "
+                 "using the default %d", section, key, tmp, def);
+        return def;
+    }
+    return (int)v;
 }
 
 static void config_exe_dir(char *out, size_t cap)

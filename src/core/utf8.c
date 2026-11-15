@@ -188,28 +188,6 @@ char *a98_utf16_to_utf8(const unsigned short *w, size_t units)
     return str_detach(&out);
 }
 
-void a98_utf8_sanitize(char *s)
-{
-    size_t len;
-    size_t i;
-    int n;
-
-    if (s == NULL) {
-        return;
-    }
-    len = strlen(s);
-    i = 0;
-    while (i < len) {
-        n = a98_utf8_decode(s + i, len - i, NULL);
-        if (n <= 0) {
-            s[i] = '?';
-            i++;
-        } else {
-            i += (size_t)n;
-        }
-    }
-}
-
 #ifdef _WIN32
 char *a98_utf8_to_acp(const char *s)
 {

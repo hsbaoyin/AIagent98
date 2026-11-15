@@ -18,6 +18,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `/tools`, `/stop`, `/export`, `/workspace` and `/model` commands; `/config`
   masks the API key.
 - GUI: **Tools -> List tools...** and Esc to stop the current run.
+- GUI: **File -> Resend last message** (`Ctrl+R`), **Rename/Delete current
+  session...**, **Tools -> Open log file**, a first-run setup wizard when no
+  API key is configured, remembered window position (`[window]` INI section),
+  a round/character counter in the status bar, lightweight markdown colouring
+  (fenced code band, inline code, bold), an auto-scroll pin that stops
+  following while you read older output, an ~4000-line transcript soft cap on
+  9x, 80 ms coalesced painting of streamed deltas, and a single-instance
+  mutex that raises the running window instead of starting a second copy.
 - Tool arguments are redacted (`api_key`, `token`, `password`, ...) before they
   reach the log.
 

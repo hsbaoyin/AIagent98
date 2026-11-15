@@ -8,6 +8,22 @@ static void set_err(char *err, size_t cap, const char *msg)
     }
 }
 
+/* Host and path go straight into request lines and header values (Host:),
+ * so bytes outside printable ASCII would let an INI-supplied URL inject
+ * extra headers or a bogus request line.  Accept only 0x21..0x7E. */
+static int has_unprintable(const char *s, size_t n)
+{
+    size_t i;
+
+    for (i = 0; i < n; i++) {
+        unsigned char c = (unsigned char)s[i];
+        if (c < 0x21 || c > 0x7E) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int url_parse(const char *url, Url *out, char *err, size_t errcap)
 {
     const char *p;
@@ -42,6 +58,10 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
     while (*p != '\0' && *p != '/' && *p != '?' && *p != '#' && *p != ':') {
         if (*p == '@') {
             set_err(err, errcap, "userinfo in URLs is not supported");
+            return -1;
+        }
+        if ((unsigned char)*p < 0x21 || (unsigned char)*p > 0x7E) {
+            set_err(err, errcap, "invalid character in host");
             return -1;
         }
         p++;
@@ -85,6 +105,10 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
     if (*path == '\0' || *path == '#') {
         strcpy(out->path, "/");
     } else if (*path == '?') {
+        if (has_unprintable(path, strlen(path))) {
+            set_err(err, errcap, "invalid character in URL path");
+            return -1;
+        }
         out->path[0] = '/';
         strncpy(out->path + 1, path, sizeof(out->path) - 2);
         out->path[sizeof(out->path) - 1] = '\0';
@@ -96,6 +120,10 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
         }
         if (n + 1 > sizeof(out->path)) {
             set_err(err, errcap, "URL path too long");
+            return -1;
+        }
+        if (has_unprintable(path, n)) {
+            set_err(err, errcap, "invalid character in URL path");
             return -1;
         }
         memcpy(out->path, path, n);

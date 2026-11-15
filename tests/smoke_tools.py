@@ -44,35 +44,61 @@ for needle, label in extra_checks.items():
 depth = 0
 i = 0
 n = len(text)
+state = "code"
 while i < n:
     c = text[i]
-    if c == '"' or c == "'":
-        q = c
+    nxt = text[i + 1] if i + 1 < n else ""
+    if state == "code":
+        # Comments must be recognised before quotes, otherwise an apostrophe
+        # or quote inside a comment flips the scanner into string mode and
+        # every brace after it is mis-counted.
+        if c == "/" and nxt == "/":
+            state = "line"
+            i += 2
+            continue
+        if c == "/" and nxt == "*":
+            state = "block"
+            i += 2
+            continue
+        if c == '"':
+            state = "str"
+            i += 1
+            continue
+        if c == "'":
+            state = "chr"
+            i += 1
+            continue
+        if c == "{":
+            depth += 1
+        elif c == "}":
+            depth -= 1
         i += 1
-        while i < n:
-            if text[i] == '\\':
-                i += 2
-                continue
-            if text[i] == q:
-                i += 1
-                break
+    elif state == "line":
+        if c == "\n":
+            state = "code"
+        i += 1
+    elif state == "block":
+        if c == "*" and nxt == "/":
+            state = "code"
+            i += 2
+        else:
             i += 1
-        continue
-    if c == '/' and i + 1 < n and text[i+1] == '/':
-        while i < n and text[i] != '\n':
+    elif state == "str":
+        if c == "\\":
+            i += 2
+        elif c == '"':
+            state = "code"
             i += 1
-        continue
-    if c == '/' and i + 1 < n and text[i+1] == '*':
-        i += 2
-        while i + 1 < n and not (text[i] == '*' and text[i+1] == '/'):
+        else:
             i += 1
-        i += 2
-        continue
-    if c == '{':
-        depth += 1
-    elif c == '}':
-        depth -= 1
-    i += 1
+    else:  # chr literal
+        if c == "\\":
+            i += 2
+        elif c == "'":
+            state = "code"
+            i += 1
+        else:
+            i += 1
 if depth != 0:
     print(f"FAIL: brace depth {depth}")
     fail = 1

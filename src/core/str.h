@@ -22,7 +22,6 @@ int str_append_cstr(Str *s, const char *text);
 int str_append_char(Str *s, char c);
 int str_appendf(Str *s, const char *fmt, ...);
 int str_set(Str *s, const char *text);
-int str_setn(Str *s, const char *text, size_t len);
 
 /* Detach the buffer; caller owns it and must a98_free() it. */
 char *str_detach(Str *s);

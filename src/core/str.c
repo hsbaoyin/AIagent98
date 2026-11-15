@@ -137,15 +137,6 @@ int str_set(Str *s, const char *text)
     return str_append_cstr(s, text);
 }
 
-int str_setn(Str *s, const char *text, size_t len)
-{
-    if (s == NULL) {
-        return -1;
-    }
-    str_clear(s);
-    return str_append(s, text, len);
-}
-
 char *str_detach(Str *s)
 {
     char *p;

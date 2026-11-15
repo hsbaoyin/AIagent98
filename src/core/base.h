@@ -37,8 +37,4 @@ int a98_strncasecmp(const char *a, const char *b, size_t n);
 /* Format into a freshly allocated string, or NULL on failure. */
 char *a98_strfmt(const char *fmt, ...);
 
-/* Replace every occurrence of `from` in `s` with `to`, in place.
- * Returns 1 if at least one replacement happened. */
-int a98_str_replace_all(char *s, size_t cap, const char *from, const char *to);
-
 #endif /* A98_BASE_H */

@@ -154,7 +154,10 @@ static char *read_text_file(const char *path, size_t max_len, size_t *out_len,
     n = fread(buf, 1, (size_t)size, f);
     fclose(f);
     buf[n] = '\0';
-    for (i = 0; i < n && i < 8192; i++) {
+    /* Scan the whole buffer for NUL bytes, not just the first 8 KiB: a file
+     * with an early zero would be handed to strlen-style converters
+     * downstream and silently truncated. */
+    for (i = 0; i < n; i++) {
         if (buf[i] == '\0') {
             a98_free(buf);
             set_err(err, errcap, "file looks binary: %s", path);
@@ -393,6 +396,83 @@ static char *utf8_to_local_lossless(const char *text)
     return local;
 }
 
+/*
+ * Replace the file at `path` with `payload` without ever destroying the
+ * original on failure.  The content is written to a temporary sibling first;
+ * only after that copy is complete is the original swapped out.  The old
+ * truncate-then-write approach destroyed the file whenever the disk filled up
+ * or the write failed halfway.
+ *
+ * The swap is a pair of MoveFileA calls, which Windows 9x supports; no
+ * MoveFileEx is needed.  A leftover `path.bak` (including ones created by the
+ * old apply_patch backup scheme) is recycled, so repeated writes to the same
+ * file never fail on a stale backup.
+ */
+static int write_file_replace(const char *path, const char *payload,
+                              size_t payload_len, int text_mode,
+                              size_t *written, char *err, size_t errcap)
+{
+    char tmp[A98_MAX_PATH];
+    char bak[A98_MAX_PATH];
+    FILE *f;
+
+    if (snprintf(tmp, sizeof(tmp), "%s.a98tmp", path) >= (int)sizeof(tmp) ||
+        snprintf(bak, sizeof(bak), "%s.bak", path) >= (int)sizeof(bak)) {
+        set_err(err, errcap, "path too long");
+        return -1;
+    }
+    f = fopen(tmp, "wb");
+    if (f == NULL) {
+        set_err(err, errcap, "cannot write %s", path);
+        return -1;
+    }
+    if (text_mode) {
+        if (write_text_dos(f, payload, payload_len, written) != 0) {
+            fclose(f);
+            remove(tmp);
+            set_err(err, errcap, "short write to %s", path);
+            return -1;
+        }
+    } else {
+        if (payload_len > 0 &&
+            fwrite(payload, 1, payload_len, f) != payload_len) {
+            fclose(f);
+            remove(tmp);
+            set_err(err, errcap, "short write to %s", path);
+            return -1;
+        }
+        *written = payload_len;
+    }
+    if (fclose(f) != 0) {
+        remove(tmp);
+        set_err(err, errcap, "cannot write %s", path);
+        return -1;
+    }
+    remove(bak);
+    if (MoveFileA(path, bak)) {
+        if (!MoveFileA(tmp, path)) {
+            /* Put the original back; the temp copy stays for inspection. */
+            MoveFileA(bak, path);
+            set_err(err, errcap, "cannot replace %s", path);
+            return -1;
+        }
+        remove(bak);
+    } else if (GetLastError() == ERROR_FILE_NOT_FOUND ||
+               GetLastError() == ERROR_PATH_NOT_FOUND) {
+        /* New file: nothing to back up, just move the temp copy into place. */
+        if (!MoveFileA(tmp, path)) {
+            remove(tmp);
+            set_err(err, errcap, "cannot write %s", path);
+            return -1;
+        }
+    } else {
+        remove(tmp);
+        set_err(err, errcap, "cannot replace %s", path);
+        return -1;
+    }
+    return 0;
+}
+
 static int tool_write_file(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 {
     char path[A98_MAX_PATH];
@@ -406,7 +486,6 @@ static int tool_write_file(Agent *a, cJSON *args, Str *out, char *err, size_t er
     size_t written = 0;
     int text_mode;
     int converted_encoding = 0;
-    FILE *f;
 
     user = arg_str(args, "path", NULL);
     content = arg_str(args, "content", NULL);
@@ -433,11 +512,6 @@ static int tool_write_file(Agent *a, cJSON *args, Str *out, char *err, size_t er
     a98_path_dirname(path, dir, sizeof(dir));
     a98_path_mkdirs(dir);
     text_mode = !path_is_binary(path);
-    f = fopen(path, "wb");
-    if (f == NULL) {
-        set_err(err, errcap, "cannot write %s", user);
-        return -1;
-    }
     payload = content;
     payload_len = len;
     if (text_mode) {
@@ -448,22 +522,13 @@ static int tool_write_file(Agent *a, cJSON *args, Str *out, char *err, size_t er
             converted_encoding = strcmp(local, content) != 0;
         }
     }
-    if (text_mode) {
-        if (write_text_dos(f, payload, payload_len, &written) != 0) {
-            fclose(f);
-            a98_free(local);
-            set_err(err, errcap, "short write to %s", user);
-            return -1;
-        }
-    } else {
-        if (len > 0 && fwrite(content, 1, len, f) != len) {
-            fclose(f);
-            set_err(err, errcap, "short write to %s", user);
-            return -1;
-        }
-        written = len;
+    /* Write to a temp file and swap: a failed write used to leave the target
+     * truncated and destroyed. */
+    if (write_file_replace(path, payload, payload_len, text_mode, &written,
+                           err, errcap) != 0) {
+        a98_free(local);
+        return -1;
     }
-    fclose(f);
     if (converted_encoding) {
         log_info("write_file: converted UTF-8 to code page %u (%lu -> %lu bytes): %s",
                  (unsigned)GetACP(), (unsigned long)len,
@@ -686,30 +751,38 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
     }
 
     /* Block obviously destructive Win9x shell commands unless user overrides
-     * via config (allow_shell is already required). */
+     * via config (allow_shell is already required).  The scan must cover the
+     * whole command line: a 511-byte window let `format`/`deltree` hidden
+     * further in (cmdline cap is 4096) slip through. */
     {
         static const char *const banned[] = {
             "format ", "format\t", "fdisk", "deltree ", "deltree\t",
             "rmdir /s", "rd /s", "erase /", "del /s", "del /f /s",
             "regedit /s", "debug ", "sys ", NULL
         };
-        char lower[512];
+        char *lower;
         size_t i, n;
         int bi;
         n = strlen(command);
-        if (n >= sizeof(lower)) n = sizeof(lower) - 1;
+        lower = (char *)a98_alloc(n + 1);
+        if (lower == NULL) {
+            set_err(err, errcap, "oom");
+            return -1;
+        }
         for (i = 0; i < n; i++) {
             lower[i] = (char)tolower((unsigned char)command[i]);
         }
         lower[n] = '\0';
         for (bi = 0; banned[bi] != NULL; bi++) {
             if (strstr(lower, banned[bi]) != NULL) {
+                a98_free(lower);
                 set_err(err, errcap,
                         "blocked dangerous command pattern: %s (refusing to run)",
                         banned[bi]);
                 return -1;
             }
         }
+        a98_free(lower);
     }
 
     if (timeout < 1) {
@@ -1181,7 +1254,7 @@ static int tool_edit(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     const char *new_s = arg_str(args, "new_string", NULL);
     int replace_all = json_bool(args, "replace_all", 0);
     char *data, *result, *local = NULL; size_t len = 0, old_len, new_len, rcap, rlen = 0, written = 0;
-    int truncated = 0, replacements = 0, text_mode; const char *p; FILE *f;
+    int truncated = 0, replacements = 0, text_mode; const char *p;
     if (!user || !user[0] || !old_s || !new_s) { set_err(err, errcap, "path, old_string, new_string required"); return -1; }
     old_len = strlen(old_s); new_len = strlen(new_s);
     if (!old_len) { set_err(err, errcap, "old_string empty"); return -1; }
@@ -1215,21 +1288,18 @@ static int tool_edit(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     result[rlen] = '\0'; a98_free(data);
     a98_path_dirname(path, dir, sizeof(dir)); a98_path_mkdirs(dir);
     text_mode = !path_is_binary(path);
-    f = fopen(path, "wb");
-    if (!f) { a98_free(result); set_err(err, errcap, "cannot write"); return -1; }
-    if (text_mode) {
-        local = utf8_to_local_lossless(result);
-        if (write_text_dos(f, local ? local : result, local ? strlen(local) : rlen, &written) != 0) {
-            fclose(f); a98_free(local); a98_free(result); set_err(err, errcap, "short write"); return -1;
+    local = text_mode ? utf8_to_local_lossless(result) : NULL;
+    {
+        const char *payload = local ? local : result;
+        size_t payload_len = local ? strlen(local) : rlen;
+        /* Swap-in replace: a short write used to leave the file truncated. */
+        if (write_file_replace(path, payload, payload_len, text_mode,
+                               &written, err, errcap) != 0) {
+            a98_free(local); a98_free(result); return -1;
         }
-        a98_free(local);
-    } else {
-        if (rlen && fwrite(result,1,rlen,f) != rlen) {
-            fclose(f); a98_free(result); set_err(err, errcap, "short write"); return -1;
-        }
-        written = rlen;
     }
-    fclose(f); a98_free(result);
+    a98_free(local);
+    a98_free(result);
     str_appendf(out, "Edited %s (%d replacement%s)\n", user, replacements, replacements==1?"":"s");
     return 0;
 }
@@ -1702,18 +1772,18 @@ static int tool_todo_write(Agent *a, cJSON *args, Str *out, char *err, size_t er
 {
     char path[A98_MAX_PATH];
     const char *content = arg_str(args, "content", NULL);
-    FILE *f; char *local = NULL; size_t written=0;
+    char *local = NULL; size_t written=0;
     if (!content) { set_err(err, errcap, "content required"); return -1; }
     if (a98_path_join(path, sizeof(path), a->workspace, A98_TODO_FILE) != 0) {
         set_err(err, errcap, "path too long"); return -1;
     }
-    f = fopen(path, "wb");
-    if (!f) { set_err(err, errcap, "cannot write todos"); return -1; }
     local = utf8_to_local_lossless(content);
-    if (write_text_dos(f, local ? local : content, local ? strlen(local) : strlen(content), &written) != 0) {
-        fclose(f); a98_free(local); set_err(err, errcap, "short write"); return -1;
+    if (write_file_replace(path, local ? local : content,
+                           local ? strlen(local) : strlen(content), 1,
+                           &written, err, errcap) != 0) {
+        a98_free(local); return -1;
     }
-    fclose(f); a98_free(local);
+    a98_free(local);
     str_appendf(out, "Wrote todos (%lu bytes)\n", (unsigned long)written); return 0;
 }
 
@@ -1733,7 +1803,7 @@ static int tool_apply_patch(Agent *a, cJSON *args, Str *out, char *err, size_t e
     char *data, *result = NULL, *local = NULL;
     size_t len=0, rlen=0, rcap=0, written=0;
     int truncated=0, hunks=0, text_mode;
-    const char *p; FILE *f;
+    const char *p;
     if (!user||!user[0]||!patch) { set_err(err,errcap,"path and patch required"); return -1; }
     if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     data = read_text_file(path, 2*1024*1024, &len, &truncated, err, errcap);
@@ -1789,32 +1859,19 @@ static int tool_apply_patch(Agent *a, cJSON *args, Str *out, char *err, size_t e
     if (!hunks) { a98_free(result); set_err(err,errcap,"no hunks (need *** SEARCH / *** REPLACE / *** END)"); return -1; }
     a98_path_dirname(path, dir, sizeof(dir)); a98_path_mkdirs(dir);
     text_mode = !path_is_binary(path);
-    /* Backup original for recovery if something goes wrong mid-write */
+    local = text_mode ? utf8_to_local_lossless(result) : NULL;
     {
-        char bak[A98_MAX_PATH + 8];
-        snprintf(bak, sizeof(bak), "%s.bak", path);
-        if (!CopyFileA(path, bak, TRUE)) {
-            a98_free(result);
-            set_err(err, errcap, "cannot create backup %s (error %lu)",
-                    bak, (unsigned long)GetLastError());
-            return -1;
+        const char *payload = local ? local : result;
+        size_t payload_len = local ? strlen(local) : rlen;
+        /* Swap-in replace instead of truncate-then-write; also removes the
+         * old CopyFileA(path, bak, TRUE) backup that made every second
+         * apply_patch to the same file fail on the stale .bak. */
+        if (write_file_replace(path, payload, payload_len, text_mode,
+                               &written, err, errcap) != 0) {
+            a98_free(local); a98_free(result); return -1;
         }
     }
-    f = fopen(path, "wb");
-    if (!f) { a98_free(result); set_err(err,errcap,"cannot write"); return -1; }
-    if (text_mode) {
-        local = utf8_to_local_lossless(result);
-        if (write_text_dos(f, local?local:result, local?strlen(local):rlen, &written)!=0) {
-            fclose(f); a98_free(local); a98_free(result); set_err(err,errcap,"short write"); return -1;
-        }
-        a98_free(local);
-    } else {
-        if (rlen && fwrite(result,1,rlen,f)!=rlen) {
-            fclose(f); a98_free(result); set_err(err,errcap,"short write"); return -1;
-        }
-        written = rlen;
-    }
-    fclose(f); a98_free(result);
+    a98_free(local); a98_free(result);
     str_appendf(out, "Applied %d hunks to %s (%lu bytes)\n", hunks, user, (unsigned long)written);
     return 0;
 }
@@ -1903,6 +1960,7 @@ static const char schema_search[] =
 static const char schema_run_command[] =
     "{\"type\":\"object\",\"properties\":{"
     "\"command\":{\"type\":\"string\",\"description\":\"Command line to run through COMMAND.COM in the workspace.\"},"
+    "\"cwd\":{\"type\":\"string\",\"description\":\"Working directory for the command, relative to the workspace. Defaults to the workspace root.\"},"
     "\"timeout_sec\":{\"type\":\"integer\",\"description\":\"Timeout in seconds (default 30, max 300).\"}},"
     "\"required\":[\"command\"]}";
 
@@ -2075,7 +2133,7 @@ void tools_format_confirm(const char *name, const char *args_json,
         snprintf(line, sizeof(line), "Update workspace todo list");
     } else if (strcmp(n, "env") == 0) {
         const char *p = args ? json_string(args, "name") : NULL;
-        d = 1;
+        d = 0;                  /* read-only: do not tag it [WRITE] */
         snprintf(line, sizeof(line), "Read environment variable\n  name: %s",
                  (p && p[0]) ? p : "(common list)");
     } else {

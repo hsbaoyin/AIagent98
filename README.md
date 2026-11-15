@@ -184,7 +184,10 @@ was not created at all, the program never reached `main` / `WinMain`.
 
 ### Configuration
 
-On first run `agent98.ini` is created next to the executable:
+On first run `agent98.ini` is created next to the executable. If no API key is
+configured yet, the GUI opens a small first-run wizard that asks for the
+provider, API base, key and model and writes the INI right away; **Later**
+skips it and the previous behaviour (a reminder when you send) applies.
 
 ```ini
 [api]
@@ -259,7 +262,30 @@ The 800x600 GUI keeps a 90s console look:
 - **File -> Export transcript...** (`Ctrl+E`) writes the visible transcript as
   CP_ACP text with CRLF line endings, ready for Notepad.
 - The native status bar shows a spinner and the current round while a request
-  runs, plus the workspace path.
+  runs, plus a `Round n  -  x.y k chars` counter (a rough "this session is
+  getting long" cue) and the workspace path.
+- The assistant reply is rendered with lightweight markdown colouring: fenced
+  ```` ``` ```` blocks get a grey background band (colour only on RichEdit
+  1.0), `` `inline code` `` is magenta and `**bold**` is bold. Text is never
+  rewritten, only coloured, and a line split across two stream chunks is
+  never half-rendered.
+- The transcript view pins itself to the tail while new text arrives; scroll
+  up to read and it stops following until you return to the bottom. Past
+  ~4000 lines the oldest lines are trimmed to keep the control fast on a
+  9x machine (the full history stays in the session `.json`).
+- Streamed deltas are coalesced and painted every 80 ms, so a fast model does
+  not flood the 9x message queue with one redraw per chunk.
+- **File -> Resend last message** (`Ctrl+R`) re-sends your most recent prompt
+  without retyping it.
+- **File -> Rename current session... / Delete current session...** rename or
+  delete the `.json` file of the running conversation; deleting keeps the
+  in-memory conversation.
+- **Tools -> Open log file** opens `agent98.log` next to the executable.
+- The window position and maximised state are remembered in the `[window]`
+  section of `agent98.ini`.
+- Only one instance runs at a time: launching `agent98.exe` again raises the
+  existing window instead of starting a second copy that would race the INI
+  and session auto-save.
 - **Tools -> Open workspace** (or the **Workspace** button) opens the workspace
   folder in Explorer.
 
@@ -433,7 +459,14 @@ gcc -std=c99 -O1 -w -Isrc -Isrc/core -Isrc/agent -Isrc/net ^
     tests\test_tools.c src\core\*.c src\agent\*.c ... -lws2_32 -o build\host\test_tools.exe
 ```
 
-In practice use the source list in `build/host/sources.rsp`.
+In practice the easiest way is CMake:
+
+```bat
+cmake -B build\cmake -G "MinGW Makefiles" & cmake --build build\cmake --target test_tools
+```
+
+Or compile the source list in `build/host/sources.rsp` (everything except the
+CLI entry point, so `tests/test_tools.c`'s `main` does not collide).
 
 The expected output ends with `all tool tests passed`; the file also checks the
 `rmdir_force` workspace-root guard.
@@ -454,8 +487,9 @@ python tests\smoke_tools.py
 - On Windows 9x the GUI falls back from RichEdit 2.0A to RichEdit 1.0 / EDIT
   when the newer control is unavailable
 - No proxy support and no context trimming yet
-- Closing the window waits up to 3 seconds for the worker; the timeout path
-  still needs hardening
+- If the worker thread does not stop within the close grace period, the window
+  is force-destroyed and the worker is deliberately left running (no shared
+  state is freed under it); the memory is reclaimed when the process exits
 
 ### License
 
@@ -609,7 +643,9 @@ option stack=262144
 
 ### 配置
 
-首次运行会在 exe 同目录生成 `agent98.ini`：
+首次运行会在 exe 同目录生成 `agent98.ini`。若此时还没有配置 API key，
+GUI 会弹出一个简单的首运行向导，依次填写 Provider、API base、key 和模型
+并立即写入 INI；点 **Later** 可跳过，之后的行为与旧版一致（发送时再提醒）。
 
 ```ini
 [api]
@@ -636,8 +672,9 @@ level=3
 `agent98.log`。上面的示例关闭了 `allow_shell`；即使打开，每次 `run_command`
 仍会弹出确认框，`write_file` 则始终需要确认。
 
-注意：`allow_shell` 的编译内置默认值是 1，而 `dist/SAMPLE.INI` 给的是 0。
-把机器交给不可信的模型之前，先确认 `agent98.ini` 里的实际值。
+注意：`allow_shell` 的编译内置默认值与 `dist/SAMPLE.INI` 一样都是 **0**
+（旧版本默认值曾是 1，现已收紧）。把机器交给不可信的模型之前，先确认
+`agent98.ini` 里的实际值。
 
 要连 Ollama 或其他本地模型服务（而不是云端 API）：
 
@@ -682,7 +719,25 @@ model=llama3.1
 - 输入框中 `Alt+Up` / `Alt+Down` 可按 DOSKEY 方式翻阅本次运行的提示历史。
 - **File -> Export transcript...**（`Ctrl+E`）把当前对话导出为 CP_ACP
   编码、CRLF 换行的文本，可直接用记事本打开。
-- 原生状态栏在请求运行期间显示旋转指示和当前轮数，并显示 workspace 路径。
+- 原生状态栏在请求运行期间显示旋转指示和当前轮数，另有
+  `Round n  -  x.y k chars` 计数（提示"会话已经很长了"的粗略信号）和
+  workspace 路径。
+- 助手回复按轻量 Markdown 着色：```` ``` ````围栏代码块为灰底色带
+  （RichEdit 1.0 退化为仅前景色）、`` `行内代码` ``紫红色、`**加粗**`加粗。
+  只改颜色不改文本，且被两个流式分片拆开的行不会被渲染一半。
+- 对话区自动跟随最新内容；向上滚动阅读时会暂时停住，回到底部后恢复跟随。
+  超过约 4000 行后裁掉最老的行以保证 9x 上的流畅度（完整历史仍在会话
+  `.json` 文件中）。
+- 流式分片按 80 ms 合并刷新，模型输出再快也不会每片一次重绘刷爆 9x 的
+  消息队列。
+- **File -> Resend last message**（`Ctrl+R`）不重新输入即可重发最近一条
+  提问。
+- **File -> Rename current session... / Delete current session...** 重命名或
+  删除当前会话的 `.json` 文件；删除后内存中的对话仍保留。
+- **Tools -> Open log file** 打开 exe 同目录的 `agent98.log`。
+- 窗口位置和最大化状态保存在 `agent98.ini` 的 `[window]` 段。
+- 同时只允许一个实例：再次启动 `agent98.exe` 会把已运行的窗口提到前台，
+  而不是再开一个会抢写 INI 和会话自动保存的副本。
 - **Tools -> Open workspace**（或 **Workspace** 按钮）在资源管理器中打开
   workspace 目录。
 
@@ -862,7 +917,8 @@ python tests\smoke_tools.py
 - 目前仅实现 OpenAI 兼容接口；Anthropic / Gemini 尚未接入
 - Win9x 上的 RichEdit 2.0A 不可用时自动回退到 RichEdit 1.0 / EDIT
 - 尚未实现代理和上下文裁剪
-- 关闭窗口时最多等待 worker 3 秒；超时路径仍需加强
+- 若 worker 在关闭宽限期内仍未停止，窗口会被强制销毁，worker 被有意保留运行
+  （不再释放其正在使用的共享状态），内存随进程退出一并回收
 
 ### 许可证
 

@@ -433,8 +433,17 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                     log_warn("loop guard: blocked repeated tool call %s (x%d)",
                              name, block_repeat);
                 } else {
-                    if (tool_needs_confirm(name) && a->on_confirm != NULL) {
-                        allowed = a->on_confirm(a->confirm_ctx, name, args);
+                    if (tool_needs_confirm(name)) {
+                        if (a->on_confirm != NULL) {
+                            allowed = a->on_confirm(a->confirm_ctx, name,
+                                                    args);
+                        } else {
+                            /* No UI is wired up to ask: fail closed instead
+                             * of silently running a destructive tool. */
+                            allowed = 0;
+                            log_warn("confirm callback missing; denied %s",
+                                     name);
+                        }
                     }
                     if (!allowed) {
                         str_append_cstr(&out, "Tool execution denied by the user.");

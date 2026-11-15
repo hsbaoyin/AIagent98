@@ -73,7 +73,10 @@ if (-not (Test-Path $exe)) {
     throw "missing $exe"
 }
 $ini = Join-Path $Dir 'agent98.ini'
-$iniBackup = [IO.File]::ReadAllText((Resolve-Path $ini))
+# Resolve once, before the try block: the finally block must never throw on
+# its own (it would swallow the real failure and skip the INI restore).
+$iniPath = (Resolve-Path $ini).Path
+$iniBackup = [IO.File]::ReadAllText($iniPath)
 
 $mock = $null
 $p = $null
@@ -81,7 +84,23 @@ try {
     $mock = Start-Process -FilePath 'node' `
         -ArgumentList @('tests\mock_openai.js', "$Port") `
         -WorkingDirectory (Resolve-Path '.') -PassThru
-    Start-Sleep -Milliseconds 800
+    # Poll the port like retry_smoke/loop_smoke do; a fixed 800 ms sleep made
+    # the test flaky whenever node started slowly.
+    $deadline = (Get-Date).AddSeconds($TimeoutSec)
+    $mockReady = $false
+    while ((Get-Date) -lt $deadline -and -not $mockReady) {
+        try {
+            $c = New-Object Net.Sockets.TcpClient
+            $c.Connect('127.0.0.1', $Port)
+            $c.Close()
+            $mockReady = $true
+        } catch {
+            Start-Sleep -Milliseconds 200
+        }
+    }
+    if (-not $mockReady) {
+        throw "mock server did not start on port $Port"
+    }
 
     $p = Start-Process -FilePath $exe -WorkingDirectory (Resolve-Path $Dir) -PassThru
 
@@ -203,5 +222,9 @@ finally {
     if ($mock -ne $null -and -not $mock.HasExited) {
         Stop-Process -Id $mock.Id -Force
     }
-    [IO.File]::WriteAllText((Resolve-Path $ini), $iniBackup)
+    try {
+        [IO.File]::WriteAllText($iniPath, $iniBackup)
+    } catch {
+        Write-Warning "could not restore the test INI: $_"
+    }
 }

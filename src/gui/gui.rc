@@ -12,8 +12,12 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "&New conversation",        IDM_NEW
+        MENUITEM "Resend last message",      IDM_RESEND
+        MENUITEM SEPARATOR
         MENUITEM "&Save session...",         IDM_SAVE
         MENUITEM "&Load session...",         IDM_LOAD
+        MENUITEM "&Rename current session...", IDM_SESSION_RENAME
+        MENUITEM "De&lete current session...", IDM_SESSION_DELETE
         MENUITEM "&Export transcript...",    IDM_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "E&xit",                    IDM_EXIT
@@ -24,6 +28,7 @@ BEGIN
         MENUITEM "&Settings...",             IDM_SETTINGS
         MENUITEM SEPARATOR
         MENUITEM "&List tools...",          IDM_TOOLS_LIST
+        MENUITEM "Open &log file",           IDM_OPENLOG
     END
     POPUP "&Help"
     BEGIN
@@ -35,6 +40,7 @@ IDR_ACCEL ACCELERATORS
 BEGIN
     VK_ESCAPE, IDC_STOP, VIRTKEY
     "N", IDM_NEW, VIRTKEY, CONTROL
+    "R", IDM_RESEND, VIRTKEY, CONTROL
     "S", IDM_SAVE, VIRTKEY, CONTROL
     "O", IDM_LOAD, VIRTKEY, CONTROL
     "E", IDM_EXPORT, VIRTKEY, CONTROL
@@ -96,4 +102,36 @@ BEGIN
     LTEXT           "An AI agent for Windows 98 / 95 / ME.", -1, 12, 30, 216, 10
     LTEXT           "Native Win32, BearSSL TLS 1.2.", -1, 12, 46, 216, 10
     DEFPUSHBUTTON   "OK", IDOK, 182, 96, 50, 14
+END
+
+IDD_FIRSTRUN DIALOG 0, 0, 320, 176
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Welcome to Agent98"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Connect to an OpenAI-compatible API. You can change all of this later in Tools > Settings.", -1, 8, 6, 300, 18
+    LTEXT           "Provider:", -1, 8, 30, 58, 8
+    COMBOBOX        IDC_PROVIDER, 72, 27, 130, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "API base:", -1, 8, 46, 58, 8
+    EDITTEXT        IDC_API_BASE, 72, 43, 240, 12, ES_AUTOHSCROLL
+    LTEXT           "API key:", -1, 8, 62, 58, 8
+    EDITTEXT        IDC_API_KEY, 72, 59, 240, 12, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "Model:", -1, 8, 78, 58, 8
+    EDITTEXT        IDC_MODEL, 72, 75, 240, 12, ES_AUTOHSCROLL
+    LTEXT           "A local service such as Ollama does not need an API key.", -1, 72, 90, 240, 8
+    CONTROL         "Stream responses", IDC_STREAM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 104, 120, 10
+    CONTROL         "Allow shell commands (every run asks for confirmation)", IDC_ALLOW_SHELL, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 117, 240, 10
+    DEFPUSHBUTTON   "Save", IDOK, 204, 150, 54, 14
+    PUSHBUTTON      "Later", IDCANCEL, 262, 150, 50, 14
+END
+
+IDD_INPUTLINE DIALOG 0, 0, 300, 64
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Agent98"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "", IDC_INPUTLINE_LABEL, 8, 8, 284, 8
+    EDITTEXT        IDC_INPUTLINE_EDIT, 8, 22, 284, 12, ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK", IDOK, 186, 44, 50, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 242, 44, 50, 14
 END

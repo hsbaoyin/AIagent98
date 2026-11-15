@@ -9,6 +9,9 @@ if not exist "%WATCOM%\binnt\wmake.exe" (
   echo Extract the installer there, or set WATCOM to your OpenWatcom root.
   exit /b 1
 )
+rem The Makefile honours WATCOM_ROOT first and WATCOM second; keep them in
+rem sync so a custom install path is picked up either way.
+set "WATCOM_ROOT=%WATCOM%"
 
 set "PATH=%WATCOM%\binnt;%PATH%"
 set "INCLUDE=%WATCOM%\h;%WATCOM%\h\nt"

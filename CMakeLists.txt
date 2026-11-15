@@ -44,7 +44,13 @@ add_executable(a98 src/main.c)
 target_link_libraries(a98 PRIVATE agent98_core)
 
 add_executable(agent98 WIN32 src/gui/main_gui.c src/gui/gui.rc)
-target_link_libraries(agent98 PRIVATE agent98_core)
+# comctl32: InitCommonControls for the status bar; shell32: ShellExecuteA
+# for the "Open workspace" button (same libs the Watcom link file adds).
+target_link_libraries(agent98 PRIVATE agent98_core comctl32 shell32)
+
+# Host-side unit smoke test (see tests/test_tools.c).
+add_executable(test_tools tests/test_tools.c)
+target_link_libraries(test_tools PRIVATE agent98_core)
 
 add_executable(tlsprobe src/tlsprobe.c)
 target_link_libraries(tlsprobe PRIVATE agent98_core)
