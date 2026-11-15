@@ -3087,8 +3087,17 @@ static void create_controls(App *app, HWND hwnd)
         SendMessageA(app->transcript, EM_SETBKGNDCOLOR, 0,
                      (LPARAM)GetSysColor(COLOR_WINDOW));
         /* RichEdit needs an OLE callback before it will keep an inline
-         * picture; without it the emoji stay ":shortcode:" text. */
-        app->emoji_pics = a98_emoji_ole_attach(app->transcript);
+         * picture; without it the emoji stay ":shortcode:" text.  The
+         * picture path is opt-in because the RichEdit OLE insert has been
+         * seen to fault on a real Windows 98 box, and shortcode text is a
+         * much better outcome than a GPF.  [emoji] inline=1 enables it. */
+        if (app->cfg.emoji_inline) {
+            app->emoji_pics = a98_emoji_ole_attach(app->transcript);
+            log_info("emoji inline pictures %s",
+                     app->emoji_pics ? "enabled" : "unavailable on this control");
+        } else {
+            log_info("emoji inline pictures off ([emoji] inline=0)");
+        }
     } else {
         /* EM_SETLIMITTEXT takes the limit in wParam (0 = default ~32 KiB,
          * which truncated long conversations on machines without RichEdit). */

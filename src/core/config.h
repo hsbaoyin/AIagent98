@@ -20,6 +20,10 @@ typedef struct {
     int tls_verify;
     int allow_outside;
     int allow_shell;
+    /* Draw emoji as the pack's pictures in the transcript ([emoji] inline).
+     * Off by default: the RichEdit OLE path faults on some Windows 9x
+     * installs, and shortcode text is the safe fallback. */
+    int emoji_inline;
     int max_steps;
     int connect_timeout_sec;
     int request_timeout_sec;

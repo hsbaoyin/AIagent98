@@ -63,6 +63,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   folder name. Tool results are now repaired to valid UTF-8 before they reach
   the transcript or the message list (`a98_utf8_sanitize`), and a session saved
   before the fix is repaired again when it is loaded.
+- Inline emoji pictures are now opt-in (`[emoji] inline` in the INI, default
+  0). A real Windows 98 SE run faulted inside RichEdit while streaming the
+  first picture, and a GPF is worse than `:shortcode:` text; the picture path
+  itself is unchanged apart from a 9x-safe storage (`ILockBytes` docfile) and
+  two log lines around `EM_STREAMIN` (`src/gui/emoji_ui.c`) so a repeat crash
+  names its step.
 - A path argument from the model is UTF-8 while the Win32 layer takes CP_ACP,
   so a tool call naming a Chinese file or directory (`list_dir` with
   `"path":"新建文件夹"`) never matched the real one. `resolve_path` now converts

@@ -129,8 +129,9 @@ A: 先确认程序是从硬盘运行的，然后把 AGENT98.LOG 的最后几十行发出来。
 Emoji
 -----
 The Emoji button and Tools > Insert emoji... (Ctrl+J) open a picker
-with the 1219 pictures in emoji\bmp\24. In the chat an emoji is drawn as
-its 16x16 picture from that folder, streamed into the transcript as a
-RichEdit object; a shortcode you pick or type is sent to the model as the
-real character. Without the pack, or with RichEdit 1.0 only, the transcript
-shows the :shortcode: text instead.
+with the 1219 pictures in emoji\bmp\24. A shortcode you pick or type is
+sent to the model as the real character. The chat can draw those pictures
+inline too: set [emoji] inline=1 in AGENT98.INI. It is off by default
+because RichEdit's picture insert has been seen to fault on some
+Win95/98 installs; with it off, or with RichEdit 1.0 only, the transcript
+shows the :shortcode: text.

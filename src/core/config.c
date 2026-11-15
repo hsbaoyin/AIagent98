@@ -58,6 +58,7 @@ void config_defaults(Config *cfg, const char *exe_dir)
     /* Shell execution stays off until the user turns it on in Settings or the
      * INI.  dist/SAMPLE.INI and the README have always documented 0. */
     cfg->allow_shell = 0;
+    cfg->emoji_inline = 0;
     cfg->max_steps = 32;
     cfg->connect_timeout_sec = 30;
     cfg->request_timeout_sec = 180;
@@ -171,6 +172,7 @@ int config_load(Config *cfg, const char *ini_path)
              cfg->workspace, sizeof(cfg->workspace));
     cfg->allow_outside = read_int(ini_path, "agent", "allow_outside", cfg->allow_outside);
     cfg->allow_shell = read_int(ini_path, "agent", "allow_shell", cfg->allow_shell);
+    cfg->emoji_inline = read_int(ini_path, "emoji", "inline", cfg->emoji_inline);
     cfg->max_steps = read_int(ini_path, "agent", "max_steps", cfg->max_steps);
     cfg->connect_timeout_sec = read_int(ini_path, "agent", "connect_timeout",
                                         cfg->connect_timeout_sec);
@@ -250,6 +252,8 @@ int config_save(const Config *cfg, const char *ini_path)
     ok = (write_str(ini_path, "agent", "allow_outside", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->allow_shell ? 1 : 0);
     ok = (write_str(ini_path, "agent", "allow_shell", tmp) == 0) && ok;
+    sprintf(tmp, "%d", cfg->emoji_inline ? 1 : 0);
+    ok = (write_str(ini_path, "emoji", "inline", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->max_steps);
     ok = (write_str(ini_path, "agent", "max_steps", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->connect_timeout_sec);

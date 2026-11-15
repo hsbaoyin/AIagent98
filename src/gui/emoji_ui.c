@@ -8,6 +8,7 @@
  */
 #include "emoji_ui.h"
 
+#include "../core/log.h"
 #include "emoji.h"
 #include "resource.h"
 
@@ -417,13 +418,27 @@ static ULONG STDMETHODCALLTYPE pic_release(PicOle *me)
 
 static HRESULT STDMETHODCALLTYPE pic_new_storage(PicOle *me, IStorage **out)
 {
+    ILockBytes *lock = NULL;
+    HRESULT hr;
+
     (void)me;
-    /* NULL name: a docfile that lives in memory, which is exactly what an
-     * inline icon needs. */
-    return StgCreateDocfile(NULL,
-                            STGM_READWRITE | STGM_SHARE_EXCLUSIVE |
-                                STGM_CREATE | STGM_DIRECT,
-                            0, out);
+    if (out == NULL) {
+        return E_POINTER;
+    }
+    *out = NULL;
+    /* A docfile layered on an HGLOBAL-backed ILockBytes is the in-memory
+     * storage that works on Windows 9x as well as NT; StgCreateDocfile(NULL,
+     * ...) is not reliable there. */
+    hr = CreateILockBytesOnHGlobal(NULL, TRUE, &lock);
+    if (FAILED(hr) || lock == NULL) {
+        return FAILED(hr) ? hr : E_OUTOFMEMORY;
+    }
+    hr = StgCreateDocfileOnILockBytes(lock,
+                                      STGM_CREATE | STGM_READWRITE |
+                                          STGM_SHARE_EXCLUSIVE | STGM_DIRECT,
+                                      0, out);
+    lock->lpVtbl->Release(lock);
+    return hr;
 }
 
 static HRESULT STDMETHODCALLTYPE pic_inplace(PicOle *me, void **a, void **b,
@@ -674,7 +689,13 @@ int a98_emoji_insert_picture(HWND edit, const char *exe_dir,
     memset(&es, 0, sizeof(es));
     es.dwCookie = (A98Cookie)(size_t)&in;
     es.pfnCallback = (EDITSTREAMCALLBACK)pic_stream_cb;
+    /* Two log lines around the one call that can take the control down on a
+     * 9x box: if the log stops between them, RichEdit/OLE is the fault. */
+    log_info("emoji picture %s: streaming %lu chars of RTF", e->id,
+             (unsigned long)strlen(rtf));
     SendMessageA(edit, EM_STREAMIN, SF_RTF | SFF_SELECTION, (LPARAM)&es);
+    log_info("emoji picture %s: streamin done, dwError %lu", e->id,
+             (unsigned long)es.dwError);
     a98_free(rtf);
     return es.dwError == 0 ? 1 : 0;
 }

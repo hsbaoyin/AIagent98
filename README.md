@@ -296,10 +296,11 @@ emoji code point, so an emoji pushed straight into a RichEdit control arrived as
 a `?`. AIagent98 folds it instead:
 
 - the transcript draws `😀` as its 16x16 picture from the pack, streamed into
-  the control as a RichEdit object; an emoji the pack does not carry shows as
-  `[U+1FAF9]`, which still beats a box
-- without the artwork, or on a machine that only has RichEdit 1.0 (no
-  `riched20.dll`), the same text falls back to `:grinning_face:`
+  the control as a RichEdit object, once `[emoji] inline=1` is set in the INI;
+  an emoji the pack does not carry shows as `[U+1FAF9]`, which still beats a box
+- with pictures off (the default), without the artwork, or on a machine that
+  only has RichEdit 1.0 (no `riched20.dll`), the same text falls back to
+  `:grinning_face:`
 - the reverse happens on send: a `:shortcode:` from the picker (or typed by
   hand) leaves the machine as the real emoji, so the model sees the character
 - **Emoji** button or **Tools -> Insert emoji...** (`Ctrl+J`) opens the picker:
@@ -338,6 +339,16 @@ group and throws it away without an error - the reason the transcript used to
 be text only. Each picture is a bare (non-placeable) metafile recorded at 16 px
 from the 24 px art, so the icon fits the 9pt line; `d7cdc69a`-prefixed Aldus
 metafiles are rejected.
+
+Pictures stay off by default (`[emoji] inline=0`) because on a real Windows 98
+SE box inserting the first picture took the whole process down with a GPF
+inside RichEdit, and `:shortcode:` text is a much better outcome than that.
+With `inline=1` the log records `emoji picture <id>: streaming N chars of RTF`
+and the matching `streamin done, dwError N`; a crash between those two lines
+points at RichEdit's OLE insert, not at the rest of the app. The storage is an
+HGLOBAL-backed `ILockBytes` docfile (`CreateILockBytesOnHGlobal` plus
+`StgCreateDocfileOnILockBytes`) - the same shape WordPad hands over, and the one
+that works on 9x as well as NT.
 
 #### Agent loop and loop guard
 
@@ -816,9 +827,10 @@ Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位
 RichEdit 只会变成 `?`。AIagent98 的做法是先折叠、发送时再展开：
 
 - 对话区把 `😀` 画成素材里那张 16×16 的图标（以 RichEdit 对象流进去），
-  包里没有的 emoji 显示成 `[U+1FAF9]`，至少不是方块或问号
-- 素材缺失时，或机器上只有 RichEdit 1.0（没有 `riched20.dll`）时，同一段文本
-  退回显示 `:grinning_face:`
+  但默认不开，要先在 INI 里设 `[emoji] inline=1`；包里没有的 emoji 显示成
+  `[U+1FAF9]`，至少不是方块或问号
+- 图标关闭（默认）、素材缺失，或机器上只有 RichEdit 1.0（没有 `riched20.dll`）
+  时，同一段文本退回显示 `:grinning_face:`
 - 发送时反过来：从面板选中（或手打）的 `:shortcode:` 会还原成真正的 emoji
   发给模型
 - **Emoji** 按钮或 **Tools -> Insert emoji...**（`Ctrl+J`）打开面板：过滤框 +
@@ -849,6 +861,14 @@ BMP、72 px PNG，约 11 MiB）继续由 `.gitignore` 挡住，所以 clone 下�
 RTF 里的 `\pict` 组然后不报错地丢掉——这正是之前对话区只有文本的原因。每张图
 都是从 24 px 素材录制到 16 px 的裸（非 placeable）metafile，刚好塞进 9pt 的行；
 带 `d7cdc69a` Aldus 头的 metafile 会被拒绝。
+
+图标默认是关的（`[emoji] inline=0`）：真机 Win98 SE 上插第一张图就把整个进程
+带崩了（RichEdit 内部 GPF），而显示 `:shortcode:` 文本远比崩溃好。设
+`inline=1` 后，日志里会依次出现 `emoji picture <id>: streaming N chars of RTF`
+和 `streamin done, dwError N`；如果崩溃恰好停在两行之间，问题就在 RichEdit 的
+OLE 插入，跟程序其它部分无关。存储用的是 HGLOBAL 支撑的 `ILockBytes` docfile
+（`CreateILockBytesOnHGlobal` + `StgCreateDocfileOnILockBytes`），也就是
+WordPad 自己交给 RichEdit 的那种，9x 和 NT 都能用。
 
 #### Agent 循环与死循环保护
 
