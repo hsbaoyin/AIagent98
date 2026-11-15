@@ -13,6 +13,7 @@
 #define IDD_ABOUT          202
 #define IDD_FIRSTRUN       203
 #define IDD_INPUTLINE      204
+#define IDD_EMOJI          205
 
 #define IDC_TRANSCRIPT     1000
 #define IDC_INPUT          1001
@@ -24,6 +25,7 @@
 #define IDC_SESSION_LABEL  1007
 #define IDC_SESSION        1008
 #define IDC_OPEN_WORKSPACE 1009
+#define IDC_EMOJI          1010
 
 #define IDM_NEW            40001
 #define IDM_SAVE           40002
@@ -38,6 +40,7 @@
 #define IDM_SESSION_DELETE 40011
 #define IDM_SESSION_RENAME 40012
 #define IDM_OPENLOG        40013
+#define IDM_EMOJI          40014
 
 #define IDC_PROVIDER       2000
 #define IDC_API_BASE       2001
@@ -60,5 +63,9 @@
 
 #define IDC_INPUTLINE_LABEL 2102
 #define IDC_INPUTLINE_EDIT  2103
+
+#define IDC_EMOJI_LIST     2104
+#define IDC_EMOJI_FILTER   2105
+#define IDC_EMOJI_HINT     2106
 
 #endif /* A98_GUI_RESOURCE_H */

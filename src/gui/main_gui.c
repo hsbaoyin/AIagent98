@@ -24,6 +24,8 @@
 #endif
 
 #include "resource.h"
+#include "emoji.h"
+#include "emoji_ui.h"
 
 #include "../core/base.h"
 #include "../core/config.h"
@@ -163,6 +165,7 @@ typedef struct {
     HWND newbtn;
     HWND settings;
     HWND workspace_btn;
+    HWND emoji_btn;
     HWND session_label;
     HWND session_combo;
     HWND statusbar;
@@ -516,7 +519,15 @@ static void transcript_append_colored_bg(App *app, const char *utf8,
             str_append_char(&s, utf8[i]);
         }
     }
-    acp = a98_utf8_to_acp(str_cstr(&s));
+    /* Windows 9x has no emoji font and the local code page cannot hold an
+     * emoji code point, so fold emoji into ":shortcode:" before the ANSI
+     * conversion; otherwise every one of them arrives as '?'. */
+    {
+        char *folded = a98_emoji_fold(str_cstr(&s));
+
+        acp = a98_utf8_to_acp(folded != NULL ? folded : str_cstr(&s));
+        a98_free(folded);
+    }
     str_free(&s);
     if (acp == NULL) {
         return;
@@ -1581,11 +1592,49 @@ static void do_send(App *app)
         return;
     }
 
-    input_history_add(app, text);
+    {
+        /* ":shortcode:" from the picker (or typed by hand) goes to the model
+         * as the real emoji; the transcript folds it back for display, and
+         * the prompt history keeps the readable form. */
+        char *display = a98_emoji_fold(text);
+        char *expanded = a98_emoji_expand(text);
+
+        if (expanded != NULL) {
+            a98_free(text);
+            text = expanded;
+        }
+        input_history_add(app, display != NULL ? display : text);
+        a98_free(display);
+    }
     SetWindowTextA(app->input, "");
     app->input_history_pos = app->input_history_count;
     start_request(app, text);
     a98_free(text);
+}
+
+/* Tools > Insert emoji (Ctrl+J) and the Emoji button: open the picker and
+ * drop its ":shortcode:" at the caret. */
+static void do_emoji_pick(App *app)
+{
+    char token[160];
+
+    if (app == NULL) {
+        return;
+    }
+    if (app->running) {
+        msgbox_utf8(app->hwnd, "Stop the current request first.",
+                    MB_OK | MB_ICONINFORMATION);
+        return;
+    }
+    if (!a98_emoji_pick(app->hinst, app->hwnd, app->exe_dir, token,
+                        sizeof(token))) {
+        return;
+    }
+    /* EM_REPLACESEL inserts at the caret and replaces a selection, which is
+     * exactly how typing an emoji should behave.  The token is plain ASCII,
+     * so no code page conversion is needed. */
+    SendMessageA(app->input, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)token);
+    SetFocus(app->input);
 }
 
 /* Ctrl+R / File > Resend last message. */
@@ -2735,6 +2784,7 @@ static void layout(App *app)
     MoveWindow(app->newbtn, margin + 136, y, 64, btn_h, TRUE);
     MoveWindow(app->settings, margin + 204, y, 72, btn_h, TRUE);
     MoveWindow(app->workspace_btn, margin + 280, y, 84, btn_h, TRUE);
+    MoveWindow(app->emoji_btn, margin + 368, y, 60, btn_h, TRUE);
 
     iy = y - 4 - input_h;
     if (iy < margin + top_h + 4 + 40) {
@@ -2905,6 +2955,10 @@ static void create_controls(App *app, HWND hwnd)
                                          BS_PUSHBUTTON, 0, 0, 84, 24, hwnd,
                                          (HMENU)IDC_OPEN_WORKSPACE, app->hinst,
                                          NULL);
+    app->emoji_btn = CreateWindowExA(0, "BUTTON", "Emoji",
+                                     WS_CHILD | WS_VISIBLE | WS_TABSTOP |
+                                     BS_PUSHBUTTON, 0, 0, 60, 24, hwnd,
+                                     (HMENU)IDC_EMOJI, app->hinst, NULL);
 
     app->session_label = CreateWindowExA(0, "STATIC", "History:",
                                          WS_CHILD | WS_VISIBLE | SS_LEFT |
@@ -2929,6 +2983,7 @@ static void create_controls(App *app, HWND hwnd)
         SendMessageA(app->newbtn, WM_SETFONT, (WPARAM)app->font, TRUE);
         SendMessageA(app->settings, WM_SETFONT, (WPARAM)app->font, TRUE);
         SendMessageA(app->workspace_btn, WM_SETFONT, (WPARAM)app->font, TRUE);
+        SendMessageA(app->emoji_btn, WM_SETFONT, (WPARAM)app->font, TRUE);
         SendMessageA(app->session_label, WM_SETFONT, (WPARAM)app->font, TRUE);
         SendMessageA(app->session_combo, WM_SETFONT, (WPARAM)app->font, TRUE);
         SendMessageA(app->statusbar, WM_SETFONT, (WPARAM)app->font, TRUE);
@@ -3092,6 +3147,10 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         case IDC_SETTINGS:
         case IDM_SETTINGS:
             do_settings(app);
+            return 0;
+        case IDC_EMOJI:
+        case IDM_EMOJI:
+            do_emoji_pick(app);
             return 0;
         case IDC_OPEN_WORKSPACE:
         case IDM_WORKSPACE:

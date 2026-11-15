@@ -289,6 +289,38 @@ The 800x600 GUI keeps a 90s console look:
 - **Tools -> Open workspace** (or the **Workspace** button) opens the workspace
   folder in Explorer.
 
+#### Emoji
+
+Windows 9x has no color emoji font, and the local ANSI code page cannot hold an
+emoji code point, so an emoji pushed straight into a RichEdit control arrived as
+a `?`. AIagent98 folds it instead:
+
+- the transcript shows `😀` as `:grinning_face:`; an emoji the pack does not
+  carry shows as `[U+1FAF9]`, which still beats a box
+- the reverse happens on send: a `:shortcode:` from the picker (or typed by
+  hand) leaves the machine as the real emoji, so the model sees the character
+- **Emoji** button or **Tools -> Insert emoji...** (`Ctrl+J`) opens the picker:
+  a filter box plus the pack's 24x24 BMP artwork, double-click to insert at the
+  caret
+
+The 1219-icon pack is not in the repository (`.gitignore` keeps 25 MB of BMPs
+out of it), but the picker finds it wherever it actually sits. For the EXE
+directory it tries, in order:
+
+1. `<exe dir>\emoji\bmp\24` - the release layout
+2. `<exe dir>\assets\bmp\24` - the pack unzipped next to the EXE
+3. `<exe dir>\AIagent98-Emoji-Pack-v2.0\assets\bmp\24` - the source/build tree
+
+If none of those exist it repeats the same three for each parent of the EXE
+directory, then for the current directory and its parents, five levels up. So
+`build\cmake\agent98.exe` and `build\ow\agent98.exe` use the pack at the
+repository root with nothing to copy, and a release install only needs the BMPs
+in `emoji\bmp\24` beside the EXE. With no artwork anywhere the picker lists
+shortcodes only and everything else keeps working. The picker uses a list view,
+so Windows 95 needs the common controls from IE3 or later (98/Me ship them). `src/gui/emoji_table.h` is generated from the pack's
+`mapping/emoji.csv` by `tools\gen_emoji_table.ps1`. Artwork derives from Noto
+Color Emoji (SIL OFL 1.1): keep the pack's `LICENSE-NOTO.txt` beside the BMPs.
+
 #### Agent loop and loop guard
 
 One user turn is a loop of API rounds followed by tool execution. `max_steps`
@@ -468,8 +500,23 @@ cmake -B build\cmake -G "MinGW Makefiles" & cmake --build build\cmake --target t
 Or compile the source list in `build/host/sources.rsp` (everything except the
 CLI entry point, so `tests/test_tools.c`'s `main` does not collide).
 
-The expected output ends with `all tool tests passed`; the file also checks the
-`rmdir_force` workspace-root guard.
+The expected output ends with `all tool tests passed`; the file also checks
+the `rmdir_force` workspace-root guard.
+
+#### Emoji test
+
+```bat
+cmake -B build\cmake -G "MinGW Makefiles"
+cmake --build build\cmake --target test_emoji
+build\cmake\test_emoji.exe
+```
+
+It checks the shortcode table and the fold/expand round trip, then the asset
+search against the real pack (the directory it resolves, the BMP for U+1F600,
+a 24x24 LoadImage), the release `emoji\bmp\24` layout via a fixture under
+`build\`, the no-artwork degradation path, and - without ever showing a window -
+that `IDD_EMOJI` is created, loads 1219 icons and lists 1219 rows. Run it from
+the repository root; the expected last line is `all emoji tests passed`.
 
 #### Tool registry check
 
@@ -741,6 +788,33 @@ model=llama3.1
 - **Tools -> Open workspace**（或 **Workspace** 按钮）在资源管理器中打开
   workspace 目录。
 
+#### Emoji
+
+Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位，直接塞进
+RichEdit 只会变成 `?`。AIagent98 的做法是先折叠、发送时再展开：
+
+- 对话区把 `😀` 显示成 `:grinning_face:`，包里没有的 emoji 显示成
+  `[U+1FAF9]`，至少不是方块或问号
+- 发送时反过来：从面板选中（或手打）的 `:shortcode:` 会还原成真正的 emoji
+  发给模型
+- **Emoji** 按钮或 **Tools -> Insert emoji...**（`Ctrl+J`）打开面板：过滤框 +
+  包里的 24×24 BMP 图标，双击即插入光标处
+
+1219 个图标的 emoji 包不在仓库里（`.gitignore` 把 25 MB 的 BMP 挡在外面），
+但面板会按素材实际位置去找。对 EXE 所在目录依次尝试：
+
+1. `<exe 目录>\emoji\bmp\24`（发布安装的布局）
+2. `<exe 目录>\assets\bmp\24`（把包解压在 EXE 旁）
+3. `<exe 目录>\AIagent98-Emoji-Pack-v2.0\assets\bmp\24`（源码/构建树）
+
+三条都不中时，就对 EXE 目录的每一级父目录重复这三条，再从当前目录及其父目录
+往上找，最多五级。所以 `build\cmake\agent98.exe`、`build\ow\agent98.exe`
+不用复制任何文件就能用到仓库根目录的素材包；发布安装只需把 BMP 放进 EXE 旁的
+`emoji\bmp\24`。完全找不到素材时面板只列 shortcode，其他功能照常。面板用的是
+列表视图控件，Win95 需要 IE3 以上的 comctl32，98/Me 自带。`src/gui/emoji_table.h` 由 `tools\gen_emoji_table.ps1`
+从包的 `mapping/emoji.csv` 生成。图标来自 Noto Color Emoji（SIL OFL 1.1），
+请把包的 `LICENSE-NOTO.txt` 和 BMP 一起保留。
+
 #### Agent 循环与死循环保护
 
 一轮用户对话由多次 API 请求和工具执行组成。`max_steps` 限制工具轮数，默认
@@ -901,6 +975,20 @@ gcc -std=c99 -O1 -w -Isrc -Isrc/core -Isrc/agent -Isrc/net ^
 
 输出以 `all tool tests passed` 结尾；该测试同时覆盖 `rmdir_force` 的
 workspace 根目录守卫。
+
+#### Emoji 测试
+
+```bat
+cmake -B build\cmake -G "MinGW Makefiles"
+cmake --build build\cmake --target test_emoji
+build\cmake\test_emoji.exe
+```
+
+覆盖 shortcode 表和折叠/展开往返，再用真实素材目录断言定位结果（返回的目录、
+U+1F600 对应的 BMP、LoadImage 得到 24×24），检查 `build\` 下模拟的发布布局
+`emoji\bmp\24`、无素材时的降级路径，以及不显示任何窗口地证明 `IDD_EMOJI` 能
+创建、加载 1219 个图标并列出 1219 行。在仓库根目录运行，最后一行应为
+`all emoji tests passed`。
 
 #### 工具注册检查
 

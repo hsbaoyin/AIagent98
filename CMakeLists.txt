@@ -52,6 +52,12 @@ target_link_libraries(agent98 PRIVATE agent98_core comctl32 shell32)
 add_executable(test_tools tests/test_tools.c)
 target_link_libraries(test_tools PRIVATE agent98_core)
 
+# Emoji pack pipeline: fold/expand round trip, asset location and the BMP
+# asset contract, plus a dialog probe that builds IDD_EMOJI without showing it
+# (see tests/test_emoji.c).  gui.rc is compiled in so the template exists.
+add_executable(test_emoji tests/test_emoji.c src/gui/gui.rc)
+target_link_libraries(test_emoji PRIVATE agent98_core comctl32)
+
 add_executable(tlsprobe src/tlsprobe.c)
 target_link_libraries(tlsprobe PRIVATE agent98_core)
 

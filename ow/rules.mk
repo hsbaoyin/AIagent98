@@ -3,64 +3,70 @@
 PROJECT_CFLAGS = -c -bt=nt -bm -zq -za99 -ox -i=src -i=src\core -i=src\agent -i=src\net -i=src\gui -i=third_party\cjson -i=third_party\bearssl\inc -i=third_party\bearssl\src
 BEARSSL_CFLAGS = -c -bt=nt -bm -zq -ox -i=third_party\bearssl\inc -i=third_party\bearssl\src
 
-build\ow\obj\agent.obj: src\agent\agent.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\agent.obj: src\agent\agent.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\agent\agent.c
 
-build\ow\obj\api_openai.obj: src\agent\api_openai.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\api_openai.obj: src\agent\api_openai.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\agent\api_openai.c
 
-build\ow\obj\jsonutil.obj: src\agent\jsonutil.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\jsonutil.obj: src\agent\jsonutil.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\agent\jsonutil.c
 
-build\ow\obj\message.obj: src\agent\message.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\message.obj: src\agent\message.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\agent\message.c
 
-build\ow\obj\tools.obj: src\agent\tools.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\tools.obj: src\agent\tools.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\agent\tools.c
 
-build\ow\obj\base.obj: src\core\base.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\base.obj: src\core\base.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\base.c
 
-build\ow\obj\config.obj: src\core\config.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\config.obj: src\core\config.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\config.c
 
-build\ow\obj\log.obj: src\core\log.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\log.obj: src\core\log.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\log.c
 
-build\ow\obj\path.obj: src\core\path.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\path.obj: src\core\path.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\path.c
 
-build\ow\obj\str.obj: src\core\str.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\str.obj: src\core\str.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\str.c
 
-build\ow\obj\utf8.obj: src\core\utf8.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\utf8.obj: src\core\utf8.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\core\utf8.c
 
-build\ow\obj\main_gui.obj: src\gui\main_gui.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\emoji.obj: src\gui\emoji.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\gui\emoji.c
+
+build\ow\obj\emoji_ui.obj: src\gui\emoji_ui.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\gui\emoji_ui.c
+
+build\ow\obj\main_gui.obj: src\gui\main_gui.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\gui\main_gui.c
 
-build\ow\obj\main.obj: src\main.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\main.obj: src\main.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\main.c
 
-build\ow\obj\body.obj: src\net\body.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\body.obj: src\net\body.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\net\body.c
 
-build\ow\obj\http.obj: src\net\http.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\http.obj: src\net\http.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\net\http.c
 
-build\ow\obj\net_tls.obj: src\net\net_tls.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\net_tls.obj: src\net\net_tls.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\net\net_tls.c
 
-build\ow\obj\sse.obj: src\net\sse.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\sse.obj: src\net\sse.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\net\sse.c
 
-build\ow\obj\url.obj: src\net\url.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\url.obj: src\net\url.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\net\url.c
 
-build\ow\obj\tlsprobe.obj: src\tlsprobe.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\tlsprobe.obj: src\tlsprobe.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\tlsprobe.c
 
-build\ow\obj\trust_anchors.obj: src\trust_anchors.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
+build\ow\obj\trust_anchors.obj: src\trust_anchors.c src\agent\agent.h src\agent\api_openai.h src\agent\jsonutil.h src\agent\message.h src\agent\tools.h src\core\base.h src\core\config.h src\core\log.h src\core\path.h src\core\str.h src\core\utf8.h src\gui\emoji.h src\gui\emoji_table.h src\gui\emoji_ui.h src\gui\resource.h src\net\body.h src\net\http.h src\net\net.h src\net\sse.h src\net\url.h src\trust_anchors.h third_party\cjson\cJSON.h
 	$(CC) $(PROJECT_CFLAGS) -fo=$@ src\trust_anchors.c
 
 build\ow\obj\cjson.obj: third_party\cjson\cJSON.c third_party\cjson\cJSON.h
@@ -910,6 +916,8 @@ OBJS += build\ow\obj\log.obj
 OBJS += build\ow\obj\path.obj
 OBJS += build\ow\obj\str.obj
 OBJS += build\ow\obj\utf8.obj
+OBJS += build\ow\obj\emoji.obj
+OBJS += build\ow\obj\emoji_ui.obj
 OBJS += build\ow\obj\body.obj
 OBJS += build\ow\obj\http.obj
 OBJS += build\ow\obj\net_tls.obj
@@ -1208,6 +1216,8 @@ GUI_OBJS += build\ow\obj\log.obj
 GUI_OBJS += build\ow\obj\path.obj
 GUI_OBJS += build\ow\obj\str.obj
 GUI_OBJS += build\ow\obj\utf8.obj
+GUI_OBJS += build\ow\obj\emoji.obj
+GUI_OBJS += build\ow\obj\emoji_ui.obj
 GUI_OBJS += build\ow\obj\body.obj
 GUI_OBJS += build\ow\obj\http.obj
 GUI_OBJS += build\ow\obj\net_tls.obj
@@ -1506,6 +1516,8 @@ PROBE_OBJS += build\ow\obj\log.obj
 PROBE_OBJS += build\ow\obj\path.obj
 PROBE_OBJS += build\ow\obj\str.obj
 PROBE_OBJS += build\ow\obj\utf8.obj
+PROBE_OBJS += build\ow\obj\emoji.obj
+PROBE_OBJS += build\ow\obj\emoji_ui.obj
 PROBE_OBJS += build\ow\obj\body.obj
 PROBE_OBJS += build\ow\obj\http.obj
 PROBE_OBJS += build\ow\obj\net_tls.obj

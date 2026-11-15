@@ -24,6 +24,7 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
+        MENUITEM "Insert &emoji...",         IDM_EMOJI
         MENUITEM "&Open workspace",          IDM_WORKSPACE
         MENUITEM "&Settings...",             IDM_SETTINGS
         MENUITEM SEPARATOR
@@ -44,6 +45,7 @@ BEGIN
     "S", IDM_SAVE, VIRTKEY, CONTROL
     "O", IDM_LOAD, VIRTKEY, CONTROL
     "E", IDM_EXPORT, VIRTKEY, CONTROL
+    "J", IDM_EMOJI, VIRTKEY, CONTROL
 END
 
 IDD_SETTINGS DIALOG 0, 0, 360, 260
@@ -134,4 +136,20 @@ BEGIN
     EDITTEXT        IDC_INPUTLINE_EDIT, 8, 22, 284, 12, ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK", IDOK, 186, 44, 50, 14
     PUSHBUTTON      "Cancel", IDCANCEL, 242, 44, 50, 14
+END
+
+/* Win9x has no emoji font, so the picker shows the pack's BMP artwork and
+ * hands the input line a ":shortcode:" instead of a character it cannot
+ * display.  SysListView32 is a common control (comctl32 4.70+). */
+IDD_EMOJI DIALOG 0, 0, 344, 250
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Insert emoji"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Filter:", -1, 8, 9, 24, 8
+    EDITTEXT        IDC_EMOJI_FILTER, 34, 7, 100, 12, ES_AUTOHSCROLL
+    LTEXT           "", IDC_EMOJI_HINT, 140, 9, 196, 16
+    CONTROL         "", IDC_EMOJI_LIST, "SysListView32", LVS_ICON | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | WS_BORDER | WS_TABSTOP | WS_VSCROLL, 8, 28, 328, 192
+    DEFPUSHBUTTON   "Insert", IDOK, 226, 228, 52, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 284, 228, 52, 14
 END
