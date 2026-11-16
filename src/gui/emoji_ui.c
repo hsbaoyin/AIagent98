@@ -30,6 +30,20 @@
  * list is easier to hit with 24. */
 #define A98_EMOJI_ICON 24
 
+/* The dialog keeps PickCtx* in its DWLP_USER slot.  That slot holds a
+ * POINTER: the plain SetWindowLongA/GetWindowLongA pair truncates it to
+ * 32 bits on x64, and the sign-extended garbage pointer then faults the
+ * process the first time insert_selected() runs.  Win9x has no
+ * SetWindowLongPtrA export, so 32-bit builds keep the plain call (there a
+ * LONG is pointer-sized and correct). */
+#ifdef _WIN64
+#define A98_DLG_GETPTR(dlg, idx) GetWindowLongPtrA(dlg, idx)
+#define A98_DLG_SETPTR(dlg, idx, v) SetWindowLongPtrA(dlg, idx, (LONG_PTR)(v))
+#else
+#define A98_DLG_GETPTR(dlg, idx) GetWindowLongA(dlg, idx)
+#define A98_DLG_SETPTR(dlg, idx, v) SetWindowLongA(dlg, idx, (LONG)(v))
+#endif
+
 typedef struct {
     const char *exe_dir;
     char *out;
@@ -169,12 +183,12 @@ static void insert_selected(PickCtx *ctx)
 
 static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
-    PickCtx *ctx = (PickCtx *)GetWindowLongA(dlg, DWLP_USER);
+    PickCtx *ctx = (PickCtx *)A98_DLG_GETPTR(dlg, DWLP_USER);
 
     switch (msg) {
     case WM_INITDIALOG:
         ctx = (PickCtx *)lp;
-        SetWindowLongA(dlg, DWLP_USER, (LONG)ctx);
+        A98_DLG_SETPTR(dlg, DWLP_USER, ctx);
         g_dlg = dlg;
         g_image_count = 0;
         g_asset_dir[0] = '\0';

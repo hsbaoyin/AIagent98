@@ -3126,8 +3126,17 @@ static void create_controls(App *app, HWND hwnd)
         ReleaseDC(app->transcript, dc);
     }
 
+    /* The window-long slot carries a function POINTER: on x64 the plain
+     * SetWindowLongA truncates it, so use the Ptr call there.  Win9x has no
+     * SetWindowLongPtrA export and a 32-bit LONG is pointer-sized, so 32-bit
+     * builds keep the original call. */
+#ifdef _WIN64
+    g_input_oldproc = (WNDPROC)SetWindowLongPtrA(app->input, GWLP_WNDPROC,
+                                                 (LONG_PTR)input_proc);
+#else
     g_input_oldproc = (WNDPROC)SetWindowLongA(app->input, GWL_WNDPROC,
-                                             (LONG)input_proc);
+                                              (LONG)input_proc);
+#endif
 }
 
 /* ------------------------------------------------------------------ */

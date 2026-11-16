@@ -5,6 +5,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- The emoji picker crashed the whole program the moment an emoji was
+  confirmed (Insert button, Enter or double-click) on 64-bit host builds:
+  `emoji_proc` stored the dialog's `PickCtx*` in the `DWLP_USER` slot with
+  `SetWindowLongA`, which truncates a 64-bit pointer; `insert_selected` then
+  dereferenced the sign-extended garbage and took a 0xC0000005 (seen live:
+  faulting instruction `cmpq $0x0,0x8(%r10)` at `insert_selected+0x1b`, the
+  read address was the truncated stack address). The slot is now accessed
+  through `SetWindowLongPtrA`/`GetWindowLongPtrA` on `_WIN64` builds while
+  32-bit builds (Win98, Watcom) keep the plain call, which is correct there
+  and exports nothing new. The input line subclass had the same latent
+  truncation (`SetWindowLongA(GWL_WNDPROC)`), which silently broke
+  Enter-to-send on 64-bit builds; it now uses `SetWindowLongPtrA` too.
+
 ### Added
 
 - Emoji support: the transcript now draws each emoji from the model as the
