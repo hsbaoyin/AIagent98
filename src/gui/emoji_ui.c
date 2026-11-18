@@ -565,21 +565,29 @@ static const char *pic_dir(const char *exe_dir)
     return g_pic_state > 0 ? g_pic_dir : NULL;
 }
 
-/* Hex form of a one-record metafile that draws the BMP at the inline size. */
+/* Hex form of a one-record metafile that draws the BMP at the inline size.
+ *
+ * SetDIBitsToDevice() into a metafile DC records META_SETDIBTODEV but drops
+ * the DIB bits on NT, so playback is blank.  A DIB-section source DC blitted
+ * into the metafile records META_DIBBITBLT with the pixel bits embedded,
+ * which is the form Riched20 actually paints.  Map the 24px art down to the
+ * inline size through a 1:1 window/viewport extent so the display size is
+ * right.  The RTF header's \picw/\pich describe the metafile's size in
+ * 0.01mm/HIMETRIC units; \picwgoal/\pichgoal (twips) set the display size. */
 static char *pic_metafile_hex(const char *path)
 {
     static const char digits[] = "0123456789abcdef";
     HBITMAP bmp;
     DIBSECTION ds;
-    BITMAPINFO bmi;
     HDC mf;
+    HDC src;
+    HBITMAP old;
     HMETAFILE hmf;
     HGLOBAL h;
     UINT size;
     const unsigned char *bits;
     char *hex;
     size_t i;
-    int w;
     int hgt;
 
     bmp = (HBITMAP)LoadImageA(NULL, path, IMAGE_BITMAP, 0, 0,
@@ -592,27 +600,36 @@ static char *pic_metafile_hex(const char *path)
         DeleteObject(bmp);
         return NULL;
     }
-    w = (int)ds.dsBmih.biWidth;
     hgt = (int)ds.dsBmih.biHeight;
     if (hgt < 0) {
         hgt = -hgt;
     }
-    if (w <= 0 || hgt <= 0) {
+    if (ds.dsBmih.biWidth <= 0 || hgt <= 0) {
         DeleteObject(bmp);
         return NULL;
     }
-    memset(&bmi, 0, sizeof(bmi));
-    bmi.bmiHeader = ds.dsBmih;
-    bmi.bmiHeader.biHeight = hgt;
+
+    src = CreateCompatibleDC(NULL);
+    if (src == NULL) {
+        DeleteObject(bmp);
+        return NULL;
+    }
+    old = (HBITMAP)SelectObject(src, bmp);
 
     mf = CreateMetaFileA(NULL);
-    if (mf == NULL) {
-        DeleteObject(bmp);
-        return NULL;
+    if (mf != NULL) {
+        SetMapMode(mf, MM_ANISOTROPIC);
+        SetWindowExtEx(mf, A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX, NULL);
+        SetViewportExtEx(mf, A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX, NULL);
+        BitBlt(mf, 0, 0, (int)ds.dsBmih.biWidth, hgt, src, 0, 0, SRCCOPY);
+        hmf = CloseMetaFile(mf);
+    } else {
+        hmf = NULL;
     }
-    SetDIBitsToDevice(mf, 0, 0, A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX, 0,
-                      0, 0, hgt, ds.dsBm.bmBits, &bmi, DIB_RGB_COLORS);
-    hmf = CloseMetaFile(mf);
+    if (old != NULL) {
+        SelectObject(src, old);
+    }
+    DeleteDC(src);
     DeleteObject(bmp);
     if (hmf == NULL) {
         return NULL;
@@ -668,12 +685,19 @@ char *a98_emoji_picture_rtf(const char *exe_dir, const A98EmojiEntry *e)
     if (hex == NULL) {
         return NULL;
     }
-    snprintf(head, sizeof(head),
-             "{\\rtf1\\ansi\\deff0{\\pict\\wmetafile8"
-             "\\picw%d\\pich%d\\picwgoal%d\\pichgoal%d ",
-             A98_EMOJI_INLINE_PX, A98_EMOJI_INLINE_PX,
-             A98_EMOJI_INLINE_PX * A98_EMOJI_TWIPS_PER_PX,
-             A98_EMOJI_INLINE_PX * A98_EMOJI_TWIPS_PER_PX);
+    /* \picw/\pich are in hundredths of a millimetre (0.01mm / HIMETRIC):
+     * 16px at 96dpi is ~423 units.  The old value of 16 described a
+     * 0.16mm picture, so RichEdit reserved \picwgoal space but scaled the
+     * metafile down to a sub-pixel smudge.  \picwgoal/\pichgoal are twips
+     * and set the actual displayed size. */
+    {
+        int hm = A98_EMOJI_INLINE_PX * 2540 / 96;
+        int goal = A98_EMOJI_INLINE_PX * A98_EMOJI_TWIPS_PER_PX;
+        snprintf(head, sizeof(head),
+                 "{\\rtf1\\ansi\\deff0{\\pict\\wmetafile8"
+                 "\\picw%d\\pich%d\\picwgoal%d\\pichgoal%d ",
+                 hm, hm, goal, goal);
+    }
     cap = strlen(head) + strlen(hex) + 3;
     out = (char *)a98_alloc(cap);
     if (out != NULL) {

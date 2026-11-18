@@ -19,6 +19,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   and exports nothing new. The input line subclass had the same latent
   truncation (`SetWindowLongA(GWL_WNDPROC)`), which silently broke
   Enter-to-send on 64-bit builds; it now uses `SetWindowLongPtrA` too.
+- Inline emoji pictures were reserved in the transcript (a blank gap) but the
+  artwork never painted, so the GUI looked like the emoji had been dropped.
+  Two causes: the metafile was recorded with `SetDIBitsToDevice`, which on NT
+  writes a `META_SETDIBTODEV` record with the DIB bits stripped out (playback
+  is blank), and the RTF `\picw`/`\pich` used raw pixels (16) where
+  `\wmetafile8` expects 0.01mm/HIMETRIC units (423 for 16 px at 96 dpi), so
+  RichEdit scaled the picture down to a sub-pixel smudge. The metafile is now
+  recorded by `BitBlt`-ing the loaded DIB section through a 1:1 window/viewport
+  extent, producing an old-style `META_DIBBITBLT` (0x0940) record that Win9x
+  Riched20 paints, with the header sizes corrected. Verified in-process by
+  streaming the real RTF into a RichEdit20A control and counting coloured
+  pixels before/after insertion (0 -> ~177, a correctly shaped 16x16 face),
+  and end-to-end with `[emoji] inline=1` (pictures stream in, `dwError 0`, no
+  crash). The Win98 default stays `inline=0`.
 
 ### Added
 

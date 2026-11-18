@@ -416,7 +416,10 @@ static void test_transcript_pictures(const char *exe_dir)
     ok(strncmp(rtf, "{\\rtf1", 6) == 0, "the picture is a complete RTF body");
     ok(strstr(rtf, "\\wmetafile8") != NULL,
        "the picture is a \\wmetafile8 (what WordPad also writes)");
-    ok(strstr(rtf, "\\picw16\\pich16") != NULL,
+    /* \picw/\pich are 0.01mm (HIMETRIC): 16px @96dpi is ~423, not 16. */
+    ok(strstr(rtf, "\\picw423\\pich423") != NULL,
+       "the picture declares its native size in HIMETRIC units");
+    ok(strstr(rtf, "\\picwgoal240\\pichgoal240") != NULL,
        "the picture is laid out at the 16 px inline size");
     ok(strstr(rtf, "d7cdc69a") == NULL,
        "the metafile carries no Aldus prefix RichEdit would reject");
