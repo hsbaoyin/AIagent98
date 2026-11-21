@@ -2343,6 +2343,8 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                        app->cfg.tls_verify ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_ALLOW_SHELL,
                        app->cfg.allow_shell ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_FULL_ACCESS,
+                       app->cfg.full_access ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_STREAM,
                        app->cfg.stream ? BST_CHECKED : BST_UNCHECKED);
         dlg_set_utf8(dlg, IDC_TEST_RESULT, "");
@@ -2365,6 +2367,18 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             return TRUE;
         case IDC_TEST:
             settings_test_connection(dlg, app);
+            return TRUE;
+        case IDC_FULL_ACCESS:
+            if (HIWORD(wp) == BN_CLICKED &&
+                IsDlgButtonChecked(dlg, IDC_FULL_ACCESS) == BST_CHECKED) {
+                msgbox_utf8(dlg,
+                    "DANGER: full system access removes the workspace sandbox\n"
+                    "and the shell command ban list.\n\n"
+                    "The model will be able to read/write ANY file and run ANY\n"
+                    "COMMAND.COM command on this machine, including destructive\n"
+                    "ones. Only enable this on a disposable VM.",
+                    MB_OK | MB_ICONWARNING);
+            }
             return TRUE;
         case IDOK: {
             char *base;
@@ -2486,6 +2500,8 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 IsDlgButtonChecked(dlg, IDC_TLS_VERIFY) == BST_CHECKED;
             app->cfg.allow_shell =
                 IsDlgButtonChecked(dlg, IDC_ALLOW_SHELL) == BST_CHECKED;
+            app->cfg.full_access =
+                IsDlgButtonChecked(dlg, IDC_FULL_ACCESS) == BST_CHECKED;
             app->cfg.stream =
                 IsDlgButtonChecked(dlg, IDC_STREAM) == BST_CHECKED;
 

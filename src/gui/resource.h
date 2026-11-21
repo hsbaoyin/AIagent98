@@ -57,6 +57,7 @@
 #define IDC_EXTRA_HEADERS  2012
 #define IDC_TEST           2013
 #define IDC_TEST_RESULT    2014
+#define IDC_FULL_ACCESS    2015
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101

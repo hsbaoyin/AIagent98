@@ -65,8 +65,14 @@
 | web_search | no | Search via `[net] search_url` (default DuckDuckGo HTML); `max_results` |
 | gist_upload | yes | Upload a workspace file to a GitHub Gist; needs `[net] github_token` |
 
+## Dangerous option: full system access
+`[agent] full_access=1` (checkbox in Tools -> Settings...) removes all
+restrictions: paths are no longer confined to the workspace, the shell command
+ban list is skipped, and `allow_shell` is implied. Use it only on a disposable
+VM. `session_info` reports `sandbox: DISABLED` when it is active.
+
 ## Safety
-- All paths stay under workspace (resolve_path).
+- All paths stay under workspace (resolve_path) unless `full_access=1`.
 - Network tools are off unless `[net] allow=1`; optional `[net] allow_hosts` is a
   comma-separated host/suffix allow-list. Bodies are capped at `[net] max_bytes`
   (default 256 KB). `http_request` GET/HEAD do not prompt; methods that send

@@ -59,7 +59,7 @@ int tools_resolve_path(Agent *a, const char *user, char *out, size_t cap,
     }
     fs = local != NULL ? local : user;
 
-    if (!a->cfg->allow_outside) {
+    if (!a->cfg->allow_outside && !a->cfg->full_access) {
         rc = a98_path_resolve_in_root(a->workspace, fs, out, cap);
         if (rc == 0) {
             set_err(err, errcap, "path escapes the workspace: %s", user);
@@ -849,16 +849,17 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
         set_err(err, errcap, "command is required");
         return -1;
     }
-    if (a->cfg == NULL || !a->cfg->allow_shell) {
-        set_err(err, errcap, "shell commands are disabled in the configuration");
+    if (a->cfg == NULL || (!a->cfg->allow_shell && !a->cfg->full_access)) {
+        set_err(err, errcap,
+                "shell commands are disabled (allow_shell=1 or full_access=1 required)");
         return -1;
     }
 
-    /* Block obviously destructive Win9x shell commands unless user overrides
-     * via config (allow_shell is already required).  The scan must cover the
-     * whole command line: a 511-byte window let `format`/`deltree` hidden
+    /* Block obviously destructive Win9x shell commands. full_access=1 is the
+     * explicit escape hatch that removes this ban list. The scan must cover
+     * the whole command line: a 511-byte window let `format`/`deltree` hidden
      * further in (cmdline cap is 4096) slip through. */
-    {
+    if (!a->cfg->full_access) {
         static const char *const banned[] = {
             "format ", "format\t", "fdisk", "deltree ", "deltree\t",
             "rmdir /s", "rd /s", "erase /", "del /s", "del /f /s",
@@ -1561,10 +1562,20 @@ static int tool_session_info(Agent *a, cJSON *args, Str *out, char *err, size_t 
                 (unsigned long)vi.dwMajorVersion, (unsigned long)vi.dwMinorVersion,
                 (unsigned long)vi.dwBuildNumber, vi.szCSDVersion);
     str_appendf(out, "workspace: %s\n", a->workspace[0] ? a->workspace : "(none)");
+    str_appendf(out, "sandbox: %s\n",
+                a->cfg != NULL && a->cfg->full_access
+                ? "DISABLED (full_access=1: any path, any shell command)"
+                : (a->cfg != NULL && a->cfg->allow_outside
+                   ? "off (allow_outside=1)" : "on (workspace only)"));
+    str_appendf(out, "shell: %s\n",
+                a->cfg != NULL && (a->cfg->allow_shell || a->cfg->full_access)
+                ? "enabled" : "disabled");
     str_append_cstr(out, "tools: list_dir read_file write_file search_files run_command "
                    "mkdir delete_file rmdir rmdir_force move_file copy_file append_file "
                    "edit file_info touch set_attr tree wc which glob grep head tail "
-                   "diff checksum disk_info env session_info todo_read todo_write apply_patch\n");
+                   "diff checksum disk_info env session_info todo_read todo_write apply_patch "
+                   "build replace_across outline restore snapshot hexdump "
+                   "http_request http_download dns_resolve tcp_probe web_search gist_upload\n");
     return 0;
 }
 

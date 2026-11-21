@@ -72,6 +72,11 @@ the path, command line or variable name and marks HIGH RISK calls. `rmdir_force`
 always refuses the workspace root, even when the INI uses a relative path or a
 trailing separator.
 
+A dangerous **full system access** mode ([agent] full_access=1, or the
+checkbox in Tools -> Settings...) removes the workspace sandbox, implies shell
+access and skips the destructive-command ban list. It is off by default and
+intended only for disposable VMs; session_info reports sandbox: DISABLED.
+
 The console client adds `/tools`, `/stop`, `/export <file>` (CP_ACP + CRLF),
 `/workspace`, `/model` and `/config` (API key masked), plus `--ini`,
 `--workspace`, `--message`, `--yes` and `--no-shell`.
