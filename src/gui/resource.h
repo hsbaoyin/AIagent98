@@ -14,6 +14,7 @@
 #define IDD_FIRSTRUN       203
 #define IDD_INPUTLINE      204
 #define IDD_EMOJI          205
+#define IDD_TOOLS          206
 
 #define IDC_TRANSCRIPT     1000
 #define IDC_INPUT          1001
@@ -97,6 +98,8 @@
 #define IDC_L_NET1      2054
 #define IDC_L_NET2      2055
 #define IDC_L_NET3      2056
+#define IDC_TOOLS_LIST  2060
+#define IDC_TOOLS_DETAIL 2061
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101

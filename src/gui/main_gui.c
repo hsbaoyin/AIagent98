@@ -255,6 +255,7 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
+static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK firstrun_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK inputline_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static int input_line_box(HWND parent, const char *title, const char *label,
@@ -2721,6 +2722,80 @@ static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     return FALSE;
 }
 
+/* Show all tools in a scrollable list with a detail pane. The previous
+ * MessageBox truncated at 40 entries and had no scrollbar. */
+static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+    (void)lp;
+    switch (msg) {
+    case WM_INITDIALOG: {
+        int count = 0, i;
+        const ToolDef *all = tools_all(&count);
+        HWND list = GetDlgItem(dlg, IDC_TOOLS_LIST);
+        for (i = 0; i < count; i++) {
+            char label[160];
+            snprintf(label, sizeof(label), "%s%s", all[i].name,
+                     all[i].needs_confirm ? "  [confirm]" : "");
+            SendMessageA(list, LB_ADDSTRING, 0, (LPARAM)label);
+        }
+        if (count > 0) {
+            SendMessageA(list, LB_SETCURSEL, 0, 0);
+            /* fill detail for the first entry */
+            {
+                Str s;
+                char *acp;
+                str_init(&s);
+                str_appendf(&s, "%s\r\n\r\n%s\r\n\r\n%s",
+                            all[0].name,
+                            all[0].description ? all[0].description : "",
+                            all[0].params_json ? all[0].params_json : "");
+                acp = a98_utf8_to_acp(str_cstr(&s));
+                SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL,
+                                acp ? acp : str_cstr(&s));
+                a98_free(acp);
+                str_free(&s);
+            }
+        }
+        center_window(dlg);
+        return TRUE;
+    }
+    case WM_COMMAND:
+        if (LOWORD(wp) == IDOK || LOWORD(wp) == IDCANCEL) {
+            EndDialog(dlg, IDOK);
+            return TRUE;
+        }
+        if (LOWORD(wp) == IDC_TOOLS_LIST && HIWORD(wp) == LBN_SELCHANGE) {
+            HWND list = GetDlgItem(dlg, IDC_TOOLS_LIST);
+            int idx = (int)SendMessageA(list, LB_GETCURSEL, 0, 0);
+            int count = 0;
+            const ToolDef *all = tools_all(&count);
+            if (idx >= 0 && idx < count) {
+                Str s;
+                char *acp;
+                str_init(&s);
+                str_appendf(&s, "Name: %s\r\nConfirm: %s\r\n\r\n%s\r\n\r\nParameters:\r\n%s",
+                            all[idx].name,
+                            all[idx].needs_confirm ? "yes" : "no",
+                            all[idx].description ? all[idx].description : "",
+                            all[idx].params_json ? all[idx].params_json : "");
+                acp = a98_utf8_to_acp(str_cstr(&s));
+                SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL,
+                                acp ? acp : str_cstr(&s));
+                a98_free(acp);
+                str_free(&s);
+            }
+            return TRUE;
+        }
+        break;
+    case WM_CLOSE:
+        EndDialog(dlg, IDOK);
+        return TRUE;
+    default:
+        break;
+    }
+    return FALSE;
+}
+
 static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     (void)wp;
@@ -3398,25 +3473,8 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             return 0;
 
         case IDM_TOOLS_LIST:
-            {
-                int count = 0, ti;
-                const ToolDef *all = tools_all(&count);
-                Str s;
-                char *acp;
-                str_init(&s);
-                str_appendf(&s, "AIagent98 tools (%d):\r\n\r\n", count);
-                for (ti = 0; ti < count && ti < 40; ti++) {
-                    str_appendf(&s, "%s%s\r\n  %s\r\n",
-                                all[ti].name,
-                                all[ti].needs_confirm ? " [confirm]" : "",
-                                all[ti].description ? all[ti].description : "");
-                }
-                acp = a98_utf8_to_acp(str_cstr(&s));
-                MessageBoxA(hwnd, acp ? acp : str_cstr(&s), "Tools",
-                            MB_OK | MB_ICONINFORMATION);
-                a98_free(acp);
-                str_free(&s);
-            }
+            DialogBoxParamA(app->hinst, MAKEINTRESOURCEA(IDD_TOOLS),
+                            hwnd, tools_proc, 0);
             return 0;
         case IDM_ABOUT:
             DialogBoxParamA(app->hinst, MAKEINTRESOURCEA(IDD_ABOUT),
