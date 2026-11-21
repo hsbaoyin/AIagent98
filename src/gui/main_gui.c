@@ -2302,6 +2302,35 @@ static void do_settings(App *app)
 /* Dialogs                                                             */
 /* ------------------------------------------------------------------ */
 
+/* Show only the controls belonging to the selected settings tab. */
+static void settings_show_tab(HWND dlg, int sel)
+{
+    static const int page[3][24] = {
+        { IDC_L_PROVIDER, IDC_PROVIDER, IDC_L_PRESET, IDC_L_API_BASE,
+          IDC_API_BASE, IDC_L_API_KEY, IDC_API_KEY, IDC_L_MODEL, IDC_MODEL,
+          IDC_L_PROMPT, IDC_SYSTEM_PROMPT, IDC_L_TEMP, IDC_TEMPERATURE,
+          IDC_L_MAXTOK, IDC_MAX_TOKENS, IDC_L_MAXSTEP, IDC_MAX_STEPS,
+          IDC_L_HEADERS, IDC_EXTRA_HEADERS, IDC_STREAM, IDC_TEST,
+          IDC_TEST_RESULT, 0 },
+        { IDC_L_WORKSPACE, IDC_WORKSPACE, IDC_ALLOW_SHELL, IDC_ALLOW_OUTSIDE,
+          IDC_TLS_VERIFY, IDC_EMOJI_INLINE, IDC_L_CONNTO, IDC_CONNECT_TIMEOUT,
+          IDC_L_REQTO, IDC_REQUEST_TIMEOUT, IDC_L_LOG, IDC_LOG_LEVEL,
+          IDC_FULL_ACCESS, IDC_AUTO_CONFIRM, IDC_L_WARN1, IDC_L_WARN2, 0 },
+        { IDC_NET_ALLOW, IDC_L_HOSTS, IDC_NET_ALLOW_HOSTS, IDC_L_MAXBYTES,
+          IDC_NET_MAX_BYTES, IDC_L_SEARCHURL, IDC_NET_SEARCH_URL, IDC_L_TOKEN,
+          IDC_NET_GITHUB_TOKEN, IDC_L_NET1, IDC_L_NET2, IDC_L_NET3, 0 }
+    };
+    int t, i;
+    if (sel < 0) sel = 0;
+    if (sel > 2) sel = 2;
+    for (t = 0; t < 3; t++) {
+        for (i = 0; page[t][i] != 0; i++) {
+            HWND c = GetDlgItem(dlg, page[t][i]);
+            if (c != NULL) ShowWindow(c, t == sel ? SW_SHOW : SW_HIDE);
+        }
+    }
+}
+
 static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
     App *app = g_dlg_app;
@@ -2312,11 +2341,26 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         int i;
         int idx;
         char tmp[64];
+        HWND tab;
 
         if (app == NULL) {
             EndDialog(dlg, IDCANCEL);
             return TRUE;
         }
+        tab = GetDlgItem(dlg, IDC_SETTINGS_TAB);
+        if (tab != NULL) {
+            TC_ITEM ti;
+            memset(&ti, 0, sizeof(ti));
+            ti.mask = TCIF_TEXT;
+            ti.pszText = "API & Model";
+            TabCtrl_InsertItem(tab, 0, &ti);
+            ti.pszText = "Agent";
+            TabCtrl_InsertItem(tab, 1, &ti);
+            ti.pszText = "Network";
+            TabCtrl_InsertItem(tab, 2, &ti);
+            TabCtrl_SetCurSel(tab, 0);
+        }
+        settings_show_tab(dlg, 0);
         for (i = 0; i < PRESET_COUNT; i++) {
             SendDlgItemMessageA(dlg, IDC_PROVIDER, CB_ADDSTRING, 0,
                                 (LPARAM)g_presets[i].name);
@@ -2347,12 +2391,37 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                        app->cfg.full_access ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_AUTO_CONFIRM,
                        app->cfg.auto_confirm ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_ALLOW_OUTSIDE,
+                       app->cfg.allow_outside ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_EMOJI_INLINE,
+                       app->cfg.emoji_inline ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_NET_ALLOW,
+                       app->cfg.net_allow ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_STREAM,
                        app->cfg.stream ? BST_CHECKED : BST_UNCHECKED);
+        dlg_set_utf8(dlg, IDC_NET_ALLOW_HOSTS, app->cfg.net_allow_hosts);
+        dlg_set_utf8(dlg, IDC_NET_SEARCH_URL, app->cfg.net_search_url);
+        dlg_set_utf8(dlg, IDC_NET_GITHUB_TOKEN, app->cfg.net_github_token);
+        sprintf(tmp, "%d", app->cfg.connect_timeout_sec);
+        SetDlgItemTextA(dlg, IDC_CONNECT_TIMEOUT, tmp);
+        sprintf(tmp, "%d", app->cfg.request_timeout_sec);
+        SetDlgItemTextA(dlg, IDC_REQUEST_TIMEOUT, tmp);
+        sprintf(tmp, "%d", app->cfg.log_level);
+        SetDlgItemTextA(dlg, IDC_LOG_LEVEL, tmp);
+        sprintf(tmp, "%d", app->cfg.net_max_bytes);
+        SetDlgItemTextA(dlg, IDC_NET_MAX_BYTES, tmp);
         dlg_set_utf8(dlg, IDC_TEST_RESULT, "");
         center_window(dlg);
         return TRUE;
     }
+
+    case WM_NOTIFY:
+        if (lp != 0 && ((NMHDR *)lp)->idFrom == IDC_SETTINGS_TAB &&
+            ((NMHDR *)lp)->code == TCN_SELCHANGE) {
+            HWND tab = GetDlgItem(dlg, IDC_SETTINGS_TAB);
+            settings_show_tab(dlg, tab != NULL ? TabCtrl_GetCurSel(tab) : 0);
+        }
+        return 0;
 
     case WM_COMMAND:
         switch (LOWORD(wp)) {
@@ -2521,6 +2590,49 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             }
             app->cfg.stream =
                 IsDlgButtonChecked(dlg, IDC_STREAM) == BST_CHECKED;
+            app->cfg.allow_outside =
+                IsDlgButtonChecked(dlg, IDC_ALLOW_OUTSIDE) == BST_CHECKED;
+            app->cfg.emoji_inline =
+                IsDlgButtonChecked(dlg, IDC_EMOJI_INLINE) == BST_CHECKED;
+            app->cfg.net_allow =
+                IsDlgButtonChecked(dlg, IDC_NET_ALLOW) == BST_CHECKED;
+
+            /* Numeric fields with validation and safe fallbacks. */
+            {
+                int v = (int)GetDlgItemInt(dlg, IDC_CONNECT_TIMEOUT, &ok, FALSE);
+                app->cfg.connect_timeout_sec =
+                    (ok && v >= 1 && v <= 600) ? v : 30;
+                v = (int)GetDlgItemInt(dlg, IDC_REQUEST_TIMEOUT, &ok, FALSE);
+                app->cfg.request_timeout_sec =
+                    (ok && v >= 1 && v <= 3600) ? v : 180;
+                v = (int)GetDlgItemInt(dlg, IDC_LOG_LEVEL, &ok, FALSE);
+                app->cfg.log_level = (ok && v >= 0 && v <= 4) ? v : 2;
+                v = (int)GetDlgItemInt(dlg, IDC_NET_MAX_BYTES, &ok, FALSE);
+                app->cfg.net_max_bytes =
+                    (ok && v >= 1024 && v <= 8 * 1024 * 1024) ? v : 262144;
+            }
+            /* Network strings need the same UTF-8 -> ACP handling as the
+             * other text fields; dlg_text_utf8 already does it. */
+            {
+                char *h = dlg_text_utf8(dlg, IDC_NET_ALLOW_HOSTS);
+                char *u = dlg_text_utf8(dlg, IDC_NET_SEARCH_URL);
+                char *g = dlg_text_utf8(dlg, IDC_NET_GITHUB_TOKEN);
+                if (h != NULL) {
+                    copy_str(app->cfg.net_allow_hosts,
+                             sizeof(app->cfg.net_allow_hosts), h);
+                    a98_free(h);
+                }
+                if (u != NULL) {
+                    copy_str(app->cfg.net_search_url,
+                             sizeof(app->cfg.net_search_url), u);
+                    a98_free(u);
+                }
+                if (g != NULL) {
+                    copy_str(app->cfg.net_github_token,
+                             sizeof(app->cfg.net_github_token), g);
+                    a98_free(g);
+                }
+            }
 
             if (config_save(&app->cfg, app->ini_path) != 0) {
                 msgbox_utf8(dlg, "Settings could not be saved to the INI file.",

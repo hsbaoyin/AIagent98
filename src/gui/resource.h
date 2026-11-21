@@ -60,6 +60,44 @@
 #define IDC_FULL_ACCESS    2015
 #define IDC_AUTO_CONFIRM   2016
 
+/* Settings tabs */
+#define IDC_SETTINGS_TAB   2017
+#define IDC_ALLOW_OUTSIDE  2018
+#define IDC_EMOJI_INLINE   2019
+#define IDC_CONNECT_TIMEOUT 2020
+#define IDC_REQUEST_TIMEOUT 2021
+#define IDC_LOG_LEVEL      2022
+#define IDC_NET_ALLOW      2023
+#define IDC_NET_ALLOW_HOSTS 2024
+#define IDC_NET_MAX_BYTES  2025
+#define IDC_NET_SEARCH_URL 2026
+#define IDC_NET_GITHUB_TOKEN 2027
+
+/* Settings page labels (so they can be shown/hidden with their page) */
+#define IDC_L_PROVIDER  2030
+#define IDC_L_API_BASE  2031
+#define IDC_L_API_KEY   2032
+#define IDC_L_MODEL     2033
+#define IDC_L_PROMPT    2034
+#define IDC_L_TEMP      2035
+#define IDC_L_MAXTOK    2036
+#define IDC_L_MAXSTEP   2037
+#define IDC_L_HEADERS   2038
+#define IDC_L_PRESET    2039
+#define IDC_L_WORKSPACE 2040
+#define IDC_L_CONNTO    2041
+#define IDC_L_REQTO     2042
+#define IDC_L_LOG       2043
+#define IDC_L_WARN1     2044
+#define IDC_L_WARN2     2045
+#define IDC_L_HOSTS     2050
+#define IDC_L_MAXBYTES  2051
+#define IDC_L_SEARCHURL 2052
+#define IDC_L_TOKEN     2053
+#define IDC_L_NET1      2054
+#define IDC_L_NET2      2055
+#define IDC_L_NET3      2056
+
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101
 

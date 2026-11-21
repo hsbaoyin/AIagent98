@@ -48,41 +48,71 @@ BEGIN
     "J", IDM_EMOJI, VIRTKEY, CONTROL
 END
 
-IDD_SETTINGS DIALOG 0, 0, 360, 292
+IDD_SETTINGS DIALOG 0, 0, 360, 300
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "AIagent98 Settings"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Provider:", -1, 8, 12, 58, 8
-    COMBOBOX        IDC_PROVIDER, 72, 9, 130, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "A preset fills in the API base and model.", -1, 210, 12, 142, 8
-    LTEXT           "API base:", -1, 8, 30, 58, 8
-    EDITTEXT        IDC_API_BASE, 72, 27, 280, 12, ES_AUTOHSCROLL
-    LTEXT           "API key:", -1, 8, 46, 58, 8
-    EDITTEXT        IDC_API_KEY, 72, 43, 280, 12, ES_AUTOHSCROLL | ES_PASSWORD
-    LTEXT           "Model:", -1, 8, 62, 58, 8
-    EDITTEXT        IDC_MODEL, 72, 59, 280, 12, ES_AUTOHSCROLL
-    LTEXT           "System prompt:", -1, 8, 78, 58, 8
-    EDITTEXT        IDC_SYSTEM_PROMPT, 72, 75, 280, 40, ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    LTEXT           "Temperature:", -1, 8, 121, 58, 8
-    EDITTEXT        IDC_TEMPERATURE, 72, 118, 40, 12, ES_AUTOHSCROLL
-    LTEXT           "Max tokens:", -1, 128, 121, 50, 8
-    EDITTEXT        IDC_MAX_TOKENS, 180, 118, 42, 12, ES_AUTOHSCROLL
-    LTEXT           "Max steps (0=inf):", -1, 232, 121, 54, 8
-    EDITTEXT        IDC_MAX_STEPS, 288, 118, 42, 12, ES_AUTOHSCROLL
-    LTEXT           "Extra headers:", -1, 8, 137, 58, 8
-    EDITTEXT        IDC_EXTRA_HEADERS, 72, 134, 280, 26, ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    LTEXT           "Workspace:", -1, 8, 166, 58, 8
-    EDITTEXT        IDC_WORKSPACE, 72, 163, 280, 12, ES_AUTOHSCROLL
-    CONTROL         "Verify TLS certificates", IDC_TLS_VERIFY, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 182, 120, 10
-    CONTROL         "Allow shell commands", IDC_ALLOW_SHELL, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 200, 182, 120, 10
-    CONTROL         "Stream responses", IDC_STREAM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 195, 120, 10
-    CONTROL         "DANGER: full system access (no sandbox, all commands)", IDC_FULL_ACCESS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 208, 280, 10
-    CONTROL         "Auto-confirm all tools (never ask)", IDC_AUTO_CONFIRM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 220, 280, 10
-    PUSHBUTTON      "Test connection", IDC_TEST, 72, 234, 80, 14
-    LTEXT           "", IDC_TEST_RESULT, 158, 236, 194, 20
-    DEFPUSHBUTTON   "OK", IDOK, 240, 270, 50, 14
-    PUSHBUTTON      "Cancel", IDCANCEL, 296, 270, 50, 14
+    CONTROL         "", IDC_SETTINGS_TAB, "SysTabControl32", WS_TABSTOP | TCS_TABS, 8, 8, 344, 252
+
+    /* --- Page 0: API & model --- */
+    LTEXT           "Provider:", IDC_L_PROVIDER, 16, 30, 60, 8
+    COMBOBOX        IDC_PROVIDER, 80, 27, 150, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "A preset fills in the API base and model.", IDC_L_PRESET, 16, 42, 320, 8
+    LTEXT           "API base:", IDC_L_API_BASE, 16, 56, 60, 8
+    EDITTEXT        IDC_API_BASE, 80, 53, 264, 12, ES_AUTOHSCROLL
+    LTEXT           "API key:", IDC_L_API_KEY, 16, 72, 60, 8
+    EDITTEXT        IDC_API_KEY, 80, 69, 264, 12, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "Model:", IDC_L_MODEL, 16, 88, 60, 8
+    EDITTEXT        IDC_MODEL, 80, 85, 264, 12, ES_AUTOHSCROLL
+    LTEXT           "System prompt:", IDC_L_PROMPT, 16, 104, 60, 8
+    EDITTEXT        IDC_SYSTEM_PROMPT, 80, 101, 264, 44, ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    LTEXT           "Temperature:", IDC_L_TEMP, 16, 152, 60, 8
+    EDITTEXT        IDC_TEMPERATURE, 80, 149, 48, 12, ES_AUTOHSCROLL
+    LTEXT           "Max tokens:", IDC_L_MAXTOK, 140, 152, 54, 8
+    EDITTEXT        IDC_MAX_TOKENS, 196, 149, 48, 12, ES_AUTOHSCROLL
+    LTEXT           "Max steps (0=inf):", IDC_L_MAXSTEP, 254, 152, 70, 8
+    EDITTEXT        IDC_MAX_STEPS, 326, 149, 30, 12, ES_AUTOHSCROLL
+    LTEXT           "Extra headers:", IDC_L_HEADERS, 16, 168, 60, 8
+    EDITTEXT        IDC_EXTRA_HEADERS, 80, 165, 264, 26, ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "Stream responses (SSE)", IDC_STREAM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 196, 140, 10
+    PUSHBUTTON      "Test connection", IDC_TEST, 80, 214, 80, 14
+    LTEXT           "", IDC_TEST_RESULT, 168, 212, 176, 30
+
+    /* --- Page 1: Agent --- */
+    LTEXT           "Workspace:", IDC_L_WORKSPACE, 16, 30, 60, 8
+    EDITTEXT        IDC_WORKSPACE, 80, 27, 264, 12, ES_AUTOHSCROLL
+    CONTROL         "Allow shell commands (COMMAND.COM)", IDC_ALLOW_SHELL, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 48, 260, 10
+    CONTROL         "Allow paths outside the workspace", IDC_ALLOW_OUTSIDE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 62, 260, 10
+    CONTROL         "Verify TLS certificates", IDC_TLS_VERIFY, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 76, 260, 10
+    CONTROL         "Draw emoji as inline pictures", IDC_EMOJI_INLINE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 90, 260, 10
+    LTEXT           "Connect timeout (s):", IDC_L_CONNTO, 16, 112, 80, 8
+    EDITTEXT        IDC_CONNECT_TIMEOUT, 100, 109, 50, 12, ES_AUTOHSCROLL
+    LTEXT           "Request timeout (s):", IDC_L_REQTO, 166, 112, 80, 8
+    EDITTEXT        IDC_REQUEST_TIMEOUT, 250, 109, 50, 12, ES_AUTOHSCROLL
+    LTEXT           "Log level (0=ERROR .. 4=TRACE):", IDC_L_LOG, 16, 132, 120, 8
+    EDITTEXT        IDC_LOG_LEVEL, 140, 129, 40, 12, ES_AUTOHSCROLL
+    CONTROL         "DANGER: full system access (no sandbox, all commands)", IDC_FULL_ACCESS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 156, 264, 10
+    CONTROL         "DANGER: auto-confirm all tools (never ask)", IDC_AUTO_CONFIRM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 170, 264, 10
+    LTEXT           "Full access removes the sandbox and the command ban list.", IDC_L_WARN1, 16, 192, 320, 8
+    LTEXT           "Both dangerous options are intended for disposable VMs only.", IDC_L_WARN2, 16, 204, 320, 8
+
+    /* --- Page 2: Network --- */
+    CONTROL         "Enable network tools", IDC_NET_ALLOW, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 16, 30, 260, 10
+    LTEXT           "Allow hosts:", IDC_L_HOSTS, 16, 52, 80, 8
+    EDITTEXT        IDC_NET_ALLOW_HOSTS, 100, 49, 244, 12, ES_AUTOHSCROLL
+    LTEXT           "Max response bytes:", IDC_L_MAXBYTES, 16, 72, 80, 8
+    EDITTEXT        IDC_NET_MAX_BYTES, 100, 69, 90, 12, ES_AUTOHSCROLL
+    LTEXT           "Search URL (%s = query):", IDC_L_SEARCHURL, 16, 92, 100, 8
+    EDITTEXT        IDC_NET_SEARCH_URL, 100, 89, 244, 12, ES_AUTOHSCROLL
+    LTEXT           "GitHub token (gist):", IDC_L_TOKEN, 16, 112, 80, 8
+    EDITTEXT        IDC_NET_GITHUB_TOKEN, 100, 109, 244, 12, ES_AUTOHSCROLL | ES_PASSWORD
+    LTEXT           "Network tools are OFF unless 'Enable network tools' is checked.", IDC_L_NET1, 16, 138, 320, 8
+    LTEXT           "allow_hosts is comma-separated; '.domain' matches a suffix.", IDC_L_NET2, 16, 150, 320, 8
+    LTEXT           "Empty allow_hosts allows any host. github_token needs gist scope.", IDC_L_NET3, 16, 162, 320, 8
+
+    DEFPUSHBUTTON   "OK", IDOK, 240, 276, 50, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 296, 276, 50, 14
 END
 
 IDD_CONFIRM DIALOG 0, 0, 320, 210
@@ -114,13 +144,13 @@ CAPTION "Welcome to AIagent98"
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Connect to an OpenAI-compatible API. You can change all of this later in Tools > Settings.", -1, 8, 6, 300, 18
-    LTEXT           "Provider:", -1, 8, 30, 58, 8
+    LTEXT           "Provider:", IDC_L_PROVIDER, 8, 30, 58, 8
     COMBOBOX        IDC_PROVIDER, 72, 27, 130, 90, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "API base:", -1, 8, 46, 58, 8
+    LTEXT           "API base:", IDC_L_API_BASE, 8, 46, 58, 8
     EDITTEXT        IDC_API_BASE, 72, 43, 240, 12, ES_AUTOHSCROLL
-    LTEXT           "API key:", -1, 8, 62, 58, 8
+    LTEXT           "API key:", IDC_L_API_KEY, 8, 62, 58, 8
     EDITTEXT        IDC_API_KEY, 72, 59, 240, 12, ES_AUTOHSCROLL | ES_PASSWORD
-    LTEXT           "Model:", -1, 8, 78, 58, 8
+    LTEXT           "Model:", IDC_L_MODEL, 8, 78, 58, 8
     EDITTEXT        IDC_MODEL, 72, 75, 240, 12, ES_AUTOHSCROLL
     LTEXT           "A local service such as Ollama does not need an API key.", -1, 72, 90, 240, 8
     CONTROL         "Stream responses", IDC_STREAM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 72, 104, 120, 10
@@ -155,3 +185,4 @@ BEGIN
     DEFPUSHBUTTON   "Insert", IDOK, 226, 228, 52, 14
     PUSHBUTTON      "Cancel", IDCANCEL, 284, 228, 52, 14
 END
+
