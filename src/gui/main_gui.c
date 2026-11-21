@@ -26,6 +26,7 @@
 #include "resource.h"
 #include "emoji.h"
 #include "emoji_ui.h"
+#include "transcript_view.h"
 
 #include "../core/base.h"
 #include "../core/config.h"
@@ -576,9 +577,10 @@ static void transcript_insert_run(App *app, const char *text, COLORREF color,
     SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
 }
 
-/* Append folded text, drawing every ":shortcode:" the pack knows as its
- * picture (RichEdit 2.0 only).  Without artwork, or when the control refuses
- * the picture, the shortcode stays as text, so nothing is ever lost. */
+/* Append folded text, drawing every ":shortcode:" the pack knows as an
+ * inline GDI bitmap through the self-drawn transcript view.  No RichEdit OLE
+ * is involved, so this cannot trigger the Win9x RichEdit insert GPF.
+ * With [emoji] inline=0 the shortcode stays as plain text. */
 static void transcript_insert_folded(App *app, char *acp, COLORREF color,
                                      int bold)
 {
@@ -601,12 +603,9 @@ static void transcript_insert_folded(App *app, char *acp, COLORREF color,
             transcript_insert_run(app, acp + i, color, bold);
             acp[a] = keep;
         }
-        if (!a98_emoji_insert_picture(app->transcript, app->exe_dir, e)) {
-            keep = acp[b];
-            acp[b] = '\0';
-            transcript_insert_run(app, acp + a, color, bold);
-            acp[b] = keep;
-        }
+        /* The control owns the artwork cache and falls back to the shortcode
+         * text by itself when the pack is missing, so just hand it the entry. */
+        SendMessageA(app->transcript, A98TV_EMOJI, 0, (LPARAM)e);
         i = b;
     }
 }
@@ -869,34 +868,19 @@ static void md_reset(App *app, int flush)
 static void transcript_trim(App *app)
 {
     int total;
-    LONG cut;
-    CHARRANGE cr;
 
-    if (app == NULL || app->transcript == NULL || app->rich == 0) {
+    if (app == NULL || app->transcript == NULL) {
         return;
     }
     total = (int)SendMessageA(app->transcript, EM_GETLINECOUNT, 0, 0);
     if (total <= A98_TRANSCRIPT_MAX_LINES) {
         return;
     }
-    cut = (LONG)SendMessageA(app->transcript, EM_LINEINDEX,
-                             (WPARAM)(A98_TRANSCRIPT_MAX_LINES / 2), 0);
-    if (cut <= 0) {
-        return;
-    }
-    cr.cpMin = 0;
-    cr.cpMax = cut;
-    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
-    SendMessageA(app->transcript, EM_REPLACESEL, (WPARAM)FALSE, (LPARAM)"");
+    SendMessageA(app->transcript, A98TV_TRIM, (WPARAM)A98_TRANSCRIPT_MAX_LINES, 0);
     /* A fenced block may have been cut in half; never leave the renderer
      * stuck in code mode, and drop the half line too. */
     app->md_in_code = 0;
     str_clear(&app->md_pending);
-    /* Fold the caret back onto the (new) end of the buffer. */
-    SendMessageA(app->transcript, EM_SETSEL, (WPARAM)-1, (LPARAM)-1);
-    SendMessageA(app->transcript, EM_EXGETSEL, 0, (LPARAM)&cr);
-    cr.cpMin = cr.cpMax;
-    SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
     transcript_line_colored(app, "\r\n[info] ", COL_ROUND, 0,
                             "older lines were trimmed to save memory; the "
                             "full history stays in the session file",
@@ -3002,20 +2986,17 @@ static int load_rich_edit(App *app)
 
 static void create_controls(App *app, HWND hwnd)
 {
-    const char *transcript_class;
-    DWORD transcript_style;
     DWORD input_style;
 
-    transcript_class = app->rich == 2 ? RICH_CLASS20 :
-                       (app->rich == 1 ? RICH_CLASS10 : "EDIT");
-
-    transcript_style = WS_CHILD | WS_VISIBLE | WS_VSCROLL |
-                       ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL |
-                       ES_NOHIDESEL;
-    app->transcript = CreateWindowExA(WS_EX_CLIENTEDGE, transcript_class, "",
-                                      transcript_style,
-                                      0, 0, 100, 100, hwnd, (HMENU)IDC_TRANSCRIPT,
-                                      app->hinst, NULL);
+    /* The transcript is now a self-drawn control.  Emoji are GDI bitmaps,
+     * not RichEdit OLE objects, which fault on real Windows 9x.  Keep
+     * app->rich == 2 so the existing EM_* formatting path still runs. */
+    app->transcript = a98tv_create(app->hinst, hwnd, IDC_TRANSCRIPT,
+                                   app->mono_font, 0, 0, 100, 100);
+    if (app->transcript != NULL) {
+        SendMessageA(app->transcript, A98TV_SETDIR, 0, (LPARAM)app->exe_dir);
+        app->rich = 2;
+    }
 
     input_style = WS_CHILD | WS_VISIBLE | WS_VSCROLL | WS_TABSTOP |
                   ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN;
@@ -3082,32 +3063,15 @@ static void create_controls(App *app, HWND hwnd)
                      TRUE);
     }
 
-    if (app->rich == 2) {
+    if (app->transcript != NULL) {
         SendMessageA(app->transcript, EM_EXLIMITTEXT, 0, (LPARAM)TRANSCRIPT_LIMIT);
         SendMessageA(app->transcript, EM_SETBKGNDCOLOR, 0,
                      (LPARAM)GetSysColor(COLOR_WINDOW));
-        /* RichEdit needs an OLE callback before it will keep an inline
-         * picture; without it the emoji stay ":shortcode:" text.  The
-         * picture path is opt-in because the RichEdit OLE insert has been
-         * seen to fault on a real Windows 98 box, and shortcode text is a
-         * much better outcome than a GPF.  [emoji] inline=1 enables it. */
-        if (app->cfg.emoji_inline) {
-            app->emoji_pics = a98_emoji_ole_attach(app->transcript);
-            log_info("emoji inline pictures %s",
-                     app->emoji_pics ? "enabled" : "unavailable on this control");
-        } else {
-            log_info("emoji inline pictures off ([emoji] inline=0)");
-        }
-    } else {
-        /* EM_SETLIMITTEXT takes the limit in wParam (0 = default ~32 KiB,
-         * which truncated long conversations on machines without RichEdit). */
-        SendMessageA(app->transcript, EM_SETLIMITTEXT,
-                     (WPARAM)0x7FFFFFFE, 0);
-    }
-    /* EN_VSCROLL lets us notice when the user scrolls away from the tail;
-     * EDIT keeps it always-on. */
-    if (app->rich != 0) {
-        SendMessageA(app->transcript, EM_SETEVENTMASK, 0, ENM_SCROLL);
+        /* Inline emoji are GDI bitmaps drawn by the self-drawn view; no
+         * RichEdit OLE is involved, so this is safe on real Win9x. */
+        app->emoji_pics = app->cfg.emoji_inline ? 1 : 0;
+        log_info("emoji inline pictures %s (self-drawn)",
+                 app->emoji_pics ? "enabled" : "off ([emoji] inline=0)");
     }
     transcript_set_default_format(app);
     app->stick_bottom = 1;
@@ -3210,6 +3174,11 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             return 0;
         }
         break;
+    case A98TV_VIEWPORT_CHANGED:
+        /* The self-drawn view scrolled: re-pin only if we're at the bottom. */
+        app->stick_bottom = transcript_at_bottom(app);
+        return 0;
+
     case WM_COMMAND:
         if (HIWORD(wp) == EN_VSCROLL && LOWORD(wp) == IDC_TRANSCRIPT) {
             /* The user scrolled (or we scrolled back to the tail): re-pin
@@ -3719,6 +3688,12 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
 
     if (!RegisterClassExA(&wc)) {
         msgbox_utf8(NULL, "Cannot register the main window class.",
+                    MB_OK | MB_ICONERROR);
+        net_cleanup();
+        return 1;
+    }
+    if (!a98tv_register(hinst)) {
+        msgbox_utf8(NULL, "Cannot register the transcript view class.",
                     MB_OK | MB_ICONERROR);
         net_cleanup();
         return 1;

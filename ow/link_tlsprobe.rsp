@@ -19,6 +19,7 @@ file build/ow/obj/str.obj
 file build/ow/obj/utf8.obj
 file build/ow/obj/emoji.obj
 file build/ow/obj/emoji_ui.obj
+file build/ow/obj/transcript_view.obj
 file build/ow/obj/body.obj
 file build/ow/obj/http.obj
 file build/ow/obj/net_tls.obj
@@ -307,4 +308,5 @@ library ws2_32.lib
 library advapi32.lib
 library user32.lib
 library gdi32.lib
+library ole32.lib
 library comdlg32.lib
