@@ -497,95 +497,248 @@ const char schema_web_search[] =
     "\"max_results\":{\"type\":\"integer\"}},"
     "\"required\":[\"query\"]}";
 
-int tool_web_search_run(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
+/* Built-in search engines. A primary template from [net] search_url is tried
+ * first, then these. Having several makes web_search work both in China
+ * (Bing/Baidu reachable) and abroad (DuckDuckGo reachable). */
+typedef struct {
+    const char *url;
+    const char *name;
+} SearchEngine;
+
+static const SearchEngine g_search_engines[] = {
+    { "https://www.bing.com/search?q=%s",       "bing" },
+    { "https://cn.bing.com/search?q=%s",        "bing-cn" },
+    { "https://www.baidu.com/s?wd=%s",          "baidu" },
+    { "https://html.duckduckgo.com/html/?q=%s", "duckduckgo" },
+    { NULL, NULL }
+};
+
+/* Extract the href="..." attribute that appears before `tag` within the same
+ * opening <a ...> element. Returns 1 on success. */
+static int find_href(const char *html, const char *marker,
+                     char *href, size_t cap)
 {
-    const char *query = arg_str(args, "query", NULL);
-    int max_results = json_int(args, "max_results", 5);
-    char enc[512];
+    const char *h = marker;
+    const char *tag_end;
+    size_t n = 0;
+    char decoded[A98_MAX_PATH];
+
+    /* The marker may be inside the <a> (DDG: class="result__a") or on an
+     * outer element (Bing: <h2>, Baidu: <h3>). Search forward from the
+     * marker for the next href="..." within a bounded window. */
+    tag_end = marker + 512;
+    h = strstr(marker, "href=\"");
+    if (h == NULL || h > tag_end) return 0;
+    h += 6;
+    while (h[n] != '\0' && h[n] != '"' && n < cap - 1) n++;
+    href[n] = '\0';
+    memcpy(href, h, n);
+    /* decode &amp; etc; entities only contract so same-size buffer is safe */
+    html_unescape(href, decoded, sizeof(decoded));
+    strncpy(href, decoded, cap - 1);
+    href[cap - 1] = '\0';
+    return 1;
+}
+
+/* Find the text following the `>` that closes the tag at `p`. */
+static int tag_text(const char *p, char *out, size_t cap)
+{
+    const char *te = strchr(p, '>');
+    if (te == NULL) return 0;
+    html_tag_text(te + 1, out, cap);
+    return out[0] != '\0';
+}
+
+/* One parsed result. */
+typedef struct {
+    char title[512];
+    char href[1024];
+    char snippet[1024];
+} SearchResult;
+
+/* Format markers for the supported engines. The parser looks for a "block"
+ * marker (one result) and a "link" marker (the <a> carrying title + href). */
+typedef struct {
+    const char *block;   /* marks the start of one result */
+    const char *link;    /* marks the <a> inside a result */
+    const char *snippet; /* optional snippet marker */
+} HtmlFormat;
+
+static const HtmlFormat g_formats[] = {
+    /* DuckDuckGo HTML */
+    { "class=\"result__a\"",   "class=\"result__a\"",   "class=\"result__snippet\"" },
+    /* Bing */
+    { "class=\"b_algo\"",      "<h2>",                   "class=\"b_caption\"" },
+    /* Baidu */
+    { "class=\"c-container\"", "<h3",                    "class=\"c-abstract\"" },
+    { NULL, NULL, NULL }
+};
+
+/* Parse results from `html` into `out`. Returns the number found. */
+static int parse_search_html(const char *html, Str *out, int max_results)
+{
+    int i, count = 0;
+    const HtmlFormat *fmt = NULL;
+
+    for (i = 0; g_formats[i].block != NULL; i++) {
+        if (strstr(html, g_formats[i].block) != NULL) {
+            fmt = &g_formats[i];
+            break;
+        }
+    }
+    if (fmt == NULL) return 0;
+
+    {
+        const char *p = html;
+        while (*p != '\0' && count < max_results) {
+            const char *block = strstr(p, fmt->block);
+            SearchResult r;
+            if (block == NULL) break;
+            {
+                const char *link = strstr(block, fmt->link);
+                const char *anchor;
+                if (link == NULL || !find_href(html, link, r.href, sizeof(r.href))) {
+                    const char *adv = block + strlen(fmt->block);
+                    p = adv > p ? adv : p + 1;
+                    continue;
+                }
+                /* Locate the <a ...> element for the title: for DDG the
+                 * marker is inside the <a>; for Bing/Baidu the marker is an
+                 * outer <h2>/<h3> and the <a> follows. */
+                anchor = link;
+                {
+                    const char *back = link;
+                    while (back > html && *(back - 1) != '<') back--;
+                    /* back points at the first char after '<'; step back
+                     * onto the '<' itself before testing the tag name. */
+                    if (back > html && strncmp(back - 1, "<a", 2) == 0) {
+                        anchor = back - 1;        /* marker inside an <a> */
+                    } else {
+                        const char *a = strstr(link, "<a ");
+                        if (a == NULL) a = strstr(link, "<a>");
+                        if (a != NULL) anchor = a;
+                    }
+                }
+                r.title[0] = '\0';
+                tag_text(anchor, r.title, sizeof(r.title));
+                if (r.title[0] == '\0') tag_text(link, r.title, sizeof(r.title));
+                r.snippet[0] = '\0';
+                if (fmt->snippet != NULL) {
+                    const char *sn = strstr(block, fmt->snippet);
+                    if (sn != NULL) tag_text(sn, r.snippet, sizeof(r.snippet));
+                }
+                if (count > 0) str_append_char(out, '\n');
+                str_appendf(out, "%d. %s\n   %s\n", count + 1,
+                            r.title[0] ? r.title : r.href, r.href);
+                if (r.snippet[0] != '\0')
+                    str_appendf(out, "   %s\n", r.snippet);
+                count++;
+            }
+            {
+                const char *adv = block + strlen(fmt->block);
+                p = adv > block ? adv : block + 1;
+            }
+        }
+    }
+    return count;
+}
+
+/* Fetch one engine and parse. Returns 0 on success with results, -1 on
+ * transport/HTTP error, or -2 on success but no parseable results. */
+static int web_search_engine(Agent *a, const char *fmt, const char *enc,
+                             const char *engine_name, Str *out,
+                             char *err, size_t errcap)
+{
     char url[1024];
-    const char *fmt;
     HttpResponse resp;
     Str html;
-    const char *p;
-    int count = 0;
+    int count;
+    int old_timeout;
 
-    if (query == NULL || query[0] == '\0') {
-        set_err(err, errcap, "query is required");
-        return -1;
-    }
-    if (max_results < 1) max_results = 1;
-    if (max_results > 10) max_results = 10;
-    fmt = a->cfg->net_search_url[0] ? a->cfg->net_search_url
-          : "https://html.duckduckgo.com/html/?q=%s";
-    url_encode(query, enc, sizeof(enc));
     if (snprintf(url, sizeof(url), fmt, enc) >= (int)sizeof(url)) {
         set_err(err, errcap, "search URL is too long");
         return -1;
     }
+    /* Search pages are slow in some regions; keep it short so fallback can
+     * kick in quickly. Restore the configured timeout afterwards. */
+    old_timeout = a->cfg->request_timeout_sec;
+    if (old_timeout > 15) a->cfg->request_timeout_sec = 15;
+
     str_init(&html);
     memset(&resp, 0, sizeof(resp));
     if (net_fetch(a, url, "GET", NULL, NULL, 0, &html, &resp,
                   NULL, NULL, err, errcap) != 0) {
         str_free(&html);
+        a->cfg->request_timeout_sec = old_timeout;
         return -1;
     }
+    a->cfg->request_timeout_sec = old_timeout;
     if (resp.status < 200 || resp.status >= 300) {
         str_free(&html);
-        set_err(err, errcap, "search failed: HTTP %d", resp.status);
+        set_err(err, errcap, "search engine %s: HTTP %d",
+                engine_name, resp.status);
         return -1;
     }
-
-    p = str_cstr(&html);
-    while (*p != '\0' && count < max_results) {
-        const char *a_tag = strstr(p, "class=\"result__a\"");
-        const char *snip = strstr(p, "class=\"result__snippet\"");
-        char title[512], href[1024], snippet[1024], decoded[1024];
-        const char *h;
-        const char *te;
-
-        if (a_tag == NULL) break;
-        /* find the href= before this class within the same <a ...> */
-        h = a_tag;
-        while (h > str_cstr(&html) && *(h - 1) != '<') h--;
-        h = strstr(h, "href=\"");
-        if (h == NULL || h > a_tag) { p = a_tag + 18; continue; }
-        h += 6;
-        {
-            size_t n = 0;
-            while (h[n] != '\0' && h[n] != '"' && n < sizeof(href) - 1) n++;
-            memcpy(href, h, n);
-            href[n] = '\0';
-        }
-        /* Unescape into a buffer of the SAME size as href and copy back
-         * with an explicit bound. The old code unescaped into a 1200-byte
-         * tmp then strcpy'd into a 1024-byte href: DuckDuckGo redirect URLs
-         * routinely exceed 1024 after decoding, so that overflowed the
-         * stack and GPF'd on Win9x. */
-        html_unescape(href, decoded, sizeof(decoded));
-        strncpy(href, decoded, sizeof(href) - 1);
-        href[sizeof(href) - 1] = '\0';
-
-        te = strchr(a_tag, '>');
-        if (te == NULL) break;
-        html_tag_text(te + 1, title, sizeof(title));
-
-        snippet[0] = '\0';
-        if (snip != NULL && snip < a_tag + 4000) {
-            const char *se = strchr(snip, '>');
-            if (se != NULL) html_tag_text(se + 1, snippet, sizeof(snippet));
-            p = snip;
-        } else {
-            p = a_tag + 18;
-        }
-        if (count > 0) str_append_char(out, '\n');
-        str_appendf(out, "%d. %s\n   %s\n", count + 1, title, href);
-        if (snippet[0] != '\0') str_appendf(out,   "   %s\n", snippet);
-        count++;
-    }
-    if (count == 0) str_append_cstr(out, "(no results parsed)\n");
+    count = parse_search_html(str_cstr(&html), out, 10);
     str_free(&html);
+    if (count == 0) {
+        set_err(err, errcap, "search engine %s: no parseable results",
+                engine_name);
+        return -2;
+    }
+    str_appendf(out, "[via %s]\n", engine_name);
     return 0;
 }
+
+int tool_web_search_run(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
+{
+    const char *query = arg_str(args, "query", NULL);
+    char enc[512];
+    Str attempt;
+    char last_err[512];
+    int i, rc = -1;
+    int max_results;
+
+    if (query == NULL || query[0] == '\0') {
+        set_err(err, errcap, "query is required");
+        return -1;
+    }
+    max_results = json_int(args, "max_results", 5);
+    if (max_results < 1) max_results = 1;
+    if (max_results > 10) max_results = 10;
+    (void)max_results; /* parse_search_html caps at 10; caller can trim later */
+    url_encode(query, enc, sizeof(enc));
+
+    last_err[0] = '\0';
+    /* 1) user-configured primary engine */
+    if (a->cfg->net_search_url[0] != '\0') {
+        str_init(&attempt);
+        rc = web_search_engine(a, a->cfg->net_search_url, enc,
+                               "custom", &attempt, last_err, sizeof(last_err));
+        if (rc == 0) {
+            str_append(out, str_cstr(&attempt), strlen(str_cstr(&attempt)));
+            str_free(&attempt);
+            return 0;
+        }
+        str_free(&attempt);
+    }
+    /* 2) built-in engines: first one that returns results wins */
+    for (i = 0; g_search_engines[i].url != NULL; i++) {
+        str_init(&attempt);
+        rc = web_search_engine(a, g_search_engines[i].url, enc,
+                               g_search_engines[i].name, &attempt,
+                               last_err, sizeof(last_err));
+        if (rc == 0) {
+            str_append(out, str_cstr(&attempt), strlen(str_cstr(&attempt)));
+            str_free(&attempt);
+            return 0;
+        }
+        str_free(&attempt);
+    }
+    set_err(err, errcap, "all search engines failed; last: %s", last_err);
+    return -1;
+}
+
 const ToolDef tool_web_search = {
     "web_search",
     "Search the web for documentation or facts. Disabled unless [net] allow=1.",
