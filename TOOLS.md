@@ -75,6 +75,16 @@ Use it only on a disposable VM. `session_info` reports `sandbox: DISABLED`.
 confirmation dialog. It is implied by `full_access=1` but can be enabled on its
 own. Both off by default; enabling either shows a warning.
 
+## Conversation compaction
+`[agent] compact_threshold` (bytes, default 24576, `0` = off) and
+`compact_keep` (recent messages kept verbatim, default 6) control automatic
+context compaction. Before each API round, if the estimated conversation size
+exceeds the threshold, the older messages are summarized through one extra API
+call and replaced by a single system summary; the last `compact_keep` messages
+stay unchanged. A failed summary is non-fatal (the full history is kept). The
+transcript shows a `[info] Compacting conversation...` line when it happens.
+All three values are editable in Tools -> Settings... -> Agent.
+
 ## Safety
 - All paths stay under workspace (resolve_path) unless `full_access=1`.
 - Network tools are off unless `[net] allow=1`; optional `[net] allow_hosts` is a

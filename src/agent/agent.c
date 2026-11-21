@@ -217,6 +217,106 @@ static void guard_record(Str *sig, const char *name, const char *args)
     str_append_cstr(sig, args);
 }
 
+/* Rough estimate of the conversation size sent to the API. Not exact token
+ * counting, but good enough to decide when to compact on a 9x machine. */
+static size_t context_bytes(const MessageList *list)
+{
+    size_t total = 0;
+    int i;
+    for (i = 0; i < list->count; i++) {
+        const Message *m = &list->items[i];
+        if (m->content != NULL) total += strlen(m->content);
+        if (m->tool_calls_json != NULL) total += strlen(m->tool_calls_json);
+        if (m->name != NULL) total += strlen(m->name);
+    }
+    return total;
+}
+
+/* Compact old messages into one summary via an extra API call. Returns 0 if
+ * nothing happened or compaction succeeded, -1 only on a hard error that
+ * should stop the run. Never aborts the run on a failed summary. */
+static int maybe_compact(Agent *a, char *err, size_t errcap)
+{
+    Config *cfg = a->cfg;
+    size_t bytes;
+    int keep;
+    MessageList prompt;
+    ChatResult res;
+    Str summary;
+    char sum_err[512];
+    int rc = 0;
+
+    if (cfg->compact_threshold <= 0) return 0;
+    bytes = context_bytes(&a->messages);
+    if (bytes < (size_t)cfg->compact_threshold) return 0;
+
+    keep = cfg->compact_keep;
+    if (keep < 2) keep = 2;
+    if (keep > 40) keep = 40;
+    if (a->messages.count <= keep + 2) return 0;   /* nothing worth compacting */
+
+    emit(a, AGENT_EV_INFO, "Compacting conversation (context limit)...");
+    log_info("compacting conversation: %lu bytes, %d messages, keep %d",
+             (unsigned long)bytes, a->messages.count, keep);
+
+    /* Build a small prompt from the messages being removed. */
+    msglist_init(&prompt);
+    {
+        int to_remove = a->messages.count - keep;
+        int i;
+        static const char *sum_sys =
+            "You summarize conversations concisely. Produce a compact but "
+            "faithful summary of the exchange below: key facts, decisions, "
+            "file paths and code changes, and outstanding tasks. Keep it "
+            "short enough to fit in a few hundred words. Output only the "
+            "summary, no preamble.";
+        msglist_add(&prompt, MSG_USER, "Summarize the following conversation:");
+        for (i = 0; i < to_remove; i++) {
+            const Message *m = &a->messages.items[i];
+            if (m->content != NULL && m->content[0] != '\0') {
+                switch (m->role) {
+                case MSG_USER:      msglist_add(&prompt, MSG_USER, m->content); break;
+                case MSG_ASSISTANT: msglist_add(&prompt, MSG_ASSISTANT, m->content); break;
+                case MSG_TOOL: {
+                    char buf[2048];
+                    snprintf(buf, sizeof(buf), "[tool %s result] %.1500s",
+                             m->name ? m->name : "", m->content);
+                    msglist_add(&prompt, MSG_USER, buf);
+                    break;
+                }
+                default: break;
+                }
+            }
+        }
+        chat_result_init(&res);
+        sum_err[0] = '\0';
+        str_init(&summary);
+        if (api_chat(cfg, sum_sys, &prompt, &res, NULL, NULL, a->cancel,
+                     sum_err, sizeof(sum_err)) == 0 &&
+            res.content.len > 0) {
+            str_append(&summary, str_cstr(&res.content), res.content.len);
+            if (msglist_compact(&a->messages, str_cstr(&summary), keep) == 0) {
+                char info[128];
+                snprintf(info, sizeof(info),
+                         "Compacted conversation: %d messages kept + 1 summary",
+                         keep);
+                emit(a, AGENT_EV_INFO, info);
+                log_info("compaction done: %s", info);
+            } else {
+                log_warn("compaction failed to rebuild message list");
+            }
+        } else {
+            log_warn("compaction summary request failed: %s", sum_err);
+            /* Non-fatal: keep the full history and carry on. */
+        }
+        str_free(&summary);
+        chat_result_free(&res);
+    }
+    msglist_free(&prompt);
+    (void)err; (void)errcap;
+    return rc;
+}
+
 int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
 {
     int step;
@@ -280,6 +380,8 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
             snprintf(err, errcap, "cancelled by user");
             return -1;
         }
+        /* Compact before sending if the conversation has grown too large. */
+        maybe_compact(a, err, errcap);
         if (unlimited) {
             sprintf(roundbuf, "Thinking (round %d)...", step + 1);
         } else {

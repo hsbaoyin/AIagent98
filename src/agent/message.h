@@ -34,6 +34,10 @@ Message *msglist_add_assistant(MessageList *list, const char *content,
 Message *msglist_add_tool(MessageList *list, const char *tool_call_id,
                           const char *name, const char *content);
 
+/* Replace all but the last `keep` messages with a single system message
+ * holding `summary`. Returns 0 on success. Does nothing if count <= keep. */
+int msglist_compact(MessageList *list, const char *summary, int keep);
+
 const char *msg_role_name(MsgRole role);
 
 #endif /* A98_MESSAGE_H */

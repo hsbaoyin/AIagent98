@@ -113,6 +113,33 @@ Message *msglist_add_tool(MessageList *list, const char *tool_call_id,
     return m;
 }
 
+int msglist_compact(MessageList *list, const char *summary, int keep)
+{
+    int i, keep_from, to_remove;
+    Message compacted;
+
+    if (list == NULL || list->count <= keep) return 0;
+    keep_from = list->count - keep;
+    to_remove = keep_from;
+
+    /* Free the messages being removed. */
+    for (i = 0; i < to_remove; i++) {
+        message_free(&list->items[i]);
+    }
+    /* Build the single summary message before shifting the tail. */
+    memset(&compacted, 0, sizeof(compacted));
+    compacted.role = MSG_SYSTEM;
+    compacted.content = a98_strdup(summary ? summary : "");
+    if (compacted.content == NULL) return -1;
+
+    /* Shift the kept tail down to index 1. */
+    memmove(list->items + 1, list->items + keep_from,
+            (size_t)keep * sizeof(Message));
+    list->items[0] = compacted;
+    list->count = keep + 1;
+    return 0;
+}
+
 const char *msg_role_name(MsgRole role)
 {
     switch (role) {

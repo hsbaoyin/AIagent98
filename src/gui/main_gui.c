@@ -2316,6 +2316,8 @@ static void settings_show_tab(HWND dlg, int sel)
         { IDC_L_WORKSPACE, IDC_WORKSPACE, IDC_ALLOW_SHELL, IDC_ALLOW_OUTSIDE,
           IDC_TLS_VERIFY, IDC_EMOJI_INLINE, IDC_L_CONNTO, IDC_CONNECT_TIMEOUT,
           IDC_L_REQTO, IDC_REQUEST_TIMEOUT, IDC_L_LOG, IDC_LOG_LEVEL,
+          IDC_L_COMPACT_TH, IDC_COMPACT_THRESHOLD, IDC_L_COMPACT_KEEP,
+          IDC_COMPACT_KEEP,
           IDC_FULL_ACCESS, IDC_AUTO_CONFIRM, IDC_L_WARN1, IDC_L_WARN2, 0 },
         { IDC_NET_ALLOW, IDC_L_HOSTS, IDC_NET_ALLOW_HOSTS, IDC_L_MAXBYTES,
           IDC_NET_MAX_BYTES, IDC_L_SEARCHURL, IDC_NET_SEARCH_URL, IDC_L_TOKEN,
@@ -2409,6 +2411,10 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         SetDlgItemTextA(dlg, IDC_REQUEST_TIMEOUT, tmp);
         sprintf(tmp, "%d", app->cfg.log_level);
         SetDlgItemTextA(dlg, IDC_LOG_LEVEL, tmp);
+        sprintf(tmp, "%d", app->cfg.compact_threshold);
+        SetDlgItemTextA(dlg, IDC_COMPACT_THRESHOLD, tmp);
+        sprintf(tmp, "%d", app->cfg.compact_keep);
+        SetDlgItemTextA(dlg, IDC_COMPACT_KEEP, tmp);
         sprintf(tmp, "%d", app->cfg.net_max_bytes);
         SetDlgItemTextA(dlg, IDC_NET_MAX_BYTES, tmp);
         dlg_set_utf8(dlg, IDC_TEST_RESULT, "");
@@ -2608,6 +2614,12 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                     (ok && v >= 1 && v <= 3600) ? v : 180;
                 v = (int)GetDlgItemInt(dlg, IDC_LOG_LEVEL, &ok, FALSE);
                 app->cfg.log_level = (ok && v >= 0 && v <= 4) ? v : 2;
+                v = (int)GetDlgItemInt(dlg, IDC_COMPACT_THRESHOLD, &ok, FALSE);
+                app->cfg.compact_threshold =
+                    (ok && v >= 0 && v <= 4 * 1024 * 1024) ? v : 24576;
+                v = (int)GetDlgItemInt(dlg, IDC_COMPACT_KEEP, &ok, FALSE);
+                app->cfg.compact_keep =
+                    (ok && v >= 2 && v <= 40) ? v : 6;
                 v = (int)GetDlgItemInt(dlg, IDC_NET_MAX_BYTES, &ok, FALSE);
                 app->cfg.net_max_bytes =
                     (ok && v >= 1024 && v <= 8 * 1024 * 1024) ? v : 262144;

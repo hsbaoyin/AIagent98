@@ -40,6 +40,12 @@ typedef struct {
     char net_search_url[512];
     char net_github_token[256];
     int max_steps;
+    /* Conversation compaction: when the estimated context bytes exceed
+     * compact_threshold, older messages are summarized via the API and
+     * replaced by one summary message; the last compact_keep messages stay.
+     * compact_threshold=0 disables compaction. */
+    int compact_threshold;
+    int compact_keep;
     int connect_timeout_sec;
     int request_timeout_sec;
     int log_level;

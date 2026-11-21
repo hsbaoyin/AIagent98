@@ -68,6 +68,10 @@ void config_defaults(Config *cfg, const char *exe_dir)
            "https://html.duckduckgo.com/html/?q=%s");
     cfg->net_github_token[0] = '\0';
     cfg->max_steps = 32;
+    /* 24 KB ~ roughly 6-8k tokens; safe on 9x and before typical 8k/16k
+     * context limits. 0 disables. Keep the last 6 messages (~3 rounds). */
+    cfg->compact_threshold = 24576;
+    cfg->compact_keep = 6;
     cfg->connect_timeout_sec = 30;
     cfg->request_timeout_sec = 180;
     cfg->log_level = 2;
@@ -203,6 +207,13 @@ int config_load(Config *cfg, const char *ini_path)
         cfg->net_max_bytes = 8 * 1024 * 1024;
     }
     cfg->max_steps = read_int(ini_path, "agent", "max_steps", cfg->max_steps);
+    cfg->compact_threshold =
+        read_int(ini_path, "agent", "compact_threshold", cfg->compact_threshold);
+    cfg->compact_keep =
+        read_int(ini_path, "agent", "compact_keep", cfg->compact_keep);
+    if (cfg->compact_threshold < 0) cfg->compact_threshold = 0;
+    if (cfg->compact_keep < 2) cfg->compact_keep = 2;
+    if (cfg->compact_keep > 40) cfg->compact_keep = 40;
     cfg->connect_timeout_sec = read_int(ini_path, "agent", "connect_timeout",
                                         cfg->connect_timeout_sec);
     cfg->request_timeout_sec = read_int(ini_path, "agent", "request_timeout",
@@ -296,6 +307,10 @@ int config_save(const Config *cfg, const char *ini_path)
     ok = (write_str(ini_path, "net", "github_token", cfg->net_github_token) == 0) && ok;
     sprintf(tmp, "%d", cfg->max_steps);
     ok = (write_str(ini_path, "agent", "max_steps", tmp) == 0) && ok;
+    sprintf(tmp, "%d", cfg->compact_threshold);
+    ok = (write_str(ini_path, "agent", "compact_threshold", tmp) == 0) && ok;
+    sprintf(tmp, "%d", cfg->compact_keep);
+    ok = (write_str(ini_path, "agent", "compact_keep", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->connect_timeout_sec);
     ok = (write_str(ini_path, "agent", "connect_timeout", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->request_timeout_sec);

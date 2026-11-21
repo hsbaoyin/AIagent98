@@ -92,7 +92,11 @@ BEGIN
     EDITTEXT        IDC_REQUEST_TIMEOUT, 250, 109, 50, 12, ES_AUTOHSCROLL
     LTEXT           "Log level (0=ERROR .. 4=TRACE):", IDC_L_LOG, 16, 132, 120, 8
     EDITTEXT        IDC_LOG_LEVEL, 140, 129, 40, 12, ES_AUTOHSCROLL
-    CONTROL         "DANGER: full system access (no sandbox, all commands)", IDC_FULL_ACCESS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 156, 264, 10
+    LTEXT           "Compact context at (bytes, 0=off):", IDC_L_COMPACT_TH, 16, 150, 120, 8
+    EDITTEXT        IDC_COMPACT_THRESHOLD, 140, 147, 70, 12, ES_AUTOHSCROLL
+    LTEXT           "Keep recent messages:", IDC_L_COMPACT_KEEP, 220, 150, 90, 8
+    EDITTEXT        IDC_COMPACT_KEEP, 312, 147, 30, 12, ES_AUTOHSCROLL
+    CONTROL         "DANGER: full system access (no sandbox, all commands)", IDC_FULL_ACCESS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 164, 264, 10
     CONTROL         "DANGER: auto-confirm all tools (never ask)", IDC_AUTO_CONFIRM, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 80, 170, 264, 10
     LTEXT           "Full access removes the sandbox and the command ban list.", IDC_L_WARN1, 16, 192, 320, 8
     LTEXT           "Both dangerous options are intended for disposable VMs only.", IDC_L_WARN2, 16, 204, 320, 8
