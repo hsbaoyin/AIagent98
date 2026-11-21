@@ -68,8 +68,12 @@
 ## Dangerous option: full system access
 `[agent] full_access=1` (checkbox in Tools -> Settings...) removes all
 restrictions: paths are no longer confined to the workspace, the shell command
-ban list is skipped, and `allow_shell` is implied. Use it only on a disposable
-VM. `session_info` reports `sandbox: DISABLED` when it is active.
+ban list is skipped, `allow_shell` is implied, and `auto_confirm` is forced on.
+Use it only on a disposable VM. `session_info` reports `sandbox: DISABLED`.
+
+`[agent] auto_confirm=1` (separate checkbox) runs every tool call without the
+confirmation dialog. It is implied by `full_access=1` but can be enabled on its
+own. Both off by default; enabling either shows a warning.
 
 ## Safety
 - All paths stay under workspace (resolve_path) unless `full_access=1`.

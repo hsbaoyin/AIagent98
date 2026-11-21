@@ -23,6 +23,10 @@ typedef struct {
     /* DANGER: full system access. Implies allow_shell + allow_outside and
      * removes the shell command ban list. Off by default. */
     int full_access;
+    /* Auto-confirm every tool call without showing the dialog. Dangerous:
+     * implies that writes, deletes and shell commands run unchecked. When
+     * full_access is on this is forced on. */
+    int auto_confirm;
     /* Draw emoji as the pack's pictures in the transcript ([emoji] inline).
      * Off by default: the RichEdit OLE path faults on some Windows 9x
      * installs, and shortcode text is the safe fallback. */

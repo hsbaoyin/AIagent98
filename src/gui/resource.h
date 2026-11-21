@@ -58,6 +58,7 @@
 #define IDC_TEST           2013
 #define IDC_TEST_RESULT    2014
 #define IDC_FULL_ACCESS    2015
+#define IDC_AUTO_CONFIRM   2016
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101

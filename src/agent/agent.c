@@ -453,13 +453,17 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                     log_warn("loop guard: blocked repeated tool call %s (x%d)",
                              name, block_repeat);
                 } else {
-                    if (tool_needs_confirm(name, args)) {
+                    /* auto_confirm (implied by full_access) runs every tool
+                     * without showing the dialog. Otherwise ask, and fail
+                     * closed when no UI callback is wired up. */
+                    if (a->cfg != NULL && a->cfg->auto_confirm) {
+                        allowed = 1;
+                        log_info("auto-confirm: allowing %s", name);
+                    } else if (tool_needs_confirm(name, args)) {
                         if (a->on_confirm != NULL) {
                             allowed = a->on_confirm(a->confirm_ctx, name,
                                                     args);
                         } else {
-                            /* No UI is wired up to ask: fail closed instead
-                             * of silently running a destructive tool. */
                             allowed = 0;
                             log_warn("confirm callback missing; denied %s",
                                      name);

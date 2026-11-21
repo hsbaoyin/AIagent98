@@ -2345,6 +2345,8 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                        app->cfg.allow_shell ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_FULL_ACCESS,
                        app->cfg.full_access ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_AUTO_CONFIRM,
+                       app->cfg.auto_confirm ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_STREAM,
                        app->cfg.stream ? BST_CHECKED : BST_UNCHECKED);
         dlg_set_utf8(dlg, IDC_TEST_RESULT, "");
@@ -2373,10 +2375,20 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 IsDlgButtonChecked(dlg, IDC_FULL_ACCESS) == BST_CHECKED) {
                 msgbox_utf8(dlg,
                     "DANGER: full system access removes the workspace sandbox\n"
-                    "and the shell command ban list.\n\n"
+                    "and the shell command ban list, and turns on auto-confirm.\n\n"
                     "The model will be able to read/write ANY file and run ANY\n"
-                    "COMMAND.COM command on this machine, including destructive\n"
+                    "COMMAND.COM command without asking, including destructive\n"
                     "ones. Only enable this on a disposable VM.",
+                    MB_OK | MB_ICONWARNING);
+            }
+            return TRUE;
+        case IDC_AUTO_CONFIRM:
+            if (HIWORD(wp) == BN_CLICKED &&
+                IsDlgButtonChecked(dlg, IDC_AUTO_CONFIRM) == BST_CHECKED) {
+                msgbox_utf8(dlg,
+                    "Auto-confirm runs every tool call without showing the\n"
+                    "confirmation dialog, including writes and shell commands.\n"
+                    "Only enable this when you fully trust the model.",
                     MB_OK | MB_ICONWARNING);
             }
             return TRUE;
@@ -2502,6 +2514,11 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 IsDlgButtonChecked(dlg, IDC_ALLOW_SHELL) == BST_CHECKED;
             app->cfg.full_access =
                 IsDlgButtonChecked(dlg, IDC_FULL_ACCESS) == BST_CHECKED;
+            app->cfg.auto_confirm =
+                IsDlgButtonChecked(dlg, IDC_AUTO_CONFIRM) == BST_CHECKED;
+            if (app->cfg.full_access) {
+                app->cfg.auto_confirm = 1;
+            }
             app->cfg.stream =
                 IsDlgButtonChecked(dlg, IDC_STREAM) == BST_CHECKED;
 
