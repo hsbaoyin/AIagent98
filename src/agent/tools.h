@@ -15,6 +15,11 @@ typedef struct ToolDef {
     int (*run)(struct Agent *agent, cJSON *args, Str *out, char *err, size_t errcap);
 } ToolDef;
 
+/* Resolve a model-supplied path inside the workspace (or allow_outside).
+ * Returns 0 on success. Shared by the built-in and the extended tools. */
+int tools_resolve_path(struct Agent *a, const char *user, char *out, size_t cap,
+                       char *err, size_t errcap);
+
 const ToolDef *tools_all(int *count);
 const ToolDef *tools_find(const char *name);
 

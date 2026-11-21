@@ -1,4 +1,6 @@
 #include "tools.h"
+#include "tools_net.h"
+#include "tools_coding.h"
 #include "agent.h"
 #include "jsonutil.h"
 
@@ -30,7 +32,7 @@ static const char *arg_str(cJSON *args, const char *name, const char *def)
     return v != NULL ? v : def;
 }
 
-static int resolve_path(Agent *a, const char *user, char *out, size_t cap,
+int tools_resolve_path(Agent *a, const char *user, char *out, size_t cap,
                         char *err, size_t errcap)
 {
     char joined[A98_MAX_PATH * 2];
@@ -193,7 +195,7 @@ static int tool_list_dir(Agent *a, cJSON *args, Str *out, char *err, size_t errc
     HANDLE h;
     int count = 0;
 
-    if (resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
+    if (tools_resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
                      err, errcap) != 0) {
         return -1;
     }
@@ -249,7 +251,7 @@ static int tool_read_file(Agent *a, cJSON *args, Str *out, char *err, size_t err
         set_err(err, errcap, "path is required");
         return -1;
     }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) {
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) {
         return -1;
     }
     if (!a98_path_exists(path)) {
@@ -516,7 +518,7 @@ static int tool_write_file(Agent *a, cJSON *args, Str *out, char *err, size_t er
         set_err(err, errcap, "content is larger than 1 MiB");
         return -1;
     }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) {
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) {
         return -1;
     }
     if (a98_path_is_dir(path)) {
@@ -583,8 +585,80 @@ static const char *stristr_local(const char *haystack, const char *needle)
     return NULL;
 }
 
+/* A tiny backtracking regex matcher: literals, '.', '*', '+', '?', '^', '$'.
+ * Enough for code search without pulling in a regex library on Win9x. */
+static int re_char_eq(char pc, char tc, int cs)
+{
+    if (pc == '.') return tc != '\0';
+    if (cs) return pc == tc;
+    return tolower((unsigned char)pc) == tolower((unsigned char)tc);
+}
+
+static int re_here(const char *p, const char *t, int cs)
+{
+    char pc, next;
+    int i;
+
+    if (*p == '\0') return 1;
+    if (*p == '$' && p[1] == '\0') return *t == '\0';
+    pc = *p;
+    next = p[1];
+    if (next == '*' || next == '+' || next == '?') {
+        i = 0;
+        while (re_char_eq(pc, t[i], cs)) i++;
+        if (next == '+' && i == 0) return 0;
+        if (next == '?') {
+            if (i > 1) i = 1;
+            for (; i >= 0; i--)
+                if (re_here(p + 2, t + i, cs)) return 1;
+        } else {
+            for (; i >= 0; i--)
+                if (re_here(p + 2, t + i, cs)) return 1;
+        }
+        return 0;
+    }
+    if (!re_char_eq(pc, *t, cs)) return 0;
+    return re_here(p + 1, t + 1, cs);
+}
+
+static int mini_regex(const char *pat, const char *text, int cs)
+{
+    if (pat[0] == '^') return re_here(pat + 1, text, cs);
+    for (; *text != '\0'; text++) {
+        if (re_here(pat, text, cs)) return 1;
+    }
+    return re_here(pat, text, cs);
+}
+
+/* Emit one line (bounded) from `data` at line number `want`. */
+static void grep_emit_line(const char *data, size_t len, int want,
+                           const char *rel, int line_no, int mark, Str *out)
+{
+    size_t pos = 0;
+    int cur = 1;
+    while (pos < len && cur <= want) {
+        size_t eol = pos;
+        while (eol < len && data[eol] != '\n') eol++;
+        if (cur == want) {
+            size_t llen = eol - pos;
+            char buf[240];
+            size_t n;
+            if (llen > 0 && data[pos + llen - 1] == '\r') llen--;
+            n = llen < sizeof(buf) - 1 ? llen : sizeof(buf) - 1;
+            memcpy(buf, data + pos, n);
+            buf[n] = '\0';
+            str_appendf(out, "%s:%d:%c %s\n", rel, line_no,
+                        mark ? '>' : '-', buf);
+            return;
+        }
+        cur++;
+        pos = eol < len ? eol + 1 : len;
+    }
+}
+
 static void search_file(const char *full, const char *rel, const char *pattern,
-                        int case_sensitive, int *remaining, Str *out)
+                        int case_sensitive, int regex, int context,
+                        int *remaining, Str *out)
 {
     size_t len = 0;
     int truncated = 0;
@@ -592,47 +666,61 @@ static void search_file(const char *full, const char *rel, const char *pattern,
     char *data;
     size_t pos = 0;
     int line_no = 1;
+    int total_lines = 0;
+    int *hits = NULL;
 
     data = read_text_file(full, 1024 * 1024, &len, &truncated, err, sizeof(err));
     A98_UNUSED(truncated);
-    if (data == NULL) {
-        return;
-    }
-    while (pos < len && *remaining > 0) {
-        size_t eol = pos;
-        size_t llen;
-        const char *hit;
-        while (eol < len && data[eol] != '\n') {
-            eol++;
-        }
-        llen = eol - pos;
-        if (llen > 0 && data[pos + llen - 1] == '\r') {
-            llen--;
-        }
-        if (llen > 0) {
-            char saved = data[pos + llen];
-            char linebuf[240];
-            data[pos + llen] = '\0';
-            if (case_sensitive) {
-                hit = strstr(data + pos, pattern);
-            } else {
-                hit = stristr_local(data + pos, pattern);
-            }
-            if (hit != NULL) {
-                size_t n = llen;
-                if (n >= sizeof(linebuf)) {
-                    n = sizeof(linebuf) - 1;
+    if (data == NULL) return;
+
+    /* first pass: count lines and collect matching line numbers */
+    {
+        size_t p = 0;
+        int cap = 0, nhits = 0;
+        while (p < len) {
+            size_t eol = p;
+            while (eol < len && data[eol] != '\n') eol++;
+            {
+                size_t llen = eol - p;
+                if (llen > 0 && data[p + llen - 1] == '\r') llen--;
+                if (llen > 0) {
+                    char saved = data[p + llen];
+                    int hit;
+                    data[p + llen] = '\0';
+                    hit = regex ? mini_regex(pattern, data + p, case_sensitive)
+                                : (case_sensitive ? strstr(data + p, pattern) != NULL
+                                                  : stristr_local(data + p, pattern) != NULL);
+                    if (hit) {
+                        if (nhits >= cap) {
+                            int nc = cap ? cap * 2 : 16;
+                            int *np = (int *)realloc(hits, (size_t)nc * sizeof(int));
+                            if (np != NULL) { hits = np; cap = nc; }
+                        }
+                        if (nhits < cap) hits[nhits++] = total_lines + 1;
+                    }
+                    data[p + llen] = saved;
                 }
-                memcpy(linebuf, data + pos, n);
-                linebuf[n] = '\0';
-                str_appendf(out, "%s:%d: %s\n", rel, line_no, linebuf);
-                (*remaining)--;
             }
-            data[pos + llen] = saved;
+            total_lines++;
+            p = eol < len ? eol + 1 : len;
         }
-        line_no++;
-        pos = eol < len ? eol + 1 : len;
+        /* second pass: emit matches with context */
+        {
+            int i;
+            for (i = 0; i < nhits && *remaining > 0; i++) {
+                int lo = hits[i] - context;
+                int hi = hits[i] + context;
+                int l;
+                if (lo < 1) lo = 1;
+                for (l = lo; l <= hi && *remaining > 0; l++) {
+                    grep_emit_line(data, len, l, rel, l, l == hits[i], out);
+                    (*remaining)--;
+                }
+            }
+        }
+        free(hits);
     }
+    (void)pos; (void)line_no;
     a98_free(data);
 }
 
@@ -640,7 +728,7 @@ static void search_dir(const char *dir, const char *rel_prefix, const char *patt
                        int case_sensitive, int *remaining, Str *out, int depth)
 {
     static const char *const skip_dirs[] = {
-        ".git", "node_modules", "windows", "system", "recycled", "temp", NULL
+        ".git", "node_modules", "windows", "system", "recycled", "temp", ".snapshots", NULL
     };
     char pattern_path[A98_MAX_PATH];
     WIN32_FIND_DATAA fd;
@@ -680,7 +768,7 @@ static void search_dir(const char *dir, const char *rel_prefix, const char *patt
                 strncpy(rel, fd.cFileName, sizeof(rel) - 1);
                 rel[sizeof(rel) - 1] = '\0';
             }
-            search_file(full, rel, pattern, case_sensitive, remaining, out);
+            search_file(full, rel, pattern, case_sensitive, 0, 0, remaining, out);
         }
     } while (FindNextFileA(h, &fd) && *remaining > 0);
     FindClose(h);
@@ -692,6 +780,8 @@ static int tool_search_files(Agent *a, cJSON *args, Str *out, char *err, size_t 
     const char *pattern = arg_str(args, "pattern", NULL);
     int max_results = json_int(args, "max_results", 50);
     int case_sensitive = json_bool(args, "case_sensitive", 0);
+    int regex = json_bool(args, "regex", 0);
+    int context = json_int(args, "context", 0);
     int remaining;
     const char *prefix = "";
 
@@ -705,7 +795,7 @@ static int tool_search_files(Agent *a, cJSON *args, Str *out, char *err, size_t 
     if (max_results > 200) {
         max_results = 200;
     }
-    if (resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
+    if (tools_resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
                      err, errcap) != 0) {
         return -1;
     }
@@ -807,7 +897,7 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
     }
     workdir = (a->workspace[0] ? a->workspace : NULL);
     if (cwd_user != NULL && cwd_user[0] != '\0') {
-        if (resolve_path(a, cwd_user, cwd_buf, sizeof(cwd_buf), err, errcap) != 0) {
+        if (tools_resolve_path(a, cwd_user, cwd_buf, sizeof(cwd_buf), err, errcap) != 0) {
             return -1;
         }
         if (!a98_path_is_dir(cwd_buf)) {
@@ -963,7 +1053,7 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
 }
 
 
-/* AIagent98 extended tools — included into tools.c */
+/* AIagent98 extended tools ? included into tools.c */
 
 static int glob_match(const char *pat, const char *name)
 {
@@ -984,7 +1074,7 @@ static int tool_mkdir(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     char path[A98_MAX_PATH];
     const char *user = arg_str(args, "path", NULL);
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     if (a98_path_exists(path)) {
         if (a98_path_is_dir(path)) { str_appendf(out, "Directory already exists: %s\n", user); return 0; }
         set_err(err, errcap, "path exists and is not a directory: %s", user); return -1;
@@ -999,7 +1089,7 @@ static int tool_delete_file(Agent *a, cJSON *args, Str *out, char *err, size_t e
     const char *user = arg_str(args, "path", NULL);
     DWORD attrs;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "file not found: %s", user); return -1; }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
@@ -1017,7 +1107,7 @@ static int tool_rmdir(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     const char *user = arg_str(args, "path", NULL);
     DWORD attrs; WIN32_FIND_DATAA fd; HANDLE h; int empty = 1;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "not found: %s", user); return -1; }
     if (!(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -1075,7 +1165,7 @@ static int tool_rmdir_force(Agent *a, cJSON *args, Str *out, char *err, size_t e
     if (!confirm) {
         set_err(err, errcap, "rmdir_force requires confirm=true (recursive delete)"); return -1;
     }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "not found: %s", user); return -1; }
     if (!(attrs & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -1124,7 +1214,7 @@ static int tool_touch(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     const char *user = arg_str(args, "path", NULL);
     HANDLE h; FILETIME ft; SYSTEMTIME st; DWORD attrs;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) {
         a98_path_dirname(path, dir, sizeof(dir));
@@ -1156,8 +1246,8 @@ static int tool_move_file(Agent *a, cJSON *args, Str *out, char *err, size_t err
     if (!from_user || !from_user[0] || !to_user || !to_user[0]) {
         set_err(err, errcap, "from and to are required"); return -1;
     }
-    if (resolve_path(a, from_user, src, sizeof(src), err, errcap) != 0) return -1;
-    if (resolve_path(a, to_user, dst, sizeof(dst), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, from_user, src, sizeof(src), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, to_user, dst, sizeof(dst), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(src);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "source not found: %s", from_user); return -1; }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
@@ -1184,8 +1274,8 @@ static int tool_copy_file_ex(Agent *a, cJSON *args, Str *out, char *err, size_t 
     if (!from_user || !from_user[0] || !to_user || !to_user[0]) {
         set_err(err, errcap, "from and to are required"); return -1;
     }
-    if (resolve_path(a, from_user, src, sizeof(src), err, errcap) != 0) return -1;
-    if (resolve_path(a, to_user, dst, sizeof(dst), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, from_user, src, sizeof(src), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, to_user, dst, sizeof(dst), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(src);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "source not found: %s", from_user); return -1; }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
@@ -1214,7 +1304,7 @@ static int tool_file_info(Agent *a, cJSON *args, Str *out, char *err, size_t err
     const char *user = arg_str(args, "path", NULL);
     WIN32_FIND_DATAA fd; HANDLE h; SYSTEMTIME st; FILETIME ft; char time_buf[64];
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     h = FindFirstFileA(path, &fd);
     if (h == INVALID_HANDLE_VALUE) { set_err(err, errcap, "not found: %s", user); return -1; }
     FindClose(h);
@@ -1246,7 +1336,7 @@ static int tool_append_file(Agent *a, cJSON *args, Str *out, char *err, size_t e
     if (!content) { set_err(err, errcap, "content is required"); return -1; }
     len = strlen(content);
     if (len > 512*1024) { set_err(err, errcap, "content larger than 512 KiB"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     if (a98_path_is_dir(path)) { set_err(err, errcap, "is a directory"); return -1; }
     a98_path_dirname(path, dir, sizeof(dir)); a98_path_mkdirs(dir);
     f = fopen(path, "ab");
@@ -1281,7 +1371,7 @@ static int tool_edit(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     if (!user || !user[0] || !old_s || !new_s) { set_err(err, errcap, "path, old_string, new_string required"); return -1; }
     old_len = strlen(old_s); new_len = strlen(new_s);
     if (!old_len) { set_err(err, errcap, "old_string empty"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     data = read_text_file(path, 2*1024*1024, &len, &truncated, err, errcap);
     if (!data) return -1;
     if (truncated) { a98_free(data); set_err(err, errcap, "file > 2 MiB"); return -1; }
@@ -1360,7 +1450,7 @@ static int tool_tree(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     int remaining;
     if (max_depth < 1) max_depth = 1; if (max_depth > 8) max_depth = 8;
     if (max_entries < 1) max_entries = 1; if (max_entries > 500) max_entries = 500;
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     if (!a98_path_is_dir(path)) { set_err(err, errcap, "not a directory"); return -1; }
     str_appendf(out, "Tree of %s (depth<=%d):\n", user, max_depth);
     remaining = max_entries;
@@ -1376,7 +1466,7 @@ static int tool_wc(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     char *data; size_t len = 0, i; int truncated = 0;
     unsigned long lines = 0, words = 0, bytes = 0; int in_word = 0;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     data = read_text_file(path, 4*1024*1024, &len, &truncated, err, errcap);
     if (!data) return -1;
     bytes = (unsigned long)len;
@@ -1426,7 +1516,7 @@ static int tool_disk_info(Agent *a, cJSON *args, Str *out, char *err, size_t err
     char path[A98_MAX_PATH], root[8];
     const char *user = arg_str(args, "path", ".");
     DWORD spc, bps, free_c, total_c; char vol[64], fs[32]; DWORD serial, maxc, flags;
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     if (path[0] && path[1]==':') { root[0]=path[0]; root[1]=':'; root[2]='\\'; root[3]=0; }
     else { set_err(err, errcap, "cannot determine drive"); return -1; }
     if (!GetDiskFreeSpaceA(root, &spc, &bps, &free_c, &total_c)) {
@@ -1485,7 +1575,7 @@ static int tool_set_attr(Agent *a, cJSON *args, Str *out, char *err, size_t errc
     DWORD attrs, next; cJSON *j;
     int has = 0;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "not found"); return -1; }
     next = attrs;
@@ -1554,7 +1644,7 @@ static int tool_glob(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     int remaining; const char *prefix = "";
     if (!pattern || !pattern[0]) { set_err(err, errcap, "pattern required"); return -1; }
     if (max_results < 1) max_results = 1; if (max_results > 500) max_results = 500;
-    if (resolve_path(a, arg_str(args,"path","."), path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, arg_str(args,"path","."), path, sizeof(path), err, errcap) != 0) return -1;
     if (!a98_path_is_dir(path)) { set_err(err, errcap, "not a directory"); return -1; }
     remaining = max_results;
     glob_walk(path, prefix, pattern, &remaining, out, 0);
@@ -1564,11 +1654,11 @@ static int tool_glob(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 }
 
 static void grep_walk(const char *dir, const char *rel_prefix, const char *pattern,
-                     const char *include, int case_sensitive, int *remaining,
-                     Str *out, int depth)
+                     const char *include, int case_sensitive, int regex,
+                      int context, int *remaining, Str *out, int depth)
 {
     static const char *const skip_dirs[] = {
-        ".git", "node_modules", "windows", "system", "recycled", "temp", NULL
+        ".git", "node_modules", "windows", "system", "recycled", "temp", ".snapshots", NULL
     };
     char pattern_path[A98_MAX_PATH];
     char full[A98_MAX_PATH];
@@ -1607,7 +1697,7 @@ static void grep_walk(const char *dir, const char *rel_prefix, const char *patte
                 strncpy(rel, fd.cFileName, sizeof(rel) - 1);
                 rel[sizeof(rel) - 1] = '\0';
             }
-            grep_walk(full, rel, pattern, include, case_sensitive, remaining, out, depth + 1);
+            grep_walk(full, rel, pattern, include, case_sensitive, regex, context, remaining, out, depth + 1);
         } else if (fd.nFileSizeLow <= 1024 * 1024) {
             if (include != NULL && include[0] != '\0' &&
                 !glob_match(include, fd.cFileName)) {
@@ -1620,7 +1710,7 @@ static void grep_walk(const char *dir, const char *rel_prefix, const char *patte
                 strncpy(rel, fd.cFileName, sizeof(rel) - 1);
                 rel[sizeof(rel) - 1] = '\0';
             }
-            search_file(full, rel, pattern, case_sensitive, remaining, out);
+            search_file(full, rel, pattern, case_sensitive, regex, context, remaining, out);
         }
     } while (FindNextFileA(h, &fd) && *remaining > 0);
     FindClose(h);
@@ -1633,6 +1723,8 @@ static int tool_grep(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     const char *include = arg_str(args, "include", NULL);
     int max_results = json_int(args, "max_results", 50);
     int case_sensitive = json_bool(args, "case_sensitive", 0);
+    int regex = json_bool(args, "regex", 0);
+    int context = json_int(args, "context", 0);
     int remaining;
     const char *prefix = "";
 
@@ -1642,7 +1734,7 @@ static int tool_grep(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     }
     if (max_results < 1) max_results = 1;
     if (max_results > 200) max_results = 200;
-    if (resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
+    if (tools_resolve_path(a, arg_str(args, "path", "."), path, sizeof(path),
                      err, errcap) != 0) {
         return -1;
     }
@@ -1667,8 +1759,8 @@ static int tool_grep(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
         if (include != NULL && include[0] != '\0') {
             str_appendf(out, "include filter: %s\n", include);
         }
-        grep_walk(path, prefix, pattern, match, case_sensitive, &remaining,
-                  out, 0);
+        grep_walk(path, prefix, pattern, match, case_sensitive, regex, context,
+                   &remaining, out, 0);
         a98_free(include_local);
     }
     if (remaining == max_results) {
@@ -1688,7 +1780,7 @@ static int tool_head_tail(Agent *a, cJSON *args, Str *out, char *err, size_t err
     char *data; size_t len = 0, pos; int truncated = 0, line_count = 0, start_line, cur;
     if (!user || !user[0]) { set_err(err, errcap, "path required"); return -1; }
     if (max_lines < 1) max_lines = 1; if (max_lines > 500) max_lines = 500;
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     data = read_text_file(path, 2*1024*1024, &len, &truncated, err, errcap);
     if (!data) return -1;
     for (pos = 0; pos < len; pos++) if (data[pos]=='\n') line_count++;
@@ -1728,8 +1820,8 @@ static int tool_diff(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
     int max_diffs = json_int(args, "max_diffs", 50);
     if (!ua||!ub) { set_err(err,errcap,"a and b required"); return -1; }
     if (max_diffs<1) max_diffs=1; if (max_diffs>200) max_diffs=200;
-    if (resolve_path(a,ua,pa,sizeof(pa),err,errcap)!=0) return -1;
-    if (resolve_path(a,ub,pb,sizeof(pb),err,errcap)!=0) return -1;
+    if (tools_resolve_path(a,ua,pa,sizeof(pa),err,errcap)!=0) return -1;
+    if (tools_resolve_path(a,ub,pb,sizeof(pb),err,errcap)!=0) return -1;
     da = read_text_file(pa,1024*1024,&la,&ta,err,errcap); if (!da) return -1;
     db = read_text_file(pb,1024*1024,&lb,&tb,err,errcap);
     if (!db) { a98_free(da); return -1; }
@@ -1764,7 +1856,7 @@ static int tool_checksum(Agent *a, cJSON *args, Str *out, char *err, size_t errc
     FILE *f; unsigned char buf[4096]; size_t n,i; unsigned long crc, total=0;
     static unsigned long table[256]; static int ready=0;
     if (!user||!user[0]) { set_err(err,errcap,"path required"); return -1; }
-    if (resolve_path(a,user,path,sizeof(path),err,errcap)!=0) return -1;
+    if (tools_resolve_path(a,user,path,sizeof(path),err,errcap)!=0) return -1;
     if (a98_path_is_dir(path)) { set_err(err,errcap,"is directory"); return -1; }
     f = fopen(path,"rb"); if (!f) { set_err(err,errcap,"cannot open"); return -1; }
     if (!ready) {
@@ -1838,7 +1930,7 @@ static int tool_apply_patch(Agent *a, cJSON *args, Str *out, char *err, size_t e
     int truncated=0, hunks=0, text_mode;
     const char *p;
     if (!user||!user[0]||!patch) { set_err(err,errcap,"path and patch required"); return -1; }
-    if (resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
+    if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     data = read_text_file(path, 2*1024*1024, &len, &truncated, err, errcap);
     if (!data) return -1;
     if (truncated) { a98_free(data); set_err(err,errcap,"file too large"); return -1; }
@@ -1941,7 +2033,7 @@ static const char schema_set_attr[] =
 static const char schema_glob[] =
     "{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"},\"max_results\":{\"type\":\"integer\"}},\"required\":[\"pattern\"]}";
 static const char schema_grep[] =
-    "{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"},\"include\":{\"type\":\"string\"},\"max_results\":{\"type\":\"integer\"},\"case_sensitive\":{\"type\":\"boolean\"}},\"required\":[\"pattern\"]}";
+    "{\"type\":\"object\",\"properties\":{\"pattern\":{\"type\":\"string\"},\"path\":{\"type\":\"string\"},\"include\":{\"type\":\"string\"},\"max_results\":{\"type\":\"integer\"},\"case_sensitive\":{\"type\":\"boolean\"},\"regex\":{\"type\":\"boolean\",\"description\":\"Treat pattern as a simple regex (. * + ? ^ $).\"},\"context\":{\"type\":\"integer\",\"description\":\"Lines of context before/after each match.\"}},\"required\":[\"pattern\"]}";
 static const char schema_head[] =
     "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"lines\":{\"type\":\"integer\"}},\"required\":[\"path\"]}";
 static const char schema_tail[] =
@@ -2033,7 +2125,21 @@ static const ToolDef g_tools[] = {
     {"env", "Read environment variable(s). Requires approval.", schema_env, 1, tool_env},
     {"session_info", "OS, workspace, tool list.", schema_session_info, 0, tool_session_info},
     {"todo_read", "Read workspace todo list.", schema_todo_read, 0, tool_todo_read},
-    {"todo_write", "Write workspace todo list. Requires approval.", schema_todo_write, 1, tool_todo_write}
+    {"todo_write", "Write workspace todo list. Requires approval.", schema_todo_write, 1, tool_todo_write},
+    /* Extended coding tools */
+    {"build", "Run the build command and summarise compiler diagnostics. Needs allow_shell=1.", schema_build, 1, tool_build_run},
+    {"replace_across", "Search-and-replace across many files (dry-run by default).", schema_replace_across, 0, tool_replace_across_run},
+    {"outline", "List function and #define definitions in a source file.", schema_outline, 0, tool_outline_run},
+    {"restore", "Restore a file from its .bak backup. Requires approval.", schema_restore, 1, tool_restore_run},
+    {"snapshot", "Copy the whole workspace to a timestamped folder.", schema_snapshot, 0, tool_snapshot_run},
+    {"hexdump", "Show a binary file as offset/hex/ASCII dump.", schema_hexdump, 0, tool_hexdump_run},
+    /* Extended network tools (gated by [net] allow=1) */
+    {"http_request", "Make an HTTP(S) request. Needs [net] allow=1.", schema_http_request, 0, tool_http_request_run},
+    {"http_download", "Download a URL to a workspace file. Needs [net] allow=1.", schema_http_download, 0, tool_http_download_run},
+    {"dns_resolve", "Resolve a hostname. Needs [net] allow=1.", schema_dns_resolve, 0, tool_dns_resolve_run},
+    {"tcp_probe", "Test host:port reachability. Needs [net] allow=1.", schema_tcp_probe, 0, tool_tcp_probe_run},
+    {"web_search", "Search the web. Needs [net] allow=1.", schema_web_search, 0, tool_web_search_run},
+    {"gist_upload", "Upload a file to a GitHub Gist. Needs approval and github_token.", schema_gist_upload, 1, tool_gist_upload_run}
 };
 
 const ToolDef *tools_all(int *count)
@@ -2169,6 +2275,45 @@ void tools_format_confirm(const char *name, const char *args_json,
         d = 0;                  /* read-only: do not tag it [WRITE] */
         snprintf(line, sizeof(line), "Read environment variable\n  name: %s",
                  (p && p[0]) ? p : "(common list)");
+    } else if (strcmp(n, "http_request") == 0) {
+        const char *u = args ? json_string(args, "url") : NULL;
+        const char *m = args ? json_string(args, "method") : NULL;
+        d = (m != NULL && a98_strcasecmp(m, "GET") != 0 &&
+             a98_strcasecmp(m, "HEAD") != 0) ? 2 : 0;
+        snprintf(line, sizeof(line),
+                 "HTTP %s request\n  url: %s",
+                 m ? m : "GET", u ? u : "?");
+    } else if (strcmp(n, "http_download") == 0 || strcmp(n, "web_search") == 0 ||
+               strcmp(n, "dns_resolve") == 0 || strcmp(n, "tcp_probe") == 0) {
+        const char *u = args ? json_string(args, "url") : NULL;
+        if (u == NULL) u = args ? json_string(args, "host") : NULL;
+        if (u == NULL) u = args ? json_string(args, "query") : NULL;
+        d = 0;
+        snprintf(line, sizeof(line), "Network read (%s)\n  target: %s",
+                 n, u ? u : "?");
+    } else if (strcmp(n, "gist_upload") == 0) {
+        const char *p = args ? json_string(args, "path") : NULL;
+        d = 1;
+        snprintf(line, sizeof(line), "Upload file to GitHub Gist\n  path: %s",
+                 p ? p : "?");
+    } else if (strcmp(n, "replace_across") == 0) {
+        const char *pat = args ? json_string(args, "pattern") : NULL;
+        int dry = args ? json_bool(args, "dry_run", 1) : 1;
+        d = dry ? 0 : 1;
+        snprintf(line, sizeof(line),
+                 "%s across files\n  pattern: %.60s",
+                 dry ? "Dry-run search/replace" : "APPLY search/replace",
+                 pat ? pat : "?");
+    } else if (strcmp(n, "restore") == 0) {
+        const char *p = args ? json_string(args, "path") : NULL;
+        d = 1;
+        snprintf(line, sizeof(line), "Restore file from .bak\n  path: %s",
+                 p ? p : "?");
+    } else if (strcmp(n, "build") == 0) {
+        const char *c = args ? json_string(args, "command") : NULL;
+        d = 0;
+        snprintf(line, sizeof(line), "Run build\n  command: %s",
+                 c && c[0] ? c : "build_ow.cmd");
     } else {
         d = 0;
         snprintf(line, sizeof(line), "Tool: %s", n);
@@ -2237,3 +2382,14 @@ int tools_execute(Agent *a, const char *name, const char *args_json,
     cJSON_Delete(args);
     return rc;
 }
+
+
+
+
+
+
+
+
+
+
+

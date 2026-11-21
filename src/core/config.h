@@ -24,6 +24,14 @@ typedef struct {
      * Off by default: the RichEdit OLE path faults on some Windows 9x
      * installs, and shortcode text is the safe fallback. */
     int emoji_inline;
+    /* Network tools ([net]). Off by default: the agent must not reach the
+     * network unless the user opts in. allow_hosts is a comma-separated
+     * suffix list; empty means any host. max_bytes caps each response body. */
+    int net_allow;
+    char net_allow_hosts[512];
+    int net_max_bytes;
+    char net_search_url[512];
+    char net_github_token[256];
     int max_steps;
     int connect_timeout_sec;
     int request_timeout_sec;

@@ -59,6 +59,12 @@ void config_defaults(Config *cfg, const char *exe_dir)
      * INI.  dist/SAMPLE.INI and the README have always documented 0. */
     cfg->allow_shell = 0;
     cfg->emoji_inline = 0;
+    cfg->net_allow = 0;
+    cfg->net_allow_hosts[0] = '\0';
+    cfg->net_max_bytes = 262144;
+    strcpy(cfg->net_search_url,
+           "https://html.duckduckgo.com/html/?q=%s");
+    cfg->net_github_token[0] = '\0';
     cfg->max_steps = 32;
     cfg->connect_timeout_sec = 30;
     cfg->request_timeout_sec = 180;
@@ -173,6 +179,20 @@ int config_load(Config *cfg, const char *ini_path)
     cfg->allow_outside = read_int(ini_path, "agent", "allow_outside", cfg->allow_outside);
     cfg->allow_shell = read_int(ini_path, "agent", "allow_shell", cfg->allow_shell);
     cfg->emoji_inline = read_int(ini_path, "emoji", "inline", cfg->emoji_inline);
+    cfg->net_allow = read_int(ini_path, "net", "allow", cfg->net_allow);
+    read_str(ini_path, "net", "allow_hosts", cfg->net_allow_hosts,
+             cfg->net_allow_hosts, sizeof(cfg->net_allow_hosts));
+    cfg->net_max_bytes = read_int(ini_path, "net", "max_bytes", cfg->net_max_bytes);
+    read_str(ini_path, "net", "search_url", cfg->net_search_url,
+             cfg->net_search_url, sizeof(cfg->net_search_url));
+    read_str(ini_path, "net", "github_token", cfg->net_github_token,
+             cfg->net_github_token, sizeof(cfg->net_github_token));
+    if (cfg->net_max_bytes < 1024) {
+        cfg->net_max_bytes = 1024;
+    }
+    if (cfg->net_max_bytes > 8 * 1024 * 1024) {
+        cfg->net_max_bytes = 8 * 1024 * 1024;
+    }
     cfg->max_steps = read_int(ini_path, "agent", "max_steps", cfg->max_steps);
     cfg->connect_timeout_sec = read_int(ini_path, "agent", "connect_timeout",
                                         cfg->connect_timeout_sec);
@@ -254,6 +274,13 @@ int config_save(const Config *cfg, const char *ini_path)
     ok = (write_str(ini_path, "agent", "allow_shell", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->emoji_inline ? 1 : 0);
     ok = (write_str(ini_path, "emoji", "inline", tmp) == 0) && ok;
+    sprintf(tmp, "%d", cfg->net_allow ? 1 : 0);
+    ok = (write_str(ini_path, "net", "allow", tmp) == 0) && ok;
+    ok = (write_str(ini_path, "net", "allow_hosts", cfg->net_allow_hosts) == 0) && ok;
+    sprintf(tmp, "%d", cfg->net_max_bytes);
+    ok = (write_str(ini_path, "net", "max_bytes", tmp) == 0) && ok;
+    ok = (write_str(ini_path, "net", "search_url", cfg->net_search_url) == 0) && ok;
+    ok = (write_str(ini_path, "net", "github_token", cfg->net_github_token) == 0) && ok;
     sprintf(tmp, "%d", cfg->max_steps);
     ok = (write_str(ini_path, "agent", "max_steps", tmp) == 0) && ok;
     sprintf(tmp, "%d", cfg->connect_timeout_sec);

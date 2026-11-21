@@ -167,10 +167,29 @@ static void truncate_output(Str *out)
     }
 }
 
-static int tool_needs_confirm(const char *name)
+static int tool_needs_confirm(const char *name, const char *args_json)
 {
     const ToolDef *def = tools_find(name);
-    return def != NULL && def->needs_confirm;
+    if (def == NULL) return 0;
+    if (strcmp(name, "http_request") == 0) {
+        /* GET and HEAD are read-only; anything that can send data asks. */
+        cJSON *args = args_json != NULL && args_json[0] != '\0'
+                      ? cJSON_Parse(args_json) : NULL;
+        const char *m = args != NULL ? json_string(args, "method") : NULL;
+        int needs = (m != NULL && a98_strcasecmp(m, "GET") != 0 &&
+                     a98_strcasecmp(m, "HEAD") != 0);
+        if (args != NULL) cJSON_Delete(args);
+        return needs;
+    }
+    if (strcmp(name, "replace_across") == 0) {
+        /* Only applying changes asks; a dry run is harmless. */
+        cJSON *args = args_json != NULL && args_json[0] != '\0'
+                      ? cJSON_Parse(args_json) : NULL;
+        int dry = args != NULL ? json_bool(args, "dry_run", 1) : 1;
+        if (args != NULL) cJSON_Delete(args);
+        return !dry;
+    }
+    return def->needs_confirm;
 }
 
 /*
@@ -434,7 +453,7 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                     log_warn("loop guard: blocked repeated tool call %s (x%d)",
                              name, block_repeat);
                 } else {
-                    if (tool_needs_confirm(name)) {
+                    if (tool_needs_confirm(name, args)) {
                         if (a->on_confirm != NULL) {
                             allowed = a->on_confirm(a->confirm_ctx, name,
                                                     args);

@@ -11,6 +11,8 @@ file build/ow/obj/api_openai.obj
 file build/ow/obj/jsonutil.obj
 file build/ow/obj/message.obj
 file build/ow/obj/tools.obj
+file build/ow/obj/tools_coding.obj
+file build/ow/obj/tools_net.obj
 file build/ow/obj/base.obj
 file build/ow/obj/config.obj
 file build/ow/obj/log.obj

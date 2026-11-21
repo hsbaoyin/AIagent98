@@ -1,4 +1,4 @@
-# AIagent98 Tools Reference (31)
+# AIagent98 Tools Reference (43)
 
 ## Read / Search
 | Tool | Confirm | Notes |
@@ -8,7 +8,7 @@
 | head / tail | no | First/last N lines (default 20) |
 | file_info | no | Size, mtime, attributes |
 | search_files | no | Literal content search |
-| grep | no | Literal search; `include=*.c` filters basename |
+| grep | no | Literal search or `regex=true` (`.` `*` `+` `?` `^` `$`); `context=N` adds surrounding lines; `include=*.c` filters basename |
 | glob | no | `*` / `?` path patterns |
 | tree | no | Directory tree, max_depth |
 | wc | no | lines / words / bytes |
@@ -45,8 +45,33 @@
 | session_info | no | OS, workspace, tool names |
 | todo_read / todo_write | write yes | `.agent98_todos.txt` in workspace |
 
+## Coding tools (extended)
+| Tool | Confirm | Notes |
+|------|---------|-------|
+| build | yes | Run `build_ow.cmd` (or `command=`) and summarise compiler errors/warnings; needs `allow_shell=1` |
+| replace_across | apply only | Literal search/replace over many files; `dry_run=true` by default; `include=*.c`, `max_files` |
+| outline | no | List function and `#define` definitions in a source file |
+| restore | yes | Restore a file from its `.bak` backup |
+| snapshot | no | Copy the whole workspace to `<workspace>\.snapshots\<timestamp>[_name]\` |
+| hexdump | no | Offset / hex / ASCII dump of a binary file (`offset`, `length`) |
+
+## Network tools (extended, all gated by `[net] allow=1`)
+| Tool | Confirm | Notes |
+|------|---------|-------|
+| http_request | GET/HEAD no, others yes | URL, `method`, `headers` (one `Name: value` per line), `body`, `out_file`, `max_bytes` |
+| http_download | no | GET a URL to a workspace file; `max_bytes` |
+| dns_resolve | no | Resolve a hostname to IPs |
+| tcp_probe | no | Test `host:port` reachability (`timeout_sec`) |
+| web_search | no | Search via `[net] search_url` (default DuckDuckGo HTML); `max_results` |
+| gist_upload | yes | Upload a workspace file to a GitHub Gist; needs `[net] github_token` |
+
 ## Safety
 - All paths stay under workspace (resolve_path).
+- Network tools are off unless `[net] allow=1`; optional `[net] allow_hosts` is a
+  comma-separated host/suffix allow-list. Bodies are capped at `[net] max_bytes`
+  (default 256 KB). `http_request` GET/HEAD do not prompt; methods that send
+  data, `gist_upload` and applying `replace_across` do.
+- `snapshot` copies are stored under `.snapshots\` and are skipped by search tools.
 - Destructive tools require GUI/CLI confirmation.
 - Tool argument logs redact api_key / password / token / secret patterns.
 - `run_command` refuses common disk-wipe style command patterns.

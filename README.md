@@ -1,4 +1,4 @@
-# AIagent98
+﻿# AIagent98
 
 **English** | [简体中文](#简体中文)
 
@@ -47,7 +47,7 @@ A chat client on a retro PC is a demo: you ask a question, it prints an answer,
 the answer is gone. The reason to put an agent on a 1998 machine is that the
 machine has files, and the model can reach them.
 
-- 31 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
+- 43 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
   `run_command`, ...) run on the 9x box itself, not on a server somewhere else
 - every path is resolved through `GetFullPathName` and checked against the
   workspace root, so `..` cannot walk out of the sandbox (`allow_outside=0`,
@@ -60,7 +60,7 @@ machine has files, and the model can reach them.
   so the files it produces open correctly in Win98 Notepad, `EDIT` and
   `COMMAND.COM`
 
-#### Tool set (31)
+#### Tool set (43)
 
 The full reference is in [`TOOLS.md`](TOOLS.md). Read/search tools
 (`list_dir`, `read_file`, `head`, `tail`, `file_info`, `search_files`, `grep`,
@@ -554,7 +554,7 @@ repository root; the expected last line is `all emoji tests passed`.
 #### Tool registry check
 
 `tests/smoke_tools.py` is a dependency-free structural check (Python 3) that all
-31 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
+43 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
 helpers are present, and that the file's braces balance:
 
 ```bat
@@ -595,7 +595,7 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 在复古机器上跑一个聊天客户端只是个演示：问一句，它打一段字，然后没了。
 在 1998 年的机器上跑 agent 的意义在于 —— 这台机器上有文件，而模型能碰到它们。
 
-- 31 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
+- 43 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
   `run_command` 等）都在 9x 本机执行，不是转发到某台服务器
 - 所有路径先经 `GetFullPathName` 规范化，再和 workspace 根目录比对，`..`
   走不出沙箱（`allow_outside=0`，默认值）
@@ -605,7 +605,7 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 - `write_file` 会把 UTF-8 转成本地 ANSI 代码页、把 LF 转成 DOS CRLF，写出来
   的文件在 Win98 记事本、`EDIT` 和 `COMMAND.COM` 里都能正常打开
 
-#### 工具集（31 个）
+#### 工具集（43 个）
 
 完整说明见 [`TOOLS.md`](TOOLS.md)。只读/搜索类（`list_dir`、`read_file`、
 `head`、`tail`、`file_info`、`search_files`、`grep`、`glob`、`tree`、`wc`、
@@ -1051,7 +1051,7 @@ build\cmake\test_emoji.exe
 #### 工具注册检查
 
 `tests/smoke_tools.py` 是不依赖第三方库的静态检查（Python 3），确认
-`src/agent/tools.c` 里注册了全部 31 个工具、grep/glob/脱敏辅助函数存在、
+`src/agent/tools.c` 里注册了全部 43 个工具、grep/glob/脱敏辅助函数存在、
 且大括号配对：
 
 ```bat

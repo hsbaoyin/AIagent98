@@ -13,6 +13,9 @@ expected = [
     "append_file", "edit", "apply_patch", "touch", "file_info", "set_attr",
     "tree", "wc", "which", "glob", "grep", "head", "tail", "diff", "checksum",
     "disk_info", "env", "session_info", "todo_read", "todo_write",
+    "build", "replace_across", "outline", "restore", "snapshot", "hexdump",
+    "http_request", "http_download", "dns_resolve", "tcp_probe", "web_search",
+    "gist_upload",
 ]
 
 names = re.findall(r'\{\s*"([a-z_]+)"\s*,', text)
