@@ -539,7 +539,7 @@ int tool_web_search_run(Agent *a, cJSON *args, Str *out, char *err, size_t errca
     while (*p != '\0' && count < max_results) {
         const char *a_tag = strstr(p, "class=\"result__a\"");
         const char *snip = strstr(p, "class=\"result__snippet\"");
-        char title[512], href[1024], snippet[1024], tmp[1200];
+        char title[512], href[1024], snippet[1024], decoded[1024];
         const char *h;
         const char *te;
 
@@ -556,8 +556,14 @@ int tool_web_search_run(Agent *a, cJSON *args, Str *out, char *err, size_t errca
             memcpy(href, h, n);
             href[n] = '\0';
         }
-        html_unescape(href, tmp, sizeof(tmp));
-        strcpy(href, tmp);
+        /* Unescape into a buffer of the SAME size as href and copy back
+         * with an explicit bound. The old code unescaped into a 1200-byte
+         * tmp then strcpy'd into a 1024-byte href: DuckDuckGo redirect URLs
+         * routinely exceed 1024 after decoding, so that overflowed the
+         * stack and GPF'd on Win9x. */
+        html_unescape(href, decoded, sizeof(decoded));
+        strncpy(href, decoded, sizeof(href) - 1);
+        href[sizeof(href) - 1] = '\0';
 
         te = strchr(a_tag, '>');
         if (te == NULL) break;
