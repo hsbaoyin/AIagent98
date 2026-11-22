@@ -1,4 +1,4 @@
-# AIagent98 Tools Reference (43)
+﻿# AIagent98 Tools Reference (47)
 
 ## Read / Search
 | Tool | Confirm | Notes |
@@ -74,6 +74,29 @@ Use it only on a disposable VM. `session_info` reports `sandbox: DISABLED`.
 `[agent] auto_confirm=1` (separate checkbox) runs every tool call without the
 confirmation dialog. It is implied by `full_access=1` but can be enabled on its
 own. Both off by default; enabling either shows a warning.
+
+## Skills (procedural memory)
+Skills are pluggable `SKILL.md` files in `<workspace>\skills\` — no rebuild
+needed to add or remove one. Only each skill's name + description are injected
+into the system prompt; the model loads the full body with `use_skill`, and can
+save what it learned with `save_skill`. Names are ASCII `[A-Za-z0-9_-]` (max 48).
+
+| Tool | Confirm | Notes |
+|------|---------|-------|
+| list_skills | no | List available skills with descriptions |
+| use_skill | no | Load a skill's full Markdown instructions into the conversation |
+| save_skill | yes | Create/update a skill (name, description, content) |
+
+A SKILL.md has YAML-style frontmatter and a body:
+```
+---
+name: web-debug
+description: How to debug web requests on Win9x
+---
+# Web Debugging
+Use TLSPROBE.EXE first, then http_request...
+```
+Manage skills graphically in Tools -> Tools & skills... (New / Edit / Delete).
 
 ## Conversation compaction
 `[agent] compact_threshold` (bytes, default 24576, `0` = off) and

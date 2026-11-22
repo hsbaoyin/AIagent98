@@ -15,7 +15,7 @@ expected = [
     "disk_info", "env", "session_info", "todo_read", "todo_write",
     "build", "replace_across", "outline", "restore", "snapshot", "hexdump",
     "http_request", "http_download", "dns_resolve", "tcp_probe", "web_search",
-    "gist_upload",
+    "gist_upload", "list_skills", "use_skill", "save_skill",
 ]
 
 names = re.findall(r'\{\s*"([a-z_]+)"\s*,', text)

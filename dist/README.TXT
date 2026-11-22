@@ -12,7 +12,7 @@ Ollama / vLLM / 本地模型），无需中转机、无需代理、无需改造系统库。
 - 自绘 transcript：emoji 用 GDI 位图直接绘制，不再用 RichEdit OLE，
   根治了真实 Win98/Me 上插入图片导致整进程崩溃（GPF）的问题。
 - 现代聊天风格：彩色角色标签、代码块着色、工具调用可折叠。
-- 43 个工具（原 31 个）：新增 build / replace_across / outline / restore /
+- 47 个工具（原 31 个）：新增 build / replace_across / outline / restore /
   snapshot / hexdump，以及 http_request / http_download / dns_resolve /
   tcp_probe / web_search / gist_upload。
 - web_search 国内外都能用：自动按 Bing -> Bing 国内 -> 百度 -> DuckDuckGo
@@ -69,7 +69,7 @@ GUI 功能
 - Alt+Up / Alt+Down 翻历史输入（DOSKEY 风格）。
 - File -> Export transcript...（Ctrl+E）：导出为 GBK + CRLF 文本。
 - 状态栏：spinner 和轮数计数。
-- Tools -> List tools...：可滚动查看全部 43 个工具及其参数说明。
+- Tools -> List tools...：可滚动查看全部 47 个工具及其参数说明。
 - Tools -> Settings... 三个标签页可改全部配置。
 
 

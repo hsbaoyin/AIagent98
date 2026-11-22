@@ -28,7 +28,7 @@ BEGIN
         MENUITEM "&Open workspace",          IDM_WORKSPACE
         MENUITEM "&Settings...",             IDM_SETTINGS
         MENUITEM SEPARATOR
-        MENUITEM "&List tools...",          IDM_TOOLS_LIST
+        MENUITEM "&Tools & skills...",      IDM_TOOLS_LIST
         MENUITEM "Open &log file",           IDM_OPENLOG
     END
     POPUP "&Help"
@@ -131,16 +131,36 @@ BEGIN
     PUSHBUTTON      "Deny", IDCANCEL, 258, 182, 54, 14
 END
 
-IDD_TOOLS DIALOG 0, 0, 380, 260
+IDD_TOOLS DIALOG 0, 0, 420, 300
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "AIagent98 - Tools"
+CAPTION "AIagent98 - Tools & Skills"
 FONT 8, "MS Sans Serif"
 BEGIN
-    LTEXT           "Available tools (select one for details):", -1, 8, 8, 300, 8
-    LISTBOX         IDC_TOOLS_LIST, 8, 20, 170, 214, LBS_STANDARD | WS_TABSTOP
-    LTEXT           "Details:", -1, 186, 20, 180, 8
-    EDITTEXT        IDC_TOOLS_DETAIL, 186, 32, 186, 202, ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | WS_VSCROLL
-    DEFPUSHBUTTON   "Close", IDOK, 310, 240, 62, 14
+    LTEXT           "Built-in tools:", -1, 8, 8, 130, 8
+    LISTBOX         IDC_TOOLS_LIST, 8, 18, 130, 100, LBS_STANDARD | WS_TABSTOP
+    LTEXT           "Skills (procedural memory):", -1, 146, 8, 180, 8
+    LISTBOX         IDC_SKILLS_LIST, 146, 18, 180, 100, LBS_STANDARD | WS_TABSTOP
+    PUSHBUTTON      "New...", IDC_SKILL_NEW, 334, 26, 78, 14
+    PUSHBUTTON      "Edit...", IDC_SKILL_EDIT, 334, 44, 78, 14
+    PUSHBUTTON      "Delete", IDC_SKILL_DELETE, 334, 62, 78, 14
+    LTEXT           "Details:", -1, 8, 126, 300, 8
+    EDITTEXT        IDC_TOOLS_DETAIL, 8, 136, 404, 134, ES_MULTILINE | ES_READONLY | ES_AUTOVSCROLL | WS_VSCROLL
+    DEFPUSHBUTTON   "Close", IDOK, 348, 278, 64, 14
+END
+
+IDD_SKILL_EDIT DIALOG 0, 0, 400, 280
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "AIagent98 - Skill"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Name:", -1, 8, 10, 50, 8
+    EDITTEXT        IDC_SKILL_NAME, 62, 7, 320, 12, ES_AUTOHSCROLL
+    LTEXT           "Description:", -1, 8, 28, 60, 8
+    EDITTEXT        IDC_SKILL_DESC, 62, 25, 320, 12, ES_AUTOHSCROLL
+    LTEXT           "Instructions (Markdown):", -1, 8, 46, 160, 8
+    EDITTEXT        IDC_SKILL_CONTENT, 8, 56, 384, 190, ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "Save", IDOK, 266, 256, 60, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 332, 256, 60, 14
 END
 
 IDD_ABOUT DIALOG 0, 0, 240, 120

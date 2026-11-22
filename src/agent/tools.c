@@ -1,6 +1,7 @@
 #include "tools.h"
 #include "tools_net.h"
 #include "tools_coding.h"
+#include "tools_skills.h"
 #include "agent.h"
 #include "jsonutil.h"
 
@@ -2150,7 +2151,11 @@ static const ToolDef g_tools[] = {
     {"dns_resolve", "Resolve a hostname. Needs [net] allow=1.", schema_dns_resolve, 0, tool_dns_resolve_run},
     {"tcp_probe", "Test host:port reachability. Needs [net] allow=1.", schema_tcp_probe, 0, tool_tcp_probe_run},
     {"web_search", "Search the web. Needs [net] allow=1.", schema_web_search, 0, tool_web_search_run},
-    {"gist_upload", "Upload a file to a GitHub Gist. Needs approval and github_token.", schema_gist_upload, 1, tool_gist_upload_run}
+    {"gist_upload", "Upload a file to a GitHub Gist. Needs approval and github_token.", schema_gist_upload, 1, tool_gist_upload_run},
+    /* Procedural-memory / skills */
+    {"list_skills", "List available skills (procedural memory).", schema_list_skills, 0, tool_list_skills_run},
+    {"use_skill", "Load a skill's full instructions into the conversation.", schema_use_skill, 0, tool_use_skill_run},
+    {"save_skill", "Create or update a reusable skill. Requires approval.", schema_save_skill, 1, tool_save_skill_run}
 };
 
 const ToolDef *tools_all(int *count)

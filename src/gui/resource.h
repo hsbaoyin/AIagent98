@@ -15,6 +15,7 @@
 #define IDD_INPUTLINE      204
 #define IDD_EMOJI          205
 #define IDD_TOOLS          206
+#define IDD_SKILL_EDIT     207
 
 #define IDC_TRANSCRIPT     1000
 #define IDC_INPUT          1001
@@ -104,6 +105,13 @@
 #define IDC_L_COMPACT_KEEP 2062
 #define IDC_TOOLS_LIST  2060
 #define IDC_TOOLS_DETAIL 2061
+#define IDC_SKILLS_LIST  2063
+#define IDC_SKILL_NEW    2064
+#define IDC_SKILL_EDIT   2065
+#define IDC_SKILL_DELETE 2066
+#define IDC_SKILL_NAME   2067
+#define IDC_SKILL_DESC   2068
+#define IDC_SKILL_CONTENT 2069
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101

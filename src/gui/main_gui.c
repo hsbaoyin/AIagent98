@@ -37,6 +37,7 @@
 #include "../agent/agent.h"
 #include "../agent/tools.h"
 #include "../agent/api_openai.h"
+#include "../agent/skills.h"
 #include "../net/http.h"
 #include "../net/net.h"
 #include "../net/url.h"
@@ -256,6 +257,7 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
+static INT_PTR CALLBACK skill_edit_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK firstrun_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static INT_PTR CALLBACK inputline_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp);
 static int input_line_box(HWND parent, const char *title, const char *label,
@@ -2734,10 +2736,153 @@ static INT_PTR CALLBACK confirm_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     return FALSE;
 }
 
-/* Show all tools in a scrollable list with a detail pane. The previous
- * MessageBox truncated at 40 entries and had no scrollbar. */
+/* Context passed to the skill editor dialog. */
+typedef struct {
+    App *app;
+    char name[64];
+    int is_new;
+} SkillEditCtx;
+
+/* Fill the detail pane for a built-in tool. */
+static void tools_show_tool(HWND dlg, int idx)
+{
+    int count = 0;
+    const ToolDef *all = tools_all(&count);
+    if (idx < 0 || idx >= count) return;
+    {
+        Str s;
+        char *acp;
+        str_init(&s);
+        str_appendf(&s, "Tool: %s\r\nConfirm: %s\r\n\r\n%s\r\n\r\nParameters:\r\n%s",
+                    all[idx].name,
+                    all[idx].needs_confirm ? "yes" : "no",
+                    all[idx].description ? all[idx].description : "",
+                    all[idx].params_json ? all[idx].params_json : "");
+        acp = a98_utf8_to_acp(str_cstr(&s));
+        SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL, acp ? acp : str_cstr(&s));
+        a98_free(acp);
+        str_free(&s);
+    }
+}
+
+/* Fill the detail pane for a skill (full body). */
+static void tools_show_skill(HWND dlg, App *app, const char *name)
+{
+    SkillList list;
+    const Skill *s;
+    skills_init(&list);
+    skills_scan(app->agent.workspace, &list);
+    s = skills_find(&list, name);
+    if (s != NULL) {
+        Str out;
+        char *acp;
+        str_init(&out);
+        str_appendf(&out, "Skill: %s\r\nDescription: %s\r\nFile: %s\r\n\r\n%s",
+                    s->name,
+                    (s->description && s->description[0]) ? s->description : "",
+                    s->path,
+                    (s->body && s->body[0]) ? s->body : "(empty)");
+        acp = a98_utf8_to_acp(str_cstr(&out));
+        SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL, acp ? acp : str_cstr(&out));
+        a98_free(acp);
+        str_free(&out);
+    }
+    skills_free(&list);
+}
+
+/* Reload the skills listbox; returns the skill at `sel` or NULL name. */
+static void tools_fill_skills(HWND dlg, App *app, int select)
+{
+    HWND list = GetDlgItem(dlg, IDC_SKILLS_LIST);
+    SkillList skills;
+    int i;
+    SendMessageA(list, LB_RESETCONTENT, 0, 0);
+    skills_init(&skills);
+    skills_scan(app->agent.workspace, &skills);
+    for (i = 0; i < skills.count; i++)
+        SendMessageA(list, LB_ADDSTRING, 0, (LPARAM)skills.items[i].name);
+    if (skills.count > 0 && select >= 0 && select < skills.count)
+        SendMessageA(list, LB_SETCURSEL, (WPARAM)select, 0);
+    skills_free(&skills);
+}
+
+/* Skill editor dialog. */
+static INT_PTR CALLBACK skill_edit_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
+{
+    SkillEditCtx *ctx = (SkillEditCtx *)lp;
+    (void)wp;
+    switch (msg) {
+    case WM_INITDIALOG: {
+        SkillList skills;
+        const Skill *s;
+        /* g_dlg_app provides the active app for reading an existing skill. */
+        App *app = g_dlg_app;
+        if (ctx != NULL && ctx->name[0] != '\0' && !ctx->is_new && app != NULL) {
+            skills_init(&skills);
+            skills_scan(app->agent.workspace, &skills);
+            s = skills_find(&skills, ctx->name);
+            if (s != NULL) {
+                char *n = a98_utf8_to_acp(s->name);
+                char *d = a98_utf8_to_acp(s->description ? s->description : "");
+                char *b = a98_utf8_to_acp(s->body ? s->body : "");
+                SetDlgItemTextA(dlg, IDC_SKILL_NAME, n ? n : "");
+                SetDlgItemTextA(dlg, IDC_SKILL_DESC, d ? d : "");
+                SetDlgItemTextA(dlg, IDC_SKILL_CONTENT, b ? b : "");
+                a98_free(n); a98_free(d); a98_free(b);
+            }
+            skills_free(&skills);
+        }
+        center_window(dlg);
+        return TRUE;
+    }
+    case WM_COMMAND:
+        if (LOWORD(wp) == IDOK) {
+            char name[64], desc[512], content[16384];
+            GetDlgItemTextA(dlg, IDC_SKILL_NAME, name, sizeof(name));
+            GetDlgItemTextA(dlg, IDC_SKILL_DESC, desc, sizeof(desc));
+            GetDlgItemTextA(dlg, IDC_SKILL_CONTENT, content, sizeof(content));
+            if (!skills_valid_name(name)) {
+                msgbox_utf8(dlg, "Skill name may only contain letters, digits, - and _.",
+                            MB_OK | MB_ICONWARNING);
+                return TRUE;
+            }
+            if (content[0] == '\0') {
+                msgbox_utf8(dlg, "Skill instructions cannot be empty.",
+                            MB_OK | MB_ICONWARNING);
+                return TRUE;
+            }
+            /* If editing and the name changed, remove the old file first. */
+            if (ctx != NULL && !ctx->is_new && ctx->name[0] != '\0' &&
+                strcmp(ctx->name, name) != 0 && g_dlg_app != NULL) {
+                char err[256];
+                skills_delete(g_dlg_app->agent.workspace, ctx->name, err, sizeof(err));
+            }
+            {
+                char err[256];
+                if (skills_save(g_dlg_app->agent.workspace, name, desc, content,
+                                err, sizeof(err)) != 0) {
+                    msgbox_utf8(dlg, err, MB_OK | MB_ICONERROR);
+                    return TRUE;
+                }
+            }
+            EndDialog(dlg, IDOK);
+            return TRUE;
+        }
+        if (LOWORD(wp) == IDCANCEL) { EndDialog(dlg, IDCANCEL); return TRUE; }
+        break;
+    case WM_CLOSE:
+        EndDialog(dlg, IDCANCEL);
+        return TRUE;
+    default:
+        break;
+    }
+    return FALSE;
+}
+
+/* Tools & Skills browser. */
 static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
+    App *app = g_dlg_app;
     (void)lp;
     switch (msg) {
     case WM_INITDIALOG: {
@@ -2752,22 +2897,9 @@ static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         }
         if (count > 0) {
             SendMessageA(list, LB_SETCURSEL, 0, 0);
-            /* fill detail for the first entry */
-            {
-                Str s;
-                char *acp;
-                str_init(&s);
-                str_appendf(&s, "%s\r\n\r\n%s\r\n\r\n%s",
-                            all[0].name,
-                            all[0].description ? all[0].description : "",
-                            all[0].params_json ? all[0].params_json : "");
-                acp = a98_utf8_to_acp(str_cstr(&s));
-                SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL,
-                                acp ? acp : str_cstr(&s));
-                a98_free(acp);
-                str_free(&s);
-            }
+            tools_show_tool(dlg, 0);
         }
+        tools_fill_skills(dlg, app, -1);
         center_window(dlg);
         return TRUE;
     }
@@ -2777,24 +2909,53 @@ static INT_PTR CALLBACK tools_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             return TRUE;
         }
         if (LOWORD(wp) == IDC_TOOLS_LIST && HIWORD(wp) == LBN_SELCHANGE) {
-            HWND list = GetDlgItem(dlg, IDC_TOOLS_LIST);
+            int idx = (int)SendMessageA(GetDlgItem(dlg, IDC_TOOLS_LIST), LB_GETCURSEL, 0, 0);
+            tools_show_tool(dlg, idx);
+            return TRUE;
+        }
+        if (LOWORD(wp) == IDC_SKILLS_LIST && HIWORD(wp) == LBN_SELCHANGE) {
+            HWND list = GetDlgItem(dlg, IDC_SKILLS_LIST);
             int idx = (int)SendMessageA(list, LB_GETCURSEL, 0, 0);
-            int count = 0;
-            const ToolDef *all = tools_all(&count);
-            if (idx >= 0 && idx < count) {
-                Str s;
-                char *acp;
-                str_init(&s);
-                str_appendf(&s, "Name: %s\r\nConfirm: %s\r\n\r\n%s\r\n\r\nParameters:\r\n%s",
-                            all[idx].name,
-                            all[idx].needs_confirm ? "yes" : "no",
-                            all[idx].description ? all[idx].description : "",
-                            all[idx].params_json ? all[idx].params_json : "");
-                acp = a98_utf8_to_acp(str_cstr(&s));
-                SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL,
-                                acp ? acp : str_cstr(&s));
-                a98_free(acp);
-                str_free(&s);
+            char name[64];
+            if (idx >= 0 && SendMessageA(list, LB_GETTEXT, (WPARAM)idx, (LPARAM)name) > 0)
+                tools_show_skill(dlg, app, name);
+            return TRUE;
+        }
+        if (LOWORD(wp) == IDC_SKILL_NEW || LOWORD(wp) == IDC_SKILL_EDIT) {
+            SkillEditCtx ctx;
+            HWND list = GetDlgItem(dlg, IDC_SKILLS_LIST);
+            int idx = (int)SendMessageA(list, LB_GETCURSEL, 0, 0);
+            memset(&ctx, 0, sizeof(ctx));
+            ctx.app = app;
+            ctx.is_new = (LOWORD(wp) == IDC_SKILL_NEW);
+            if (!ctx.is_new && idx >= 0)
+                SendMessageA(list, LB_GETTEXT, (WPARAM)idx, (LPARAM)ctx.name);
+            if (ctx.is_new || ctx.name[0] != '\0') {
+                DialogBoxParamA(app->hinst, MAKEINTRESOURCEA(IDD_SKILL_EDIT),
+                                dlg, skill_edit_proc, (LPARAM)&ctx);
+                tools_fill_skills(dlg, app, idx);
+            } else if (!ctx.is_new) {
+                msgbox_utf8(dlg, "Select a skill to edit, or click New.",
+                            MB_OK | MB_ICONINFORMATION);
+            }
+            return TRUE;
+        }
+        if (LOWORD(wp) == IDC_SKILL_DELETE) {
+            HWND list = GetDlgItem(dlg, IDC_SKILLS_LIST);
+            int idx = (int)SendMessageA(list, LB_GETCURSEL, 0, 0);
+            char name[64];
+            if (idx >= 0 && SendMessageA(list, LB_GETTEXT, (WPARAM)idx, (LPARAM)name) > 0) {
+                char msg[256];
+                char err[256];
+                snprintf(msg, sizeof(msg), "Delete skill '%s'?", name);
+                if (MessageBoxA(dlg, msg, "Delete skill", MB_YESNO | MB_ICONQUESTION) == IDYES) {
+                    if (skills_delete(app->agent.workspace, name, err, sizeof(err)) != 0)
+                        msgbox_utf8(dlg, err, MB_OK | MB_ICONERROR);
+                    else {
+                        tools_fill_skills(dlg, app, -1);
+                        SetDlgItemTextA(dlg, IDC_TOOLS_DETAIL, "");
+                    }
+                }
             }
             return TRUE;
         }
@@ -3485,8 +3646,10 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             return 0;
 
         case IDM_TOOLS_LIST:
+            g_dlg_app = app;
             DialogBoxParamA(app->hinst, MAKEINTRESOURCEA(IDD_TOOLS),
                             hwnd, tools_proc, 0);
+            g_dlg_app = NULL;
             return 0;
         case IDM_ABOUT:
             DialogBoxParamA(app->hinst, MAKEINTRESOURCEA(IDD_ABOUT),
@@ -4004,3 +4167,5 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     }
     return (int)msg.wParam;
 }
+
+

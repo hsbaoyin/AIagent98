@@ -30,7 +30,7 @@ local models included. No relay PC, no proxy, no patched system libraries.
 ## English
 
 > **New in this release:** the transcript is now self-drawn and renders emoji
-> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 43
+> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 47
 > with coding and network tools (`web_search` auto-falls back through Bing /
 > Baidu / DuckDuckGo, so it works in China and abroad); long conversations are
 > auto-compacted into a summary; all 24 settings live in a tabbed dialog; and
@@ -54,7 +54,7 @@ A chat client on a retro PC is a demo: you ask a question, it prints an answer,
 the answer is gone. The reason to put an agent on a 1998 machine is that the
 machine has files, and the model can reach them.
 
-- 43 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
+- 47 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
   `run_command`, ...) run on the 9x box itself, not on a server somewhere else
 - every path is resolved through `GetFullPathName` and checked against the
   workspace root, so `..` cannot walk out of the sandbox (`allow_outside=0`,
@@ -67,7 +67,7 @@ machine has files, and the model can reach them.
   so the files it produces open correctly in Win98 Notepad, `EDIT` and
   `COMMAND.COM`
 
-#### Tool set (43)
+#### Tool set (47)
 
 The full reference is in [`TOOLS.md`](TOOLS.md). Read/search tools
 (`list_dir`, `read_file`, `head`, `tail`, `file_info`, `search_files`, `grep`,
@@ -93,11 +93,15 @@ The console client adds `/tools`, `/stop`, `/export <file>` (CP_ACP + CRLF),
 - **Self-drawn transcript:** emoji are plain GDI bitmaps, not RichEdit OLE
   objects — no more Win9x GPF when the model sends an emoji. Chat-style bubbles,
   coloured role labels, code bands and collapsible tool calls.
-- **43 tools (up from 31):** coding tools (`build`, `replace_across`, `outline`,
-  `restore`, `snapshot`, `hexdump`) and network tools (`http_request`,
-  `http_download`, `dns_resolve`, `tcp_probe`, `web_search`, `gist_upload`).
-  `web_search` auto-falls back through Bing / Baidu / DuckDuckGo so it works in
-  China and abroad.
+- **47 tools (up from 31):** coding tools (`build`, `replace_across`, `outline`,
+  `restore`, `snapshot`, `hexdump`), network tools (`http_request`,
+  `http_download`, `dns_resolve`, `tcp_probe`, `web_search`, `gist_upload`), and
+  skill tools (`list_skills`, `use_skill`, `save_skill`). `web_search` auto-falls
+  back through Bing / Baidu / DuckDuckGo so it works in China and abroad.
+- **Skills (procedural memory):** reusable procedures live as pluggable
+  `SKILL.md` files in `workspace\skills\`. The model loads one with `use_skill`
+  and can create its own with `save_skill`; manage them in Tools -> Tools &
+  skills... (New / Edit / Delete).
 - **Automatic conversation compaction:** when the context grows past a
   threshold, older messages are summarized into one, keeping recent turns.
 - **All 24 settings in a tabbed dialog** (Tools -> Settings...): API, Agent,
@@ -553,7 +557,7 @@ repository root; the expected last line is `all emoji tests passed`.
 #### Tool registry check
 
 `tests/smoke_tools.py` is a dependency-free structural check (Python 3) that all
-43 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
+47 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
 helpers are present, and that the file's braces balance:
 
 ```bat
@@ -600,8 +604,11 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 在复古机器上跑一个聊天客户端只是个演示：问一句，它打一段字，然后没了。
 在 1998 年的机器上跑 agent 的意义在于 —— 这台机器上有文件，而模型能碰到它们。
 
-- 43 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
+- 47 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
   `run_command` 等）都在 9x 本机执行，不是转发到某台服务器
+- **技能（过程记忆）**：可复用的流程以 `SKILL.md` 文件的形式插件化存放在
+  `workspace\skills\`，增删不用重编译。模型用 `use_skill` 加载完整流程、用
+  `save_skill` 自己新建技能；在 Tools -> Tools & skills... 里可图形化管理。
 - 所有路径先经 `GetFullPathName` 规范化，再和 workspace 根目录比对，`..`
   走不出沙箱（`allow_outside=0`，默认值）
 - 写文件和执行命令会停下来先问，确认框里显示确切的路径或命令行
@@ -610,7 +617,7 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 - `write_file` 会把 UTF-8 转成本地 ANSI 代码页、把 LF 转成 DOS CRLF，写出来
   的文件在 Win98 记事本、`EDIT` 和 `COMMAND.COM` 里都能正常打开
 
-#### 工具集（43 个）
+#### 工具集（47 个）
 
 完整说明见 [`TOOLS.md`](TOOLS.md)。只读/搜索类（`list_dir`、`read_file`、
 `head`、`tail`、`file_info`、`search_files`、`grep`、`glob`、`tree`、`wc`、
@@ -1035,7 +1042,7 @@ build\cmake\test_emoji.exe
 #### 工具注册检查
 
 `tests/smoke_tools.py` 是不依赖第三方库的静态检查（Python 3），确认
-`src/agent/tools.c` 里注册了全部 43 个工具、grep/glob/脱敏辅助函数存在、
+`src/agent/tools.c` 里注册了全部 47 个工具、grep/glob/脱敏辅助函数存在、
 且大括号配对：
 
 ```bat

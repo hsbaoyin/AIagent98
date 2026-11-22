@@ -1,5 +1,6 @@
 #include "api_openai.h"
 #include "tools.h"
+#include "tools_skills.h"
 #include "jsonutil.h"
 
 #include "../core/log.h"
@@ -489,6 +490,15 @@ static char *build_system_prompt(const Config *cfg, const char *user_prompt)
         "cmd.exe or PowerShell. Do not use 2>&1, &&, ||, stderr pipes, "
         "curl, or tasklist. Prefer the built-in file tools; use ver, mem, "
         "dir, set, or type for system information.\n");
+
+    /* Procedural memory: list available skills (progressive disclosure). */
+    if (cfg != NULL) {
+        char *skills = skills_prompt_block(cfg->workspace);
+        if (skills != NULL) {
+            if (skills[0] != '\0') str_append_cstr(&s, skills);
+            a98_free(skills);
+        }
+    }
 
     if (user_prompt != NULL && user_prompt[0] != '\0') {
         str_append_cstr(&s, "\nUser instructions:\n");
