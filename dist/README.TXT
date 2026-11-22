@@ -1,137 +1,107 @@
-AIagent98 0.2.0 - Windows 9x 原生 AI 客户端
+AIagent98 - Windows 9x 上的原生 AI 智能体
 ==========================================
 
-AIagent98 是一个运行在 Windows 95/98/Me 上的原生 32 位程序，直接通过
-BearSSL 连接现代的 HTTPS LLM 服务（OpenAI、DeepSeek、Moonshot/Kimi、
-SiliconFlow、Ollama 等 OpenAI 兼容接口），不需要局域网中转机，也不需要
-第二台电脑。
+AIagent98 是一个运行在 Windows 95/98/Me 上的 32 位原生 Win32 AI 智能体。
+它不只是聊天：能在 9x 本机读写文件、遍历目录、搜索源码、执行 COMMAND.COM
+命令（受 workspace 沙箱和确认框约束），单个 EXE 内完成 TLS 1.2 握手，
+直连任意 OpenAI 兼容端点（OpenAI / DeepSeek / Moonshot Kimi / SiliconFlow /
+Ollama / vLLM / 本地模型），无需中转机、无需代理、无需改造系统库。
+
+本版本亮点（相对 0.2.0）
+------------------------
+- 自绘 transcript：emoji 用 GDI 位图直接绘制，不再用 RichEdit OLE，
+  根治了真实 Win98/Me 上插入图片导致整进程崩溃（GPF）的问题。
+- 现代聊天风格：彩色角色标签、代码块着色、工具调用可折叠。
+- 43 个工具（原 31 个）：新增 build / replace_across / outline / restore /
+  snapshot / hexdump，以及 http_request / http_download / dns_resolve /
+  tcp_probe / web_search / gist_upload。
+- web_search 国内外都能用：自动按 Bing -> Bing 国内 -> 百度 -> DuckDuckGo
+  的顺序回退，哪个能用就用哪个。
+- 对话自动压缩：上下文超过阈值时把旧消息摘要成一条，省 token、省内存。
+- 标签页设置：全部 24 项配置都能在 Tools -> Settings... 里用鼠标修改。
+- 危险选项（可选）：full_access 取消沙箱和命令黑名单，auto_confirm 免确认。
+  默认关闭，仅建议在可丢弃的虚拟机上开启。
 
 
-系统要求
+运行环境
 --------
 - Windows 95 OSR2 / 98 / 98SE / Me（推荐 Windows 98 SE）
-- 486 以上 CPU，16 MB 内存以上
-- 能访问外网的网络连接（Winsock 2 或 1.1）
-- 系统日期和时间必须正确，否则 TLS 证书校验会失败
+- 486 及以上 CPU，建议 16 MB 以上内存
+- 已安装 Winsock 2（或 1.1）；联网需可用的网络驱动
 
 
 安装
 ----
-1. 把整个文件夹复制到本地硬盘，例如 C:\AGENT98
-   注意：不要直接在光盘或只读目录里运行，程序需要在 exe 同目录写
-   配置、日志和 workspace。
-2. 首次运行 AGENT98.EXE 会弹出配置向导，填好 Provider / API key / Model
-   后点 Save，自动生成 AGENT98.INI；点 Later 可跳过。
-3. 也可以用记事本打开 AGENT98.INI，填写 [api] 下的 key / base / model，
-   或之后在 Tools -> Settings... 里修改。
+1. 把本目录所有文件复制到硬盘目录（例如 C:\AGENT98）。
+   不要直接在光盘或只读目录运行——程序会在 exe 同目录创建
+   AGENT98.INI、AGENT98.LOG 和 workspace。
+2. 运行 AGENT98.EXE，首次会弹出向导：选择 Provider / API key / Model，
+   点 Save 即写入 AGENT98.INI；点 Later 跳过。
+3. 也可直接编辑 AGENT98.INI 的 [api] 段填 key / base / model，
+   或在 Tools -> Settings... 里图形化设置。
 
 
 文件说明
 --------
 AGENT98.EXE    图形界面版（推荐）
-A98.EXE        命令行版，两个 exe 共用同一份 AGENT98.INI
-TLSPROBE.EXE   TLS 连通性探测：TLSPROBE.EXE https://example.com/
-SAMPLE.INI     配置示例，复制成 AGENT98.INI 使用
-AGENT98.INI    首次运行后自动生成（含 API 密钥，不要外传）
-AGENT98.LOG    运行日志，出问题时请看这个文件
+A98.EXE        命令行版，共享同一个 AGENT98.INI
+TLSPROBE.EXE   TLS 连通性测试：TLSPROBE.EXE https://example.com/
+SAMPLE.INI     配置示例，改名为 AGENT98.INI 后按需修改
+AGENT98.INI    配置文件（自动生成，保存 API 等设置）
+AGENT98.LOG    运行日志（排查问题先看它）
 
 
-快速开始
+使用步骤
 --------
 1. 运行 AGENT98.EXE
-2. 首次启动按弹出的向导填写；或打开 Tools -> Settings...
-3. Provider 选择服务商，填入 API key；本机 Ollama 选 Ollama 并留空 key
-4. 点 Test connection，看到 HTTP 200 即表示地址和密钥可用
-5. 回到主窗口，在下方输入框提问
+2. Tools -> Settings... 设置 API（三个标签页：API & Model / Agent / Network）
+3. 选 Provider 并填 API key；Ollama 等本地服务不需要 key
+4. 点 Test connection，看到 HTTP 200 即配置正确
+5. 在输入框发消息，回车发送
 
 
 GUI 功能
 --------
-- 对话区使用 9 磅等宽字体（Fixedsys；中文系统为 NSimSun），并按语义
-  着色：You: 深蓝加粗、[round] 灰色、[tool] 深青、[result] 深绿、
-  [error] 红色。
-- 顶部 History 下拉框列出 exe 同目录 sessions\ 中的会话；每次请求完成后
-  自动保存为 YYYYMMDD_HHMM_<首条消息>.json，选择条目即可重新载入，
-  New 开始新会话。
-- 输入框中 Alt+Up / Alt+Down 按 DOSKEY 方式翻阅本次运行的提示历史。
-- File -> Export transcript...（Ctrl+E）把当前对话导出为 GBK 编码、
-  CRLF 换行的文本，可直接用记事本打开。
-- 原生状态栏显示旋转指示、当前轮数和 Round n - x.y k chars 计数，并显示
-  workspace。
-- 助手回复按轻量 Markdown 着色：``` 围栏代码块灰底、`行内代码` 紫红、
-  **加粗**生效；只改颜色不改文本。
-- 对话区自动跟随最新内容；向上滚动阅读时暂停跟随，回到底部后恢复。超过
-  约 4000 行后自动裁掉最老的行（完整历史仍在会话 json 文件中）。
-- File -> Resend last message（Ctrl+R）不重新输入即可重发最近一条提问。
-- File -> Rename / Delete current session... 重命名或删除当前会话的 json
-  文件；删除不影响内存中的对话。
-- Tools -> Open log file 打开 exe 同目录的 AGENT98.LOG。
-- 窗口位置和最大化状态保存在 AGENT98.INI 的 [window] 段。
-- 同一时间只允许运行一个 AGENT98.EXE；再次启动会把已运行的窗口提到前台。
-- Tools -> Open workspace（或 Workspace 按钮）打开 workspace 目录。
+- 自绘 transcript：彩色角色标签（You 蓝 / Assistant 黑 / tool 青 /
+  result 绿 / error 红），固定宽度自动换行，emoji 显示为 16x16 图标。
+- History 下拉框：自动保存到 exe 同目录 sessions\ 下的会话文件，
+  File -> New 可开新会话。
+- Alt+Up / Alt+Down 翻历史输入（DOSKEY 风格）。
+- File -> Export transcript...（Ctrl+E）：导出为 GBK + CRLF 文本。
+- 状态栏：spinner 和轮数计数。
+- Tools -> List tools...：可滚动查看全部 43 个工具及其参数说明。
+- Tools -> Settings... 三个标签页可改全部配置。
 
-命令行版
+
+配置要点（AGENT98.INI）
+----------------------
+[api]   base / key / model / stream / max_tokens / temperature / extra_headers
+[agent] workspace / allow_shell / allow_outside / max_steps /
+        compact_threshold / compact_keep / full_access / auto_confirm /
+        connect_timeout / request_timeout
+[tls]   verify
+[log]   level (0=ERROR .. 4=TRACE)
+[emoji] inline (1=用图片显示 emoji，0=显示 :shortcode: 文本)
+[net]   allow (1=启用网络工具) / allow_hosts / max_bytes /
+        search_url / github_token
+
+max_steps：工具轮数上限，默认 32，0=不限。
+compact_threshold：对话压缩阈值（字节），默认 24576，0=关闭。
+compact_keep：压缩后保留的最近消息数，默认 6。
+full_access / auto_confirm：危险选项，默认 0，仅在可丢弃 VM 上开启。
+
+
+网络工具
 --------
-  A98.EXE
-输入问题后回车；/help 查看命令，Ctrl+C 取消当前请求。
-也可以用管道批量输入，例如：
-  TYPE QUESTIONS.TXT | A98.EXE
+需先在 [net] 里设 allow=1。提供 http_request / http_download / dns_resolve /
+tcp_probe / web_search / gist_upload。可用 allow_hosts 限制允许的主机
+（逗号分隔，.domain 匹配后缀），max_bytes 限制响应大小。
+gist_upload 需在 github_token 填有 gist 权限的令牌。
 
 
-工具与安全
-----------
-模型可以调用本地工具：读文件、写文件、列目录、搜索文件、执行命令。
-- 写文件、删除、移动、执行命令和读取环境变量都会弹出确认对话框；高危调用默认聚焦拒绝按钮。
-- 内置 31 个工具（读/写/搜索/执行/磁盘/环境/待办），完整列表见 TOOLS.md。
-- rmdir_force 递归删除前会确认，并始终拒绝删除 workspace 根目录。
-- workspace 目录之外默认不可访问，可在 INI 里打开 allow_outside。
-- run_command 使用 16 位 COMMAND.COM，只支持 ver、dir、type、set、
-  mem 等基本命令，不支持 cmd.exe / PowerShell 语法。
-
-
-常见问题
+联系我们
 --------
-Q: 提示 "no entropy available" 或 TLS 握手失败？
-A: 检查系统时间是否正确，以及能否用 TLSPROBE.EXE 连通目标站点。
-
-Q: 对话中途报 "TLS read failed: I/O error" 就中断？
-A: 网络抖动或服务端超时现在会自动重试，最多 2 次（间隔 1 秒、2 秒），
-   过程记录在 AGENT98.LOG。连续失败请检查拨号连接或更换 API 地址。
-
-Q: 界面是英文？
-A: 目前界面只有英文，中文通过 RichEdit 正常显示。
-
-Q: 窗口关闭很慢？
-A: 关闭时会等待后台线程最多 3 秒。
-
-Q: 程序崩溃，Dr. Watson 报 <unknown>？
-A: 先确认程序是从硬盘运行的，然后把 AGENT98.LOG 的最后几十行发出来。
-
-
-版本
-----
-0.2.0  31 个工具（含 apply_patch / edit / grep / glob / tree / diff / checksum 等）、
-       确认摘要与风险等级、CLI 新增 /tools /stop /export 与 --ini 等参数、
-       GUI 新增 Tools -> List tools... 和 Esc 停止、日志参数脱敏。
-       修复：rmdir_force 根目录守卫、GUI 高危确认焦点、env 未确认读取、
-       /export 编码、日志级别、apply_patch 备份失败处理。
-0.1.0  首个发布版：CLI + GUI、BearSSL TLS 1.2、流式对话、本地工具、
-       服务商预设与连接测试、运行时环境注入。
-       修订：瞬时网络错误自动重试 2 次；写文本文件自动使用 CRLF；
-       max_steps 默认 32，0 表示不限。
-       连续 3 次重复调用由循环保护拦截，避免空转消耗额度。
-       写文本文件自动转 GBK 代码页、读文件自动识别 UTF-8/GBK，
-       Win98/Me 记事本与 COMMAND.COM 不再显示乱码。
-       GUI：彩色等宽对话区、会话历史下拉框、自动保存、Alt+Up/Down
-       提示历史、导出文本、状态栏和打开 workspace。
-
-
-Emoji
------
-The Emoji button and Tools > Insert emoji... (Ctrl+J) open a picker
-with the 1219 pictures in emoji\bmp\24. A shortcode you pick or type is
-sent to the model as the real character. The chat can draw those pictures
-inline too: set [emoji] inline=1 in AGENT98.INI. It is off by default
-because RichEdit's picture insert has been seen to fault on some
-Win95/98 installs; with it off, or with RichEdit 1.0 only, the transcript
-shows the :shortcode: text.
+项目主页与最新版下载：
+  https://github.com/hsbaoyin/AIagent98/releases/latest
+问题反馈：
+  https://github.com/hsbaoyin/AIagent98/issues

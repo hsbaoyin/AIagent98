@@ -29,6 +29,13 @@ local models included. No relay PC, no proxy, no patched system libraries.
 
 ## English
 
+> **New in this release:** the transcript is now self-drawn and renders emoji
+> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 43
+> with coding and network tools (`web_search` auto-falls back through Bing /
+> Baidu / DuckDuckGo, so it works in China and abroad); long conversations are
+> auto-compacted into a summary; all 24 settings live in a tabbed dialog; and
+> optional `full_access` / `auto_confirm` dangerous modes (off by default).
+
 ### Why this exists
 
 Most "AI on retro hardware" projects end the same way: a Raspberry Pi in the
@@ -83,6 +90,19 @@ The console client adds `/tools`, `/stop`, `/export <file>` (CP_ACP + CRLF),
 
 ### Highlights
 
+- **Self-drawn transcript:** emoji are plain GDI bitmaps, not RichEdit OLE
+  objects — no more Win9x GPF when the model sends an emoji. Chat-style bubbles,
+  coloured role labels, code bands and collapsible tool calls.
+- **43 tools (up from 31):** coding tools (`build`, `replace_across`, `outline`,
+  `restore`, `snapshot`, `hexdump`) and network tools (`http_request`,
+  `http_download`, `dns_resolve`, `tcp_probe`, `web_search`, `gist_upload`).
+  `web_search` auto-falls back through Bing / Baidu / DuckDuckGo so it works in
+  China and abroad.
+- **Automatic conversation compaction:** when the context grows past a
+  threshold, older messages are summarized into one, keeping recent turns.
+- **All 24 settings in a tabbed dialog** (Tools -> Settings...): API, Agent,
+  Network. Optional `full_access` / `auto_confirm` for hands-off control on a
+  disposable VM.
 - **Agent, not a chat window:** filesystem and shell tools that execute on the
   9x machine, sandboxed to the workspace, gated by a confirmation dialog and a
   loop guard
@@ -294,66 +314,40 @@ The 800x600 GUI keeps a 90s console look:
 - **Tools -> Open workspace** (or the **Workspace** button) opens the workspace
   folder in Explorer.
 
-#### Emoji
+#### Emoji and the self-drawn transcript
 
 Windows 9x has no color emoji font, and the local ANSI code page cannot hold an
-emoji code point, so an emoji pushed straight into a RichEdit control arrived as
-a `?`. AIagent98 folds it instead:
+emoji code point, so a raw emoji reaching a text control arrives as `?`.
+AIagent98 folds emoji to `:shortcode:` for display and expands shortcodes back
+to real emoji on send. With `[emoji] inline=1` the transcript draws `😀` as its
+16x16 picture from the pack; with pictures off, or when artwork is missing, it
+shows `:grinning_face:` text instead. An emoji the pack does not carry shows as
+`[U+1FAF9]`, which still beats a box.
 
-- the transcript draws `😀` as its 16x16 picture from the pack, streamed into
-  the control as a RichEdit object, once `[emoji] inline=1` is set in the INI;
-  an emoji the pack does not carry shows as `[U+1FAF9]`, which still beats a box
-- with pictures off (the default), without the artwork, or on a machine that
-  only has RichEdit 1.0 (no `riched20.dll`), the same text falls back to
-  `:grinning_face:`
-- the reverse happens on send: a `:shortcode:` from the picker (or typed by
-  hand) leaves the machine as the real emoji, so the model sees the character
-- **Emoji** button or **Tools -> Insert emoji...** (`Ctrl+J`) opens the picker:
-  a filter box plus the pack's 24x24 BMP artwork, double-click to insert at the
-  caret
+The transcript is a **self-drawn control** (`src/gui/transcript_view.c`), not a
+RichEdit. This matters: the old design streamed each emoji into RichEdit as an
+OLE `\pict` object, and on real Windows 98/Me inserting the first picture took
+the whole process down with a GPF inside RichEdit's OLE insert. Drawing the
+emoji as a plain GDI `BitBlt` removes OLE entirely and is stable on 9x. The
+control emulates the few `EM_*` messages the GUI already used, so the agent
+loop, markdown colouring, session replay and export are unchanged. It also
+gives chat-style bubbles, coloured role labels, code bands, collapsible tool
+calls, mouse selection and Ctrl+C copy.
 
-The 24 px artwork the picker draws is part of the repository: `assets/emoji/bmp/24`
-holds all 1219 BMPs (1782 bytes each, about 2 MiB) with `LICENSE-NOTO.txt` and
-the `mapping/emoji.csv` that generates `src/gui/emoji_table.h`. The rest of the
-optional pack (16/32 px BMP, 72 px PNG, about 11 MiB) stays out through
-`.gitignore`, so a clone is complete without Git LFS, a download step or
-network access at build time. For each directory it tries, in order:
+The 24 px artwork is part of the repository: `assets/emoji/bmp/24` holds all
+1219 BMPs (1782 bytes each, about 2 MiB) with `LICENSE-NOTO.txt` and the
+`mapping/emoji.csv` that generates `src/gui/emoji_table.h`. The optional larger
+pack stays out through `.gitignore`. Artwork lookup tries `<dir>\assets\emoji\bmp\24`,
+`<dir>\emoji\bmp\24`, `<dir>\assets\bmp\24` and an unpacked pack, starting at
+the EXE directory and walking up to five parents, then the current directory.
+`src/gui/emoji_table.h` is generated from `assets/emoji/mapping/emoji.csv` by
+`tools\gen_emoji_table.ps1`. Artwork derives from Noto Color Emoji (SIL OFL
+1.1): keep `LICENSE-NOTO.txt` beside the BMPs.
 
-1. `<dir>\assets\emoji\bmp\24` - the checkout's own copy
-2. `<dir>\emoji\bmp\24` - the release layout
-3. `<dir>\assets\bmp\24` - the pack unzipped next to the EXE
-4. `<dir>\AIagent98-Emoji-Pack-v2.0\assets\bmp\24` - an unpacked pack beside it
-
-Starting with the EXE directory it repeats that list for each parent, then for
-the current directory and its parents, five levels up. So
-`build\cmake\agent98.exe` and `build\ow\agent98.exe` find the tracked artwork
-at the repository root with nothing to copy, and a release install only needs
-the BMPs in `emoji\bmp\24` beside the EXE. With no artwork anywhere the picker
-lists shortcodes only and everything else keeps working. The picker uses a list
-view, so Windows 95 needs the common controls from IE3 or later (98/Me ship
-them). `src/gui/emoji_table.h` is generated from
-`assets/emoji/mapping/emoji.csv` by `tools\gen_emoji_table.ps1`. Artwork
-derives from Noto Color Emoji (SIL OFL 1.1): keep `LICENSE-NOTO.txt` beside the
-BMPs.
-
-An inline picture is an OLE object as far as RichEdit is concerned, so the GUI
-calls `OleInitialize` before creating the transcript and hands it an
-`IRichEditOleCallback` whose `GetNewStorage` returns an in-memory docfile
-(`src/gui/emoji_ui.c`). Without that callback RichEdit parses the RTF `\pict`
-group and throws it away without an error - the reason the transcript used to
-be text only. Each picture is a bare (non-placeable) metafile recorded at 16 px
-from the 24 px art, so the icon fits the 9pt line; `d7cdc69a`-prefixed Aldus
-metafiles are rejected.
-
-Pictures stay off by default (`[emoji] inline=0`) because on a real Windows 98
-SE box inserting the first picture took the whole process down with a GPF
-inside RichEdit, and `:shortcode:` text is a much better outcome than that.
-With `inline=1` the log records `emoji picture <id>: streaming N chars of RTF`
-and the matching `streamin done, dwError N`; a crash between those two lines
-points at RichEdit's OLE insert, not at the rest of the app. The storage is an
-HGLOBAL-backed `ILockBytes` docfile (`CreateILockBytesOnHGlobal` plus
-`StgCreateDocfileOnILockBytes`) - the same shape WordPad hands over, and the one
-that works on 9x as well as NT.
+**Emoji** button or **Tools -> Insert emoji...** (`Ctrl+J`) opens the picker: a
+filter box plus the pack's 24x24 BMP artwork, double-click to insert at the
+caret. The picker uses a list view, so Windows 95 needs common controls from
+IE3 or later (98/Me ship them).
 
 #### Agent loop and loop guard
 
@@ -569,9 +563,9 @@ python tests\smoke_tools.py
 ### Known limitations
 
 - Only OpenAI-compatible APIs are implemented; Anthropic / Gemini are not wired up
-- On Windows 9x the GUI falls back from RichEdit 2.0A to RichEdit 1.0 / EDIT
-  when the newer control is unavailable
-- No proxy support and no context trimming yet
+- No HTTP proxy support (direct connections only)
+- Conversation compaction is heuristic (byte estimate, not exact token count);
+  very large single tool results are still bundled into the summary request
 - If the worker thread does not stop within the close grace period, the window
   is force-destroyed and the worker is deliberately left running (no shared
   state is freed under it); the memory is reclaimed when the process exits
@@ -584,6 +578,12 @@ under `third_party/` keep their original licenses.
 ---
 
 ## 简体中文
+
+> **本版新特性**：对话区改为自绘，emoji 用 GDI 位图绘制，根治 Win9x 上
+> RichEdit OLE 插入图片导致的崩溃；工具从 31 个增至 43 个，新增编程与网络
+> 工具（`web_search` 会在 Bing / 百度 / DuckDuckGo 之间自动回退，国内外都能
+> 用）；长对话自动摘要压缩；全部 24 项配置集中在三标签页设置对话框；可选
+> 的 `full_access` / `auto_confirm` 危险模式（默认关闭）。
 
 ### 为什么做这个
 
@@ -826,54 +826,33 @@ model=llama3.1
 - **Tools -> Open workspace**（或 **Workspace** 按钮）在资源管理器中打开
   workspace 目录。
 
-#### Emoji
+#### Emoji 与自绘对话区
 
-Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位，直接塞进
-RichEdit 只会变成 `?`。AIagent98 的做法是先折叠、发送时再展开：
+Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位，直接塞进文本
+控件只会变成 `?`。AIagent98 的做法是先折叠、发送时再展开：显示时把 emoji 变成
+`:shortcode:`，发送时再把 shortcode 还原成真正的 emoji。设 `[emoji] inline=1`
+时，对话区把 `😀` 画成素材里那张 16×16 的图标；关掉图标或缺素材时显示
+`:grinning_face:` 文本。包里没有的 emoji 显示成 `[U+1FAF9]`，至少不是方块。
 
-- 对话区把 `😀` 画成素材里那张 16×16 的图标（以 RichEdit 对象流进去），
-  但默认不开，要先在 INI 里设 `[emoji] inline=1`；包里没有的 emoji 显示成
-  `[U+1FAF9]`，至少不是方块或问号
-- 图标关闭（默认）、素材缺失，或机器上只有 RichEdit 1.0（没有 `riched20.dll`）
-  时，同一段文本退回显示 `:grinning_face:`
-- 发送时反过来：从面板选中（或手打）的 `:shortcode:` 会还原成真正的 emoji
-  发给模型
-- **Emoji** 按钮或 **Tools -> Insert emoji...**（`Ctrl+J`）打开面板：过滤框 +
-  包里的 24×24 BMP 图标，双击即插入光标处
+对话区现在是**自绘控件**（`src/gui/transcript_view.c`），不再是 RichEdit。这点很
+关键：旧设计把每张 emoji 作为 OLE `\pict` 对象流进 RichEdit，而真机 Win98/Me 上
+插第一张图就把整个进程带崩（RichEdit 内部 GPF）。改成用 GDI `BitBlt` 直接画位图
+后彻底抛开 OLE，在 9x 上稳定。控件模拟了 GUI 原本用的那几个 `EM_*` 消息，所以
+agent 循环、Markdown 着色、会话回放和导出都不用改。它还带来气泡式卡片、彩色
+角色标签、代码底色带、可折叠的工具调用、鼠标选择和 Ctrl+C 复制。
 
 面板要用的 24 px 素材就在仓库里：`assets/emoji/bmp/24` 放了全部 1219 个 BMP
 （每个 1782 字节，合计约 2 MiB），旁边还有 `LICENSE-NOTO.txt` 和用来生成
-`src/gui/emoji_table.h` 的 `mapping/emoji.csv`。可选素材包剩下的部分（16/32 px
-BMP、72 px PNG，约 11 MiB）继续由 `.gitignore` 挡住，所以 clone 下来就是完整的，
-既不需要 Git LFS，也不需要在构建时下载任何东西。对每个基准目录依次尝试：
+`src/gui/emoji_table.h` 的 `mapping/emoji.csv`。可选素材包剩下的部分继续由
+`.gitignore` 挡住，clone 下来就是完整的，不需要 Git LFS。查找素材时依次尝试
+`<dir>\assets\emoji\bmp\24`、`<dir>\emoji\bmp\24`、`<dir>\assets\bmp\24` 和解压的
+包，从 EXE 目录开始向上最多五级，再查当前目录。完全找不到时面板只列 shortcode，
+其他功能照常。图标来自 Noto Color Emoji（SIL OFL 1.1），请把 `LICENSE-NOTO.txt`
+和 BMP 一起保留。
 
-1. `<dir>\assets\emoji\bmp\24`（仓库自带的那份）
-2. `<dir>\emoji\bmp\24`（发布安装的布局）
-3. `<dir>\assets\bmp\24`（把包解压在 EXE 旁）
-4. `<dir>\AIagent98-Emoji-Pack-v2.0\assets\bmp\24`（旁边解开了素材包）
-
-四条都不中时，就对 EXE 目录的每一级父目录重复这四条，再从当前目录及其父目录
-往上找，最多五级。所以 `build\cmake\agent98.exe`、`build\ow\agent98.exe`
-不用复制任何文件就能用到仓库根目录里的素材；发布安装只需把 BMP 放进 EXE 旁的
-`emoji\bmp\24`。完全找不到素材时面板只列 shortcode，其他功能照常。面板用的是
-列表视图控件，Win95 需要 IE3 以上的 comctl32，98/Me 自带。`src/gui/emoji_table.h` 由 `tools\gen_emoji_table.ps1`
-从 `assets/emoji/mapping/emoji.csv` 生成。图标来自 Noto Color Emoji（SIL OFL 1.1），
-请把 `LICENSE-NOTO.txt` 和 BMP 一起保留。
-
-内联图标在 RichEdit 眼里是 OLE 对象，所以 GUI 在创建对话区之前先调用
-`OleInitialize`，再给控件挂一个 `IRichEditOleCallback`，由 `GetNewStorage`
-返回内存中的 docfile（`src/gui/emoji_ui.c`）。没有这个回调时，RichEdit 会解析
-RTF 里的 `\pict` 组然后不报错地丢掉——这正是之前对话区只有文本的原因。每张图
-都是从 24 px 素材录制到 16 px 的裸（非 placeable）metafile，刚好塞进 9pt 的行；
-带 `d7cdc69a` Aldus 头的 metafile 会被拒绝。
-
-图标默认是关的（`[emoji] inline=0`）：真机 Win98 SE 上插第一张图就把整个进程
-带崩了（RichEdit 内部 GPF），而显示 `:shortcode:` 文本远比崩溃好。设
-`inline=1` 后，日志里会依次出现 `emoji picture <id>: streaming N chars of RTF`
-和 `streamin done, dwError N`；如果崩溃恰好停在两行之间，问题就在 RichEdit 的
-OLE 插入，跟程序其它部分无关。存储用的是 HGLOBAL 支撑的 `ILockBytes` docfile
-（`CreateILockBytesOnHGlobal` + `StgCreateDocfileOnILockBytes`），也就是
-WordPad 自己交给 RichEdit 的那种，9x 和 NT 都能用。
+**Emoji** 按钮或 **Tools -> Insert emoji...**（`Ctrl+J`）打开面板：过滤框 +
+包里的 24×24 BMP 图标，双击即插入光标处。面板用的是列表视图控件，Win95 需要
+IE3 以上的 comctl32，98/Me 自带。
 
 #### Agent 循环与死循环保护
 
@@ -1066,8 +1045,9 @@ python tests\smoke_tools.py
 ### 已知限制
 
 - 目前仅实现 OpenAI 兼容接口；Anthropic / Gemini 尚未接入
-- Win9x 上的 RichEdit 2.0A 不可用时自动回退到 RichEdit 1.0 / EDIT
-- 尚未实现代理和上下文裁剪
+- 不支持 HTTP 代理（只能直连）
+- 对话压缩是启发式的（按字节估算，不是精确 token 数）；过大的单条工具结果
+  仍会被一起塞进摘要请求
 - 若 worker 在关闭宽限期内仍未停止，窗口会被强制销毁，worker 被有意保留运行
   （不再释放其正在使用的共享状态），内存随进程退出一并回收
 
