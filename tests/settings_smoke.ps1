@@ -105,7 +105,7 @@ try {
         throw "missing mock server: $mockScript"
     }
     $mock = Start-Process -FilePath 'node' `
-        -ArgumentList @("`"$mockScript`"", "$Port") `
+        -ArgumentList @("`"$mockScript`"", "$Port") -WindowStyle Hidden `
         -WorkingDirectory $root -PassThru
     # Poll the port like retry_smoke/loop_smoke do; a fixed 800 ms sleep made
     # the test flaky whenever node started slowly.

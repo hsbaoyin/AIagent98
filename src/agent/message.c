@@ -1,5 +1,7 @@
 #include "message.h"
 
+#include <limits.h>
+
 void msglist_init(MessageList *list)
 {
     if (list != NULL) {
@@ -59,9 +61,17 @@ static Message *msglist_new(MessageList *list)
         return NULL;
     }
     if (list->count == list->cap) {
-        int cap = list->cap ? list->cap * 2 : 16;
-        Message *items = (Message *)a98_realloc(list->items,
-                                                (size_t)cap * sizeof(Message));
+        int cap;
+        Message *items;
+
+        /* Guard the doubling so a huge cap cannot wrap to a negative value
+         * and turn the allocation size into nonsense. */
+        if (list->cap > INT_MAX / 2) {
+            return NULL;
+        }
+        cap = list->cap ? list->cap * 2 : 16;
+        items = (Message *)a98_realloc(list->items,
+                                       (size_t)cap * sizeof(Message));
         if (items == NULL) {
             return NULL;
         }
@@ -115,22 +125,25 @@ Message *msglist_add_tool(MessageList *list, const char *tool_call_id,
 
 int msglist_compact(MessageList *list, const char *summary, int keep)
 {
-    int i, keep_from, to_remove;
+    int i, keep_from;
     Message compacted;
 
-    if (list == NULL || list->count <= keep) return 0;
+    if (list == NULL || keep < 0 || list->count <= keep) return 0;
     keep_from = list->count - keep;
-    to_remove = keep_from;
 
-    /* Free the messages being removed. */
-    for (i = 0; i < to_remove; i++) {
-        message_free(&list->items[i]);
-    }
-    /* Build the single summary message before shifting the tail. */
+    /* Build the summary message first.  Nothing in the list is touched until
+     * the allocation succeeds, so an OOM here leaves the list fully intact
+     * (no "freed but still counted" entries for context_bytes()/session
+     * saving to trip over). */
     memset(&compacted, 0, sizeof(compacted));
     compacted.role = MSG_SYSTEM;
     compacted.content = a98_strdup(summary ? summary : "");
     if (compacted.content == NULL) return -1;
+
+    /* Now free the messages being removed. */
+    for (i = 0; i < keep_from; i++) {
+        message_free(&list->items[i]);
+    }
 
     /* Shift the kept tail down to index 1. */
     memmove(list->items + 1, list->items + keep_from,

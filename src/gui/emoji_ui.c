@@ -10,6 +10,7 @@
 
 #include "../core/log.h"
 #include "emoji.h"
+#include "emoji_table.h"
 #include "resource.h"
 
 #include <commctrl.h>
@@ -44,29 +45,40 @@
 #define A98_DLG_SETPTR(dlg, idx, v) SetWindowLongA(dlg, idx, (LONG)(v))
 #endif
 
+/* All picker state lives in the dialog's DWLP_USER slot.  The old file-scope
+ * statics made two opens leak the previous HIMAGELIST and let one dialog's
+ * list view draw with another dialog's images. */
 typedef struct {
     const char *exe_dir;
     char *out;
     size_t cap;
+    HWND dlg;
+    HWND list;
+    HIMAGELIST images;
+    int image_count;
+    char asset_dir[A98_MAX_PATH];
+    /* BMPs that fail to load are skipped, so the image list is a COMPACT
+     * array: table index i maps to img_of[i], not to i.  -1 = no artwork. */
+    int img_of[A98_EMOJI_PACK_COUNT];
 } PickCtx;
 
-static HIMAGELIST g_images;
-static HWND g_dlg;
-static HWND g_list;
-static int g_image_count;
-static char g_asset_dir[A98_MAX_PATH];
-
-/* Index i in the image list is index i in the pack table, so a list item
- * only has to remember its table index. */
-static void load_images(void)
+static void load_images(PickCtx *ctx)
 {
     int i;
     int count = a98_emoji_count();
     HCURSOR old = SetCursor(LoadCursorA(NULL, IDC_WAIT));
 
-    g_images = ImageList_Create(A98_EMOJI_ICON, A98_EMOJI_ICON,
-                                ILC_COLOR8 | ILC_MASK, 8, 64);
-    if (g_images == NULL) {
+    /* Re-entrant init: never leak a previous image list. */
+    if (ctx->images != NULL) {
+        ImageList_Destroy(ctx->images);
+        ctx->images = NULL;
+    }
+    ctx->image_count = 0;
+    for (i = 0; i < count; i++) ctx->img_of[i] = -1;
+
+    ctx->images = ImageList_Create(A98_EMOJI_ICON, A98_EMOJI_ICON,
+                                   ILC_COLOR8 | ILC_MASK, 8, 64);
+    if (ctx->images == NULL) {
         SetCursor(old);
         return;
     }
@@ -74,11 +86,12 @@ static void load_images(void)
         const A98EmojiEntry *e = a98_emoji_at(i);
         char path[A98_MAX_PATH];
         HBITMAP bmp;
+        int k;
 
         if (e == NULL) {
             break;
         }
-        if (a98_emoji_asset_file(g_asset_dir, e, path, sizeof(path)) != 0) {
+        if (a98_emoji_asset_file(ctx->asset_dir, e, path, sizeof(path)) != 0) {
             continue;
         }
         bmp = (HBITMAP)LoadImageA(NULL, path, IMAGE_BITMAP,
@@ -87,8 +100,10 @@ static void load_images(void)
         if (bmp == NULL) {
             continue;
         }
-        if (ImageList_AddMasked(g_images, bmp, RGB(255, 255, 255)) >= 0) {
-            g_image_count++;
+        k = ImageList_AddMasked(ctx->images, bmp, RGB(255, 255, 255));
+        if (k >= 0) {
+            ctx->img_of[i] = k;
+            ctx->image_count++;
         }
         DeleteObject(bmp);
     }
@@ -106,23 +121,23 @@ static void to_lower(char *s)
     }
 }
 
-static void fill_list(void)
+static void fill_list(PickCtx *ctx)
 {
     char filter[64];
     int i;
     int n = 0;
     int count;
 
-    if (g_list == NULL || g_dlg == NULL) {
+    if (ctx == NULL || ctx->list == NULL || ctx->dlg == NULL) {
         return;
     }
     filter[0] = '\0';
-    GetDlgItemTextA(g_dlg, IDC_EMOJI_FILTER, filter, sizeof(filter));
+    GetDlgItemTextA(ctx->dlg, IDC_EMOJI_FILTER, filter, sizeof(filter));
     to_lower(filter);
     count = a98_emoji_count();
 
-    SendMessageA(g_list, WM_SETREDRAW, (WPARAM)FALSE, 0);
-    ListView_DeleteAllItems(g_list);
+    SendMessageA(ctx->list, WM_SETREDRAW, (WPARAM)FALSE, 0);
+    ListView_DeleteAllItems(ctx->list);
     for (i = 0; i < count; i++) {
         const A98EmojiEntry *e = a98_emoji_at(i);
         LVITEMA it;
@@ -140,16 +155,18 @@ static void fill_list(void)
         it.iItem = n;
         it.pszText = (char *)e->shortcode;
         it.lParam = (LPARAM)i;
-        if (g_image_count > 0) {
+        /* `i` is the pack-table index, not the image-list index: skipped
+         * BMPs make the image list a compact array. */
+        if (ctx->img_of[i] >= 0) {
             it.mask |= LVIF_IMAGE;
-            it.iImage = i;
+            it.iImage = ctx->img_of[i];
         }
-        if (ListView_InsertItem(g_list, &it) >= 0) {
+        if (ListView_InsertItem(ctx->list, &it) >= 0) {
             n++;
         }
     }
-    SendMessageA(g_list, WM_SETREDRAW, (WPARAM)TRUE, 0);
-    InvalidateRect(g_list, NULL, TRUE);
+    SendMessageA(ctx->list, WM_SETREDRAW, (WPARAM)TRUE, 0);
+    InvalidateRect(ctx->list, NULL, TRUE);
 }
 
 static void insert_selected(PickCtx *ctx)
@@ -160,17 +177,17 @@ static void insert_selected(PickCtx *ctx)
 
     /* The probe path creates the dialog with no output buffer; inserting is
      * meaningless there, so bail out instead of writing to NULL. */
-    if (ctx == NULL || g_list == NULL || ctx->out == NULL || ctx->cap == 0) {
+    if (ctx == NULL || ctx->list == NULL || ctx->out == NULL || ctx->cap == 0) {
         return;
     }
-    sel = ListView_GetNextItem(g_list, -1, LVNI_SELECTED);
+    sel = ListView_GetNextItem(ctx->list, -1, LVNI_SELECTED);
     if (sel < 0) {
         return;
     }
     memset(&it, 0, sizeof(it));
     it.mask = LVIF_PARAM;
     it.iItem = sel;
-    if (!ListView_GetItem(g_list, &it)) {
+    if (!ListView_GetItem(ctx->list, &it)) {
         return;
     }
     e = a98_emoji_at((int)it.lParam);
@@ -178,7 +195,7 @@ static void insert_selected(PickCtx *ctx)
         return;
     }
     snprintf(ctx->out, ctx->cap, ":%s:", e->shortcode);
-    EndDialog(g_dlg, 1);
+    EndDialog(ctx->dlg, 1);
 }
 
 static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
@@ -189,24 +206,28 @@ static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     case WM_INITDIALOG:
         ctx = (PickCtx *)lp;
         A98_DLG_SETPTR(dlg, DWLP_USER, ctx);
-        g_dlg = dlg;
-        g_image_count = 0;
-        g_asset_dir[0] = '\0';
-        g_list = GetDlgItem(dlg, IDC_EMOJI_LIST);
-        if (a98_emoji_asset_dir(ctx->exe_dir, g_asset_dir,
-                                sizeof(g_asset_dir))) {
-            load_images();
+        {
+            int i;
+            for (i = 0; i < A98_EMOJI_PACK_COUNT; i++) ctx->img_of[i] = -1;
         }
-        if (g_images != NULL && g_image_count > 0) {
-            ListView_SetImageList(g_list, g_images, LVSIL_NORMAL);
+        ctx->dlg = dlg;
+        ctx->image_count = 0;
+        ctx->asset_dir[0] = '\0';
+        ctx->list = GetDlgItem(dlg, IDC_EMOJI_LIST);
+        if (a98_emoji_asset_dir(ctx->exe_dir, ctx->asset_dir,
+                                sizeof(ctx->asset_dir))) {
+            load_images(ctx);
         }
-        fill_list();
+        if (ctx->images != NULL && ctx->image_count > 0) {
+            ListView_SetImageList(ctx->list, ctx->images, LVSIL_NORMAL);
+        }
+        fill_list(ctx);
         {
             char hint[160];
 
-            if (g_image_count > 0) {
+            if (ctx->image_count > 0) {
                 snprintf(hint, sizeof(hint), "%d pictures from %s",
-                         g_image_count, g_asset_dir);
+                         ctx->image_count, ctx->asset_dir);
             } else {
                 snprintf(hint, sizeof(hint),
                          "No pictures found - unzip the pack's "
@@ -215,7 +236,7 @@ static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             }
             SetDlgItemTextA(dlg, IDC_EMOJI_HINT, hint);
         }
-        SetFocus(g_list);
+        SetFocus(ctx->list);
         return FALSE;
 
     case WM_COMMAND:
@@ -228,7 +249,7 @@ static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             return TRUE;
         case IDC_EMOJI_FILTER:
             if (HIWORD(wp) == EN_CHANGE) {
-                fill_list();
+                fill_list(ctx);
             }
             return TRUE;
         default:
@@ -237,7 +258,10 @@ static INT_PTR CALLBACK emoji_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         return TRUE;
 
     case WM_NOTIFY:
-        if (((NMHDR *)lp)->code == LVN_DBLCLK) {
+        /* Other controls can send WM_NOTIFY to the dialog; only the pack
+         * list's double-click means "insert". */
+        if (lp != 0 && ((NMHDR *)lp)->idFrom == IDC_EMOJI_LIST &&
+            ((NMHDR *)lp)->code == LVN_DBLCLK) {
             insert_selected(ctx);
             return TRUE;
         }
@@ -263,6 +287,7 @@ int a98_emoji_pick(HINSTANCE hinst, HWND owner, const char *exe_dir,
         return 0;
     }
     out[0] = '\0';
+    memset(&ctx, 0, sizeof(ctx));
     ctx.exe_dir = exe_dir;
     ctx.out = out;
     ctx.cap = cap;
@@ -270,13 +295,12 @@ int a98_emoji_pick(HINSTANCE hinst, HWND owner, const char *exe_dir,
     rc = DialogBoxParamA(hinst, MAKEINTRESOURCEA(IDD_EMOJI), owner,
                          emoji_proc, (LPARAM)&ctx);
 
-    if (g_images != NULL) {
-        ImageList_Destroy(g_images);
-        g_images = NULL;
+    /* The list view carries LVS_SHAREIMAGELISTS, so the image list is ours to
+     * free - and only after the dialog/control that draws it is gone. */
+    if (ctx.images != NULL) {
+        ImageList_Destroy(ctx.images);
+        ctx.images = NULL;
     }
-    g_dlg = NULL;
-    g_list = NULL;
-    g_image_count = 0;
     return (rc == 1 && out[0] != '\0') ? 1 : 0;
 }
 
@@ -295,6 +319,7 @@ int a98_emoji_dialog_probe(HINSTANCE hinst, const char *exe_dir, int *images,
     if (dir != NULL && dir_cap > 0) {
         dir[0] = '\0';
     }
+    memset(&ctx, 0, sizeof(ctx));
     ctx.exe_dir = exe_dir;
     ctx.out = NULL;
     ctx.cap = 0;
@@ -307,26 +332,23 @@ int a98_emoji_dialog_probe(HINSTANCE hinst, const char *exe_dir, int *images,
         return 0;
     }
     if (images != NULL) {
-        *images = g_image_count;
+        *images = ctx.image_count;
     }
-    if (items != NULL && g_list != NULL) {
-        *items = (int)SendMessageA(g_list, LVM_GETITEMCOUNT, 0, 0);
+    if (items != NULL && ctx.list != NULL) {
+        *items = (int)SendMessageA(ctx.list, LVM_GETITEMCOUNT, 0, 0);
     }
     if (dir != NULL && dir_cap > 0) {
-        strncpy(dir, g_asset_dir, dir_cap - 1);
+        strncpy(dir, ctx.asset_dir, dir_cap - 1);
         dir[dir_cap - 1] = '\0';
     }
 
     DestroyWindow(dlg);
     /* The list view carries LVS_SHAREIMAGELISTS, so the image list is ours to
      * free - and only after the control that draws it is gone. */
-    if (g_images != NULL) {
-        ImageList_Destroy(g_images);
-        g_images = NULL;
+    if (ctx.images != NULL) {
+        ImageList_Destroy(ctx.images);
+        ctx.images = NULL;
     }
-    g_dlg = NULL;
-    g_list = NULL;
-    g_image_count = 0;
     return 1;
 }
 
@@ -414,10 +436,23 @@ struct PicOle {
 static HRESULT STDMETHODCALLTYPE pic_qi(PicOle *me, const IID *const iid,
                                         void **out)
 {
-    (void)iid;
-    *out = me;
-    me->refs++;
-    return S_OK;
+    /* IID_IRichEditOleCallback = {00020D03-0000-0000-C000-000000000046}.
+     * Declared locally so very old Win9x headers need not export the symbol. */
+    static const IID iid_iricholecb = {
+        0x00020D03UL, 0x0000, 0x0000,
+        { 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46 }
+    };
+
+    if (out == NULL) return E_POINTER;
+    *out = NULL;
+    if (iid == NULL) return E_NOINTERFACE;
+    if (memcmp(iid, &IID_IUnknown, sizeof(IID)) == 0 ||
+        memcmp(iid, &iid_iricholecb, sizeof(IID)) == 0) {
+        *out = me;
+        me->refs++;
+        return S_OK;
+    }
+    return E_NOINTERFACE;
 }
 
 static ULONG STDMETHODCALLTYPE pic_addref(PicOle *me)
@@ -646,6 +681,11 @@ static char *pic_metafile_hex(const char *path)
         return NULL;
     }
     bits = (const unsigned char *)GlobalLock(h);
+    if (bits == NULL) {
+        DeleteMetaFile(hmf);
+        GlobalFree(h);
+        return NULL;
+    }
     GetMetaFileBitsEx(hmf, size, (LPVOID)bits);
     DeleteMetaFile(hmf);
 

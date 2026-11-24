@@ -19,10 +19,12 @@
 
 #include "base.h"
 
-/* Longest ":shortcode:" we accept; the pack's longest name is well under
- * this, and the bound keeps a stray colon from scanning the rest of the
- * message.  Shared by expand() and the transcript's picture scanner. */
-#define A98_EMOJI_MAX_TOKEN 72
+/* Longest ":shortcode:" we accept.  The longest name in the current pack is
+ * 78 characters, so 72 used to truncate it; leave headroom for packs with
+ * longer names.  The bound still keeps a stray colon from scanning the rest
+ * of the message.  Shared by expand(), the transcript's picture scanner and
+ * the inline-picture renderer. */
+#define A98_EMOJI_MAX_TOKEN 96
 
 /* One entry of the bundled pack.  `id` doubles as the asset file name. */
 typedef struct {

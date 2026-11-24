@@ -35,7 +35,10 @@ target_compile_definitions(agent98_core PUBLIC CJSON_HIDE_SYMBOLS)
 if(MSVC)
     target_compile_options(agent98_core PRIVATE /W3)
 else()
-    target_compile_options(agent98_core PRIVATE -w)
+    # -Wall on the whole source set (including vendored BearSSL/cJSON) was
+    # measured at ~14 GCC warnings and no errors, which is reviewable, so keep
+    # the warnings visible instead of silencing them with -w.
+    target_compile_options(agent98_core PRIVATE -Wall)
 endif()
 
 # ole32: RichEdit keeps an inline emoji picture as an OLE object, so the

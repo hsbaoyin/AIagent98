@@ -1,8 +1,15 @@
 #include "utf8.h"
 #include "str.h"
 
+#include <limits.h>
+
 #ifdef _WIN32
 #include <windows.h>
+/* MultiByteToWideChar/WideCharToMultiByte take wchar_t*, while this module's
+ * UTF-16 codec uses 16-bit units throughout.  Lock that ABI assumption down:
+ * on a 32-bit-wchar_t build the casts below would corrupt the heap.  OpenWatcom
+ * has no C_ASSERT, so use the standard negative-array typedef trick. */
+typedef char a98_wchar_t_must_be_2_bytes[(sizeof(wchar_t) == 2) ? 1 : -1];
 #endif
 
 int a98_utf8_decode(const char *s, size_t len, unsigned int *cp)
@@ -120,6 +127,9 @@ unsigned short *a98_utf8_to_utf16(const char *s, size_t *out_units)
         s = "";
     }
     len = strlen(s);
+    if (len > (size_t)-1 / sizeof(unsigned short) - 2) {
+        return NULL;
+    }
     cap = len + 1;
     w = (unsigned short *)a98_alloc((cap + 1) * sizeof(unsigned short));
     if (w == NULL) {
@@ -130,6 +140,14 @@ unsigned short *a98_utf8_to_utf16(const char *s, size_t *out_units)
     while (i < len) {
         if (o + 3 > cap) {
             unsigned short *bigger;
+            /* Guard both the doubling and the element-count multiplication
+             * before realloc(); a wrapped size used to allocate a tiny
+             * buffer and then write far past it. */
+            if (cap > ((size_t)-1 - 16) / 2 ||
+                cap >= (size_t)-1 / sizeof(unsigned short) - 16) {
+                a98_free(w);
+                return NULL;
+            }
             cap = cap * 2 + 16;
             bigger = (unsigned short *)a98_realloc(w, (cap + 1) * sizeof(unsigned short));
             if (bigger == NULL) {
@@ -181,8 +199,9 @@ char *a98_utf16_to_utf8(const unsigned short *w, size_t units)
             cp = '?';
         }
         n = a98_utf8_encode(cp, tmp);
-        if (n > 0) {
-            str_append(&out, tmp, (size_t)n);
+        if (n > 0 && str_append(&out, tmp, (size_t)n) != 0) {
+            str_free(&out);
+            return NULL;
         }
     }
     return str_detach(&out);
@@ -208,7 +227,10 @@ char *a98_utf8_sanitize(const char *s)
         int n = a98_utf8_decode(s + i, len - i, NULL);
 
         if (n > 0) {
-            str_append(&out, s + i, (size_t)n);
+            if (str_append(&out, s + i, (size_t)n) != 0) {
+                str_free(&out);
+                return NULL;
+            }
             i += (size_t)n;
             continue;
         }
@@ -236,11 +258,21 @@ char *a98_utf8_sanitize(const char *s)
             chunk = a98_strndup(s + i, (size_t)nbytes);
             utf8 = chunk != NULL ? a98_acp_to_utf8(chunk) : NULL;
             if (utf8 != NULL && utf8[0] != '\0') {
-                str_append_cstr(&out, utf8);
+                if (str_append_cstr(&out, utf8) != 0) {
+                    a98_free(utf8);
+                    a98_free(chunk);
+                    str_free(&out);
+                    return NULL;
+                }
             } else {
                 /* Not even CP_ACP text: one placeholder keeps the rest of the
                  * line aligned. */
-                str_append_char(&out, '?');
+                if (str_append_char(&out, '?') != 0) {
+                    a98_free(utf8);
+                    a98_free(chunk);
+                    str_free(&out);
+                    return NULL;
+                }
             }
             a98_free(utf8);
             a98_free(chunk);
@@ -253,7 +285,7 @@ char *a98_utf8_sanitize(const char *s)
 #ifdef _WIN32
 char *a98_utf8_to_acp(const char *s)
 {
-    unsigned short *w;
+    wchar_t *w;
     size_t units = 0;
     int need;
     char *out;
@@ -261,11 +293,17 @@ char *a98_utf8_to_acp(const char *s)
     if (s == NULL) {
         return NULL;
     }
-    w = a98_utf8_to_utf16(s, &units);
+    /* sizeof(wchar_t) == 2 is asserted at file scope, so reinterpreting the
+     * codec's 16-bit units as wchar_t is safe here (and only here). */
+    w = (wchar_t *)a98_utf8_to_utf16(s, &units);
     if (w == NULL) {
         return NULL;
     }
-    need = WideCharToMultiByte(CP_ACP, 0, (const wchar_t *)w, (int)units,
+    if (units > (size_t)INT_MAX) {
+        a98_free(w);
+        return NULL;
+    }
+    need = WideCharToMultiByte(CP_ACP, 0, w, (int)units,
                                NULL, 0, NULL, NULL);
     if (need <= 0) {
         a98_free(w);
@@ -276,8 +314,7 @@ char *a98_utf8_to_acp(const char *s)
         a98_free(w);
         return NULL;
     }
-    WideCharToMultiByte(CP_ACP, 0, (const wchar_t *)w, (int)units,
-                        out, need, NULL, NULL);
+    WideCharToMultiByte(CP_ACP, 0, w, (int)units, out, need, NULL, NULL);
     out[need] = '\0';
     a98_free(w);
     return out;
@@ -286,7 +323,7 @@ char *a98_utf8_to_acp(const char *s)
 char *a98_acp_to_utf8(const char *s)
 {
     int need;
-    unsigned short *w;
+    wchar_t *w;
     char *out;
 
     if (s == NULL) {
@@ -296,12 +333,12 @@ char *a98_acp_to_utf8(const char *s)
     if (need <= 0) {
         return a98_strdup("");
     }
-    w = (unsigned short *)a98_alloc(((size_t)need + 1) * sizeof(unsigned short));
+    w = (wchar_t *)a98_alloc(((size_t)need + 1) * sizeof(wchar_t));
     if (w == NULL) {
         return NULL;
     }
-    MultiByteToWideChar(CP_ACP, 0, s, -1, (wchar_t *)w, need);
-    out = a98_utf16_to_utf8(w, (size_t)(need - 1));
+    MultiByteToWideChar(CP_ACP, 0, s, -1, w, need);
+    out = a98_utf16_to_utf8((const unsigned short *)w, (size_t)(need - 1));
     a98_free(w);
     return out;
 }

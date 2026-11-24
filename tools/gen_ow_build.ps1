@@ -19,6 +19,10 @@ $headers = @()
 $headers += Get-ChildItem src -Recurse -Filter *.h |
     Sort-Object FullName | ForEach-Object { Rel $_.FullName }
 $headers += 'third_party\cjson\cJSON.h'
+# BearSSL headers are just as much a build input as src/*.h: when a TLS header
+# changes, every object that includes it (src/net/tls*.c) must be recompiled.
+$headers += Get-ChildItem third_party\bearssl\inc, third_party\bearssl\src `
+    -Recurse -Filter *.h | Sort-Object FullName | ForEach-Object { Rel $_.FullName }
 $headerDeps = ($headers -join ' ')
 
 $rules = New-Object System.Collections.Generic.List[string]
@@ -132,7 +136,11 @@ function Write-LinkFile($path, $name, $subsystem, $list, $resource) {
     $link.Add('library advapi32.lib')
     $link.Add('library user32.lib')
     $link.Add('library gdi32.lib')
-    # RichEdit stores inline emoji pictures as OLE objects (emoji_ui.c).
+    # OLE2 (ole32.dll) ships with Windows 9x.  emoji_ui.c builds the in-memory
+    # structured storage (CreateILockBytesOnHGlobal /
+    # StgCreateDocfileOnILockBytes) used by the emoji picture RTF path; the
+    # self-drawn transcript no longer inserts OLE objects, but the library is
+    # still linked, so check_pe.ps1 must not treat ole32 as an NT-only import.
     $link.Add('library ole32.lib')
     $link.Add('library comdlg32.lib')
     if ($subsystem -eq 'nt_win') {

@@ -61,4 +61,5 @@ clean: .SYMBOLIC
 	-@if exist build\ow\gui.res del build\ow\gui.res
 	-@if exist build\ow\tlsprobe.exe del build\ow\tlsprobe.exe
 	-@if exist build\ow\tlsprobe.map del build\ow\tlsprobe.map
-	-@if exist build\ow\agent98.ini del build\ow\agent98.ini
+# agent98.ini is user configuration, not a build artifact: keep it across
+# `clean` so a clean release rebuild does not reset the operator's settings.

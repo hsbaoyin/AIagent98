@@ -77,6 +77,14 @@ static int parse_chunk_size(Str *line, unsigned long *out)
     if (digits == 0) {
         return -1;
     }
+    /* RFC 7230: only optional whitespace and a ';' chunk-extension may
+     * follow the hexadecimal size.  Reject any other trailing garbage. */
+    while (i < line->len && (line->data[i] == ' ' || line->data[i] == '\t')) {
+        i++;
+    }
+    if (i < line->len && line->data[i] != ';') {
+        return -1;
+    }
     *out = v;
     return 0;
 }
@@ -171,16 +179,14 @@ int body_decoder_feed(BodyDecoder *d, const char *data, size_t len,
             i += n;
             if (d->remaining == 0) {
                 d->state = 2;
-                d->saw_cr = 0;
             }
         } else if (d->state == 2) {
             /* CRLF after chunk data (tolerate bare LF). */
             i++;
             if (c == '\r') {
-                d->saw_cr = 1;
+                /* waiting for the matching '\n' */
             } else if (c == '\n') {
                 d->state = 0;
-                d->saw_cr = 0;
             } else {
                 set_err(err, errcap, "missing CRLF after chunk");
                 return -1;

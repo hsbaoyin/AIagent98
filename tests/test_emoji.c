@@ -20,6 +20,7 @@
 #include "core/path.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include <windows.h>
 #include <commctrl.h>
@@ -27,6 +28,22 @@
 #include <richedit.h>
 
 static int failures = 0;
+static int skips = 0;
+static int allow_skip = 0;
+
+/* A SKIP must never be silently reported as "all emoji tests passed".
+ * Count every one; main() fails unless --allow-skip was given explicitly. */
+static void skipped(const char *fmt, ...)
+{
+    va_list ap;
+
+    skips++;
+    printf("SKIP: ");
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    printf("\n");
+}
 
 static void expect(const char *what, const char *got, const char *want)
 {
@@ -272,23 +289,23 @@ static void test_release_layout(const char *pack_dir)
     const A98EmojiEntry *e = a98_emoji_by_shortcode("grinning_face");
 
     if (pack_dir == NULL || e == NULL) {
-        printf("SKIP: release layout fixture (no pack)\n");
+        skipped("release layout fixture (no pack)");
         return;
     }
     if (a98_emoji_asset_file(pack_dir, e, src, sizeof(src)) != 0 ||
         !a98_path_exists(src)) {
-        printf("SKIP: release layout fixture (%s missing)\n", src);
+        skipped("release layout fixture (%s missing)", src);
         return;
     }
     a98_path_join(dst, sizeof(dst), root, "emoji\\bmp\\24");
     if (a98_path_mkdirs(dst) != 0) {
-        printf("SKIP: cannot create %s\n", dst);
+        skipped("cannot create %s", dst);
         return;
     }
     a98_path_join(path, sizeof(path), dst, "A98E0672.bmp");
     if (!CopyFileA(src, path, FALSE) && !a98_path_exists(path)) {
-        printf("SKIP: cannot copy the fixture BMP (%lu)\n",
-               (unsigned long)GetLastError());
+        skipped("cannot copy the fixture BMP (%lu)",
+                (unsigned long)GetLastError());
         return;
     }
 
@@ -334,9 +351,9 @@ static void test_dialog_probe(const char *exe_dir, const char *asset_dir)
     dir[0] = '\0';
     if (a98_emoji_dialog_probe(inst, exe_dir, &images, &items, dir,
                                sizeof(dir)) != 1) {
-        printf("SKIP: IDD_EMOJI could not be created (CreateDialogParam "
-               "failed, error %lu) - no window station in this session?\n",
-               (unsigned long)GetLastError());
+        skipped("IDD_EMOJI could not be created (CreateDialogParam "
+                "failed, error %lu) - no window station in this session?",
+                (unsigned long)GetLastError());
         return;
     }
     printf("  dialog : %d icons, %d rows, dir=%s\n", images, items, dir);
@@ -362,8 +379,8 @@ static void test_dialog_probe(const char *exe_dir, const char *asset_dir)
         ok(items == a98_emoji_count(),
            "IDD_EMOJI still lists names when the EXE path has no artwork");
     } else {
-        printf("SKIP: degradation dialog probe (%lu)\n",
-               (unsigned long)GetLastError());
+        skipped("degradation dialog probe (%lu)",
+                (unsigned long)GetLastError());
     }
 }
 
@@ -398,12 +415,13 @@ static void test_transcript_pictures(const char *exe_dir)
     const char *token = ":grinning_face:";
     char *rtf;
     HWND wnd;
+    HMODULE riched;
     EDITSTREAM es;
     TestOut so;
 
     InitCommonControls();
     if (e == NULL) {
-        printf("SKIP: transcript picture test (no U+1F600 in the pack)\n");
+        skipped("transcript picture test (no U+1F600 in the pack)");
         return;
     }
 
@@ -425,9 +443,9 @@ static void test_transcript_pictures(const char *exe_dir)
        "the metafile carries no Aldus prefix RichEdit would reject");
     a98_free(rtf);
 
-    if (LoadLibraryA("riched20.dll") == NULL) {
-        printf("SKIP: no RichEdit 2.0 here, the transcript falls back to "
-               "text\n");
+    riched = LoadLibraryA("riched20.dll");
+    if (riched == NULL) {
+        skipped("no RichEdit 2.0 here, the transcript falls back to text");
         return;
     }
     OleInitialize(NULL);
@@ -436,8 +454,10 @@ static void test_transcript_pictures(const char *exe_dir)
                           0, 0, 400, 200, NULL, NULL,
                           GetModuleHandleA(NULL), NULL);
     if (wnd == NULL) {
-        printf("SKIP: RichEdit20A could not be created (error %lu)\n",
-               (unsigned long)GetLastError());
+        skipped("RichEdit20A could not be created (error %lu)",
+                (unsigned long)GetLastError());
+        OleUninitialize();
+        FreeLibrary(riched);
         return;
     }
 
@@ -472,12 +492,23 @@ static void test_transcript_pictures(const char *exe_dir)
 
     DestroyWindow(wnd);
     OleUninitialize();
+    FreeLibrary(riched);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     char exe_dir[A98_MAX_PATH];
     char pack_dir[A98_MAX_PATH];
+    int i;
+
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--allow-skip") == 0) {
+            allow_skip = 1;
+        } else {
+            printf("usage: test_emoji [--allow-skip]\n");
+            return 2;
+        }
+    }
 
     printf("AIagent98 emoji pack test\n\n");
     test_text_pipeline();
@@ -493,6 +524,15 @@ int main(void)
     printf("\n-- transcript pictures\n");
     test_transcript_pictures(exe_dir);
 
+    /* A headless CI session legitimately skips the dialog/RichEdit probes,
+     * but the default is strict: a SKIP must not be reported as success. */
+    if (skips != 0 && !allow_skip) {
+        printf("\n%d emoji test(s) skipped; pass --allow-skip to accept SKIPs\n",
+               skips);
+        failures++;
+    } else if (skips != 0) {
+        printf("\n%d emoji test(s) skipped (--allow-skip)\n", skips);
+    }
     if (failures != 0) {
         printf("\n%d emoji test(s) failed\n", failures);
         return 1;

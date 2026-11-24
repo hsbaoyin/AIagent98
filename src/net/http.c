@@ -2,6 +2,8 @@
 #include "body.h"
 #include "../core/log.h"
 
+#include <errno.h>
+
 static void set_err(char *err, size_t cap, const char *fmt, ...)
 {
     va_list ap;
@@ -150,9 +152,22 @@ int http_parse_response_head(const char *data, size_t len, HttpResponse *out,
 
                 if (a98_strcasecmp(name, "Content-Length") == 0) {
                     char *endptr = NULL;
-                    unsigned long cl = strtoul(value, &endptr, 10);
-                    if (endptr == value || *endptr != '\0') {
+                    unsigned long cl;
+
+                    /* strtoul("-1") would wrap to ULONG_MAX; reject signs. */
+                    if (value[0] == '-' || value[0] == '+') {
                         set_err(err, errcap, "invalid Content-Length");
+                        return -1;
+                    }
+                    errno = 0;
+                    cl = strtoul(value, &endptr, 10);
+                    if (errno == ERANGE || endptr == value || *endptr != '\0') {
+                        set_err(err, errcap, "invalid Content-Length");
+                        return -1;
+                    }
+                    /* Two different lengths are a request-smuggling risk. */
+                    if (out->has_length && out->content_length != cl) {
+                        set_err(err, errcap, "conflicting Content-Length headers");
                         return -1;
                     }
                     out->content_length = cl;
@@ -216,32 +231,150 @@ static int headers_contain(const char *block, const char *name)
     return 0;
 }
 
+/* Validate caller-supplied "Name: value\r\n" lines before they are copied
+ * into the request.  Header names must consist only of RFC 7230 tchar bytes;
+ * values may not contain NUL/control bytes (HTAB is allowed as HTTP OWS) or a
+ * bare CR.  Every line may end with CRLF (the last one may omit it). */
+static int validate_extra_headers(const char *h, char *err, size_t errcap)
+{
+    const char *p;
+
+    if (h == NULL) {
+        return 0;
+    }
+    p = h;
+    while (*p != '\0') {
+        const char *colon = p;
+        const char *q;
+        const char *eol;
+
+        while (*colon != '\0' && *colon != '\r' && *colon != '\n' &&
+               *colon != ':') {
+            colon++;
+        }
+        if (colon == p || *colon != ':') {
+            set_err(err, errcap, "invalid extra header: missing or empty name");
+            return -1;
+        }
+        for (q = p; q < colon; q++) {
+            if (!is_tchar(*q)) {
+                set_err(err, errcap,
+                        "invalid extra header: illegal character in name");
+                return -1;
+            }
+        }
+        q = colon + 1;
+        eol = q;
+        while (*eol != '\0' && *eol != '\r' && *eol != '\n') {
+            eol++;
+        }
+        for (; q < eol; q++) {
+            unsigned char c = (unsigned char)*q;
+            if (c == '\t') {
+                continue;
+            }
+            if (c < 0x20 || c == 0x7F) {
+                set_err(err, errcap,
+                        "invalid extra header: control character in value");
+                return -1;
+            }
+        }
+        if (*eol != '\0') {
+            const char *e = eol;
+
+            /* Tolerate a run of CRs before the LF: one caller normalizes
+             * lines by appending CRLF to input that already had one.  A CR
+             * followed by ordinary text is still rejected. */
+            while (*e == '\r') {
+                e++;
+            }
+            if (*e == '\n') {
+                p = e + 1;
+            } else if (*e == '\0') {
+                p = e;
+            } else {
+                set_err(err, errcap, "invalid extra header: bare CR");
+                return -1;
+            }
+        } else {
+            p = eol; /* final line without CRLF; build_request adds it */
+        }
+    }
+    return 0;
+}
+
 static int build_request(Str *req, const char *method, const Url *url,
-                         const char *extra_headers, size_t body_len)
+                         const char *extra_headers, size_t body_len,
+                         char *err, size_t errcap)
 {
     char host[300];
+    size_t i;
+    size_t method_len;
+
+    if (method == NULL || url == NULL || req == NULL) {
+        set_err(err, errcap, "invalid HTTP request arguments");
+        return -1;
+    }
+    method_len = strlen(method);
+    if (method_len == 0 || method_len > 32) {
+        set_err(err, errcap, "invalid HTTP method");
+        return -1;
+    }
+    for (i = 0; i < method_len; i++) {
+        if (!is_tchar(method[i])) {
+            set_err(err, errcap, "invalid HTTP method");
+            return -1;
+        }
+    }
+    if (validate_extra_headers(extra_headers, err, errcap) != 0) {
+        return -1;
+    }
 
     url_host_header(url, host, sizeof(host));
-    str_appendf(req, "%s %s HTTP/1.1\r\n", method, url->path);
+    if (str_appendf(req, "%s %s HTTP/1.1\r\n", method, url->path) != 0) {
+        goto append_fail;
+    }
     if (!headers_contain(extra_headers, "Host")) {
-        str_appendf(req, "Host: %s\r\n", host);
+        if (str_appendf(req, "Host: %s\r\n", host) != 0) {
+            goto append_fail;
+        }
     }
-    str_appendf(req, "User-Agent: AIagent98/%s\r\n", A98_VERSION);
+    if (str_appendf(req, "User-Agent: AIagent98/%s\r\n", A98_VERSION) != 0) {
+        goto append_fail;
+    }
     if (!headers_contain(extra_headers, "Accept")) {
-        str_appendf(req, "Accept: */*\r\n");
+        if (str_appendf(req, "Accept: */*\r\n") != 0) {
+            goto append_fail;
+        }
     }
-    str_appendf(req, "Connection: close\r\n");
+    if (str_appendf(req, "Connection: close\r\n") != 0) {
+        goto append_fail;
+    }
     if (extra_headers != NULL && extra_headers[0] != '\0') {
-        str_append_cstr(req, extra_headers);
-        if (req->len >= 2 && !(req->data[req->len - 2] == '\r' && req->data[req->len - 1] == '\n')) {
-            str_append_cstr(req, "\r\n");
+        if (str_append_cstr(req, extra_headers) != 0) {
+            goto append_fail;
+        }
+        if (req->len >= 2 &&
+            !(req->data[req->len - 2] == '\r' && req->data[req->len - 1] == '\n')) {
+            if (str_append_cstr(req, "\r\n") != 0) {
+                goto append_fail;
+            }
         }
     }
     if (body_len > 0) {
-        str_appendf(req, "Content-Length: %lu\r\n", (unsigned long)body_len);
+        if (str_appendf(req, "Content-Length: %lu\r\n",
+                        (unsigned long)body_len) != 0) {
+            goto append_fail;
+        }
     }
-    str_append_cstr(req, "\r\n");
+    if (str_append_cstr(req, "\r\n") != 0) {
+        goto append_fail;
+    }
     return 0;
+
+append_fail:
+    set_err(err, errcap, "out of memory building HTTP request");
+    return -1;
 }
 
 int http_request(NetConn *conn, const char *method, const Url *url,
@@ -271,7 +404,10 @@ int http_request(NetConn *conn, const char *method, const Url *url,
         body_len = 0;
     }
 
-    build_request(&req, method, url, extra_headers, body_len);
+    if (build_request(&req, method, url, extra_headers, body_len,
+                      err, errcap) != 0) {
+        goto done;
+    }
     log_debug("HTTP %s %s (%lu body bytes)", method, url->path, (unsigned long)body_len);
     if (net_write_all(conn, str_cstr(&req), req.len) != 0) {
         set_err(err, errcap, "%s", net_error(conn));
@@ -295,13 +431,32 @@ int http_request(NetConn *conn, const char *method, const Url *url,
             break;
         }
         if (!got_head) {
-            str_append(&head, buf, (size_t)n);
+            if (str_append(&head, buf, (size_t)n) != 0) {
+                set_err(err, errcap, "out of memory reading HTTP response");
+                goto done;
+            }
             if (head.len > 65536) {
                 set_err(err, errcap, "HTTP response head too large");
                 goto done;
             }
             if (http_parse_response_head(head.data, head.len, resp, err, errcap) == 0) {
                 size_t body_off = resp->head_len;
+                if (resp->status >= 100 && resp->status < 200) {
+                    /* 1xx (e.g. 100 Continue) is informational and has no
+                     * body.  Drop its head and parse the final response that
+                     * follows, keeping any bytes already buffered. */
+                    size_t rem = head.len - body_off;
+                    log_debug("skipping informational HTTP response %d",
+                              resp->status);
+                    if (rem > 0) {
+                        memmove(head.data, head.data + body_off, rem);
+                    }
+                    head.len = rem;
+                    if (head.data != NULL) {
+                        head.data[head.len] = '\0';
+                    }
+                    continue;
+                }
                 got_head = 1;
                 if (resp->status == 204 || resp->status == 304 ||
                     a98_strcasecmp(method, "HEAD") == 0) {

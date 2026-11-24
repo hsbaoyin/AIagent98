@@ -6,6 +6,9 @@
  * Behaviour:
  *   - "list files" in the latest user message -> one list_dir tool call
  *   - "write file" -> one write_file tool call
+ *   - "dangerous command" -> one HIGH RISK run_command tool call
+ *     ("ver" is harmless if the user allows it; the point is that the
+ *     confirmation dialog must label it HIGH RISK and default to Deny)
  *   - "loop forever" -> the same list_dir call on every round (loop guard)
  *   - "count up [N]" -> N distinct list_dir calls, then a final answer
  *   - "retry 503" / "retry drop" -> fail the first request, succeed later
@@ -72,6 +75,10 @@ const server = http.createServer((req, res) => {
     const hasToolResult = toolMessages.length > 0;
     const wantsTool = /list files/i.test(lastUser) && freshUser;
     const wantsWrite = /write file/i.test(lastUser) && freshUser;
+    /* Used for the final answer too, where the last message is a tool result
+     * (so freshUser is false), hence no freshUser guard here. */
+    const isDangerous = /dangerous command/i.test(lastUser);
+    const wantsDangerous = isDangerous && freshUser;
     const stream = !!payload.stream;
     const wantsRetry503 = /retry 503/i.test(lastUser) && freshUser;
     const wantsRetryDrop = /retry drop/i.test(lastUser) && freshUser;
@@ -107,9 +114,19 @@ const server = http.createServer((req, res) => {
       retried = true;
     }
 
-    if (!countDone && (wantsTool || wantsWrite || wantsLoop || wantsCount)) {
+    if (!countDone && (wantsTool || wantsWrite || wantsLoop || wantsCount ||
+                       wantsDangerous)) {
       let call;
-      if (wantsWrite) {
+      if (wantsDangerous) {
+        call = {
+          id: 'call_mock_dangerous',
+          type: 'function',
+          function: {
+            name: 'run_command',
+            arguments: JSON.stringify({ command: 'ver' })
+          }
+        };
+      } else if (wantsWrite) {
         call = {
           id: 'call_mock_write',
           type: 'function',
@@ -179,6 +196,10 @@ const server = http.createServer((req, res) => {
       text = 'The retry succeeded.';
     } else if (countDone) {
       text = 'Counted ' + countTarget + ' steps.';
+    } else if (isDangerous && hasToolResult) {
+      text = /denied by the user/i.test(lastTool)
+        ? 'The dangerous call was denied.'
+        : 'The dangerous call was allowed.';
     } else if (hasToolResult) {
       if (/Wrote \d+ bytes/.test(lastTool)) {
         text = 'I wrote the file.';

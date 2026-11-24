@@ -86,16 +86,16 @@ static char *read_all(const char *path, size_t *len)
 
 /* Parse a SKILL.md buffer: frontmatter between --- fences, rest is body.
  * Fills name/description (UTF-8) and body (UTF-8). Returns 0 on success. */
-static int parse_skill(const char *text, const char *path,
+static int parse_skill(const char *text, size_t len, const char *path,
                        Skill *out)
 {
     const char *body = text;
     const char *p;
     char name[64] = "", desc[512] = "";
 
-    /* strip UTF-8 BOM */
-    if ((unsigned char)text[0] == 0xEF && (unsigned char)text[1] == 0xBB &&
-        (unsigned char)text[2] == 0xBF) {
+    /* strip UTF-8 BOM (only when the file is long enough to hold one) */
+    if (len >= 3 && (unsigned char)text[0] == 0xEF &&
+        (unsigned char)text[1] == 0xBB && (unsigned char)text[2] == 0xBF) {
         text += 3;
     }
 
@@ -196,14 +196,15 @@ int skills_scan(const char *workspace, SkillList *list)
     do {
         char path[A98_MAX_PATH];
         char *text;
+        size_t len = 0;
         Skill s, *p;
 
         if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
         if (snprintf(path, sizeof(path), "%s\\%s", dir, fd.cFileName) >= (int)sizeof(path))
             continue;
-        text = read_all(path, NULL);
+        text = read_all(path, &len);
         if (text == NULL) continue;
-        if (parse_skill(text, path, &s) == 0) {
+        if (parse_skill(text, len, path, &s) == 0) {
             if (list->count == list->cap) {
                 int nc = list->cap ? list->cap * 2 : 8;
                 Skill *np = (Skill *)a98_realloc(list->items, (size_t)nc * sizeof(Skill));

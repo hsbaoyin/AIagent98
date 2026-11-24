@@ -52,6 +52,7 @@ int main(int argc, char **argv)
     DWORD started;
     DWORD elapsed;
     int verify = 1;
+    int target_given = 0;
     int i;
     int rc;
 
@@ -62,12 +63,28 @@ int main(int argc, char **argv)
             usage();
             return 0;
         } else {
+            /* More than one positional target used to silently overwrite the
+             * first one; report the conflict instead of probing the wrong URL. */
+            if (target_given) {
+                printf("Error: more than one target specified ('%s' and '%s').\n",
+                       target, argv[i]);
+                usage();
+                return 2;
+            }
             target = argv[i];
+            target_given = 1;
         }
     }
 
     if (strstr(target, "://") == NULL) {
-        snprintf(target_buf, sizeof(target_buf), "https://%s", target);
+        int written = snprintf(target_buf, sizeof(target_buf), "https://%s", target);
+        /* A snprintf truncation would produce a broken URL and a confusing
+         * parse error, so fail loudly with the real limit instead. */
+        if (written < 0 || (size_t)written >= sizeof(target_buf)) {
+            printf("Error: target is too long without a scheme (limit %u chars).\n",
+                   (unsigned)(sizeof(target_buf) - 1 - 8));
+            return 2;
+        }
         target = target_buf;
     }
 
@@ -84,6 +101,7 @@ int main(int argc, char **argv)
     log_init(NULL, LOG_LEVEL_WARN);
     if (net_init() != 0) {
         printf("Failed to initialize Winsock.\n");
+        log_shutdown();
         return 2;
     }
 
@@ -95,6 +113,7 @@ int main(int argc, char **argv)
     if (conn == NULL) {
         printf("Connect failed: %s\n", err[0] ? err : "unknown error");
         net_cleanup();
+        log_shutdown();
         return 2;
     }
     if (net_peer_addr(conn, peer, sizeof(peer)) == 0) {
@@ -123,6 +142,7 @@ int main(int argc, char **argv)
                net_tls_cipher(conn) ? net_tls_cipher(conn) : "(none)");
         net_close(conn);
         net_cleanup();
+        log_shutdown();
         return 2;
     }
 

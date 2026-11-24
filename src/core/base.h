@@ -14,8 +14,15 @@
 #include <stdarg.h>
 #include <time.h>
 
-#define A98_VERSION "0.1.0"
+#define A98_VERSION "0.3.0"
 #define A98_NAME "AIagent98"
+
+/* Compile-time build stamp.  __DATE__/__TIME__ are standard predefined
+ * macros (supported by OpenWatcom, MinGW and MSVC), so the About dialog and
+ * the startup log always show the exact build that is running. */
+#define A98_BUILD_DATE  __DATE__
+#define A98_BUILD_TIME  __TIME__
+#define A98_BUILD_STAMP __DATE__ " " __TIME__
 
 /* Longest path we accept. Win9x MAX_PATH is 260. */
 #define A98_MAX_PATH 260

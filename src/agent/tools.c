@@ -1078,7 +1078,14 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
         for (i = 0; i <= len; ) {
             while (i < len && cmd_tok_sep(lower[i])) i++;
             if (i >= len) break;
-            if (ntoks < (int)A98_ARRAY_LEN(toks)) toks[ntoks++] = lower + i;
+            if (ntoks >= (int)A98_ARRAY_LEN(toks)) {
+                a98_free(lower);
+                set_err(err, errcap,
+                        "command has too many tokens (limit %lu)",
+                        (unsigned long)A98_ARRAY_LEN(toks));
+                return -1;
+            }
+            toks[ntoks++] = lower + i;
             while (i < len && !cmd_tok_sep(lower[i])) i++;
             if (i < len) lower[i++] = '\0';
         }
@@ -2616,7 +2623,8 @@ void tools_format_confirm(const char *name, const char *args_json,
                  p ? p : "?");
     } else if (strcmp(n, "build") == 0) {
         const char *c = args ? json_string(args, "command") : NULL;
-        d = 0;
+        /* build.command is passed to COMMAND.COM; treat it like run_command. */
+        d = 2;
         snprintf(line, sizeof(line), "Run build\n  command: %s",
                  c && c[0] ? c : "build_ow.cmd");
     } else {

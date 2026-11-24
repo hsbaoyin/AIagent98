@@ -16,9 +16,15 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+# NT-only DLLs: never present on a stock Windows 9x system.
+# ole32.dll / oleaut32.dll are deliberately NOT in this list: OLE2 is a Win9x
+# system component.  src/gui/emoji_ui.c uses CreateILockBytesOnHGlobal and
+# StgCreateDocfileOnILockBytes for in-memory structured storage, both provided
+# by ole32.dll on Windows 95/98/ME.  gen_ow_build.ps1 links ole32.lib for all
+# three targets, so blacklisting it made every real artifact fail this check.
 $blacklist = @(
     'ntdll.dll', 'bcrypt.dll', 'ncrypt.dll', 'crypt32.dll', 'secur32.dll',
-    'shlwapi.dll', 'ole32.dll', 'oleaut32.dll', 'psapi.dll', 'userenv.dll'
+    'shlwapi.dll', 'psapi.dll', 'userenv.dll'
 )
 
 function Get-U16([byte[]]$b, [int]$o) { return [BitConverter]::ToUInt16($b, $o) }
@@ -32,6 +38,13 @@ function Test-Pe([string]$path) {
         throw "$path is not a PE file"
     }
     $pe = Get-U32 $b 0x3C
+    # e_lfanew is an untrusted offset from the file: bounds-check it before
+    # indexing (we need the 4-byte signature plus the 20-byte COFF header),
+    # otherwise a truncated/corrupt file throws IndexOutOfRangeException
+    # instead of a useful "not a PE file" message.
+    if ($pe -lt 0x40 -or $pe + 24 -gt $b.Length) {
+        throw ("$path has an out-of-range PE header offset (0x{0:X})" -f $pe)
+    }
     if ($b[$pe] -ne 0x50 -or $b[$pe + 1] -ne 0x45) {
         throw "$path has no PE signature"
     }

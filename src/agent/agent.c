@@ -8,6 +8,8 @@
 #include "../core/utf8.h"
 #include "../../third_party/cjson/cJSON.h"
 
+#include <windows.h>
+
 #define MAX_TOOL_OUTPUT 16384
 
 /* Error sink shared by every entry point in this file.  Callers are allowed
@@ -818,9 +820,12 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     cJSON *arr;
     char *text;
     char tmp[A98_MAX_PATH + 8];
+    char bak[A98_MAX_PATH + 8];
     FILE *f;
     int i;
     int ok = 1;
+    int tmp_len;
+    int bak_len;
 
     if (a == NULL || path == NULL) {
         return -1;
@@ -869,7 +874,14 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
         return -1;
     }
 
-    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+    tmp_len = snprintf(tmp, sizeof(tmp), "%s.tmp", path);
+    bak_len = snprintf(bak, sizeof(bak), "%s.bak", path);
+    if (tmp_len < 0 || tmp_len >= (int)sizeof(tmp) ||
+        bak_len < 0 || bak_len >= (int)sizeof(bak)) {
+        cJSON_free(text);
+        set_err(err, errcap, "session path is too long");
+        return -1;
+    }
     f = fopen(tmp, "wb");
     if (f == NULL) {
         cJSON_free(text);
@@ -879,18 +891,45 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     if (fwrite(text, 1, strlen(text), f) != strlen(text)) {
         ok = 0;
     }
-    fclose(f);
+    if (fclose(f) != 0) {
+        ok = 0;
+    }
     cJSON_free(text);
     if (!ok) {
         remove(tmp);
         set_err(err, errcap, "failed to write the session file");
         return -1;
     }
-    remove(path);
-    if (rename(tmp, path) != 0) {
-        remove(tmp);
-        set_err(err, errcap, "cannot replace %s", path);
-        return -1;
+    /* Win9x rename() cannot replace an existing destination. Preserve the
+     * current session until the complete temp file is ready, then move it to
+     * a sibling backup while installing the new file. */
+    remove(bak);
+    if (MoveFileA(path, bak)) {
+        if (!MoveFileA(tmp, path)) {
+            DWORD move_error = GetLastError();
+            MoveFileA(bak, path); /* best-effort rollback */
+            remove(tmp);
+            set_err(err, errcap, "cannot replace %s (error %lu)", path,
+                    (unsigned long)move_error);
+            return -1;
+        }
+        remove(bak);
+    } else {
+        DWORD move_error = GetLastError();
+        if (move_error != ERROR_FILE_NOT_FOUND &&
+            move_error != ERROR_PATH_NOT_FOUND) {
+            remove(tmp);
+            set_err(err, errcap, "cannot preserve existing session %s (error %lu)",
+                    path, (unsigned long)move_error);
+            return -1;
+        }
+        if (!MoveFileA(tmp, path)) {
+            move_error = GetLastError();
+            remove(tmp);
+            set_err(err, errcap, "cannot install session %s (error %lu)",
+                    path, (unsigned long)move_error);
+            return -1;
+        }
     }
     log_info("session saved: %s (%d messages)", path, a->messages.count);
     return 0;

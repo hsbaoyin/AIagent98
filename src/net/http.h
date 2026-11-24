@@ -20,7 +20,13 @@ typedef struct {
 } HttpResponse;
 
 /* Parse a complete response head (status line + headers + blank line).
- * `data` need not be NUL-terminated. Returns 0 on success. */
+ * `data` need not be NUL-terminated. Returns 0 on success.
+ *
+ * NOTE: This client does NOT follow redirects. A 3xx response is returned to
+ * the caller as-is; the `location` field below is populated from the
+ * Location header purely for the caller's own use (e.g. to show a link or to
+ * issue a new request). Informational 1xx responses are skipped internally;
+ * `status` always describes the final response. */
 int http_parse_response_head(const char *data, size_t len, HttpResponse *out,
                              char *err, size_t errcap);
 

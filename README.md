@@ -13,12 +13,12 @@
 A native 32-bit Win32 AI **agent** for Windows 9x. It does not just print text
 into a window: it reads and writes files, walks directories, searches source
 and runs `COMMAND.COM` commands on the 9x machine itself, inside a workspace
-sandbox and behind a confirmation prompt. One ~400 KB EXE completes the TLS 1.2
+sandbox and behind a confirmation prompt. The ~650 KB GUI EXE completes the TLS 1.2
 handshake on a Pentium and talks to any OpenAI-compatible endpoint — Ollama and
 local models included. No relay PC, no proxy, no patched system libraries.
 一个 32 位原生 Win32 **AI agent**（智能体）。它不只是往窗口里打字：它能在 9x
 机器上读写文件、遍历目录、搜索源码、执行 `COMMAND.COM` 命令，受 workspace
-沙箱约束并需要确认。一个约 400 KB 的 EXE 在 Pentium 上完成 TLS 1.2 握手，
+沙箱约束并需要确认。约 650 KB 的 GUI EXE 可在 Pentium 上完成 TLS 1.2 握手，
 直连任意 OpenAI 兼容端点（包括 Ollama 和本地模型）—— 不需要中转机、不需要
 代理、不改造系统库。
 
@@ -29,12 +29,11 @@ local models included. No relay PC, no proxy, no patched system libraries.
 
 ## English
 
-> **New in this release:** the transcript is now self-drawn and renders emoji
-> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 46
-> with coding and network tools (`web_search` auto-falls back through Bing /
-> Baidu / DuckDuckGo, so it works in China and abroad); long conversations are
-> auto-compacted into a summary; all 24 settings live in a tabbed dialog; and
-> optional `full_access` / `auto_confirm` dangerous modes (off by default).
+> **New in 0.3.0:** fewer API rounds through unchanged-read caching, plain-text
+> tool-call recovery and acceptance-check nudges; configurable tool profiles;
+> safer HTTP parsing and response handling; hardened Win9x path, UTF-8 and
+> logging code; plus a reproducible coding-task benchmark. The 46-tool GUI,
+> emoji pack, conversation compaction and confirmation controls remain included.
 
 ### Why this exists
 

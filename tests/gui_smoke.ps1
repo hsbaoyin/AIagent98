@@ -5,6 +5,7 @@
 #
 # Covers:
 #   * streamed replies, tool calls/results and the confirmation dialog
+#   * HIGH RISK confirmation fails closed (label + Deny as default button)
 #   * auto-saved session files and the History combo box
 #   * the native status bar (class and layout)
 #   * DOSKEY-style Alt+Up / Alt+Down prompt history
@@ -57,6 +58,7 @@ public class A98Ui {
     public const uint WM_KEYDOWN = 0x0100;
     public const uint WM_SYSKEYDOWN = 0x0104;
 
+    public const uint DM_GETDEFID = 0x0400;
     public const uint CB_GETCOUNT = 0x0146;
     public const uint CB_SETCURSEL = 0x014E;
     public const int VK_UP = 0x26;
@@ -70,6 +72,7 @@ public class A98Ui {
     public const int IDC_STATUS = 1006;
     public const int IDC_SESSION = 1008;
     public const int IDC_OPEN_WORKSPACE = 1009;
+    public const int IDC_CONFIRM_TOOL = 2100;
 
     public static string Text(IntPtr h) {
         int n = (int)SendInt(h, WM_GETTEXTLENGTH, IntPtr.Zero, IntPtr.Zero);
@@ -244,6 +247,39 @@ try {
     }
     Write-Host 'PASS: confirmation denied and tool skipped'
 
+    # HIGH RISK safety.  The CLI gates these tools on typing the exact string
+    # "YES" (src/main.c); this GUI has no text gate, so its equivalent contract
+    # is: label the call HIGH RISK and make Deny the default button, so Enter /
+    # an accidental click cannot approve it.  Assert both, then show that an
+    # explicit Allow still runs the (harmless) "ver" command.
+    Start-Chat 'dangerous command'
+    $dlg = Wait-ConfirmDialog
+    $riskLabel = [A98Ui]::Text([A98Ui]::GetDlgItem($dlg, [A98Ui]::IDC_CONFIRM_TOOL))
+    if ($riskLabel -notlike '*HIGH RISK*') {
+        throw "HIGH RISK label missing from confirmation dialog: '$riskLabel'"
+    }
+    $defIdRaw = [int]([A98Ui]::SendInt($dlg, [A98Ui]::DM_GETDEFID,
+                                       [IntPtr]::Zero, [IntPtr]::Zero))
+    # DM_GETDEFID returns DC_HASDEFID (0x534B) in the high word on success,
+    # and the default control ID in the low word.  IDCANCEL (2) is Deny.
+    $DC_HASDEFID = 0x534B
+    if (($defIdRaw -shr 16) -ne $DC_HASDEFID -or ($defIdRaw -band 0xFFFF) -ne 2) {
+        throw "HIGH RISK dialog did not default to Deny: 0x$('{0:X}' -f $defIdRaw)"
+    }
+    Write-Host 'PASS: HIGH RISK call labelled and defaulted to Deny'
+    [void][A98Ui]::SendInt($dlg, [A98Ui]::WM_COMMAND, [IntPtr]2, [IntPtr]::Zero)
+    $t6 = Wait-Transcript 'The dangerous call was denied.'
+    if (-not $t6.Contains('denied by the user')) {
+        throw 'HIGH RISK denial message missing from transcript'
+    }
+    Write-Host 'PASS: HIGH RISK operation denied without explicit approval'
+
+    Start-Chat 'dangerous command'
+    $dlg = Wait-ConfirmDialog
+    [void][A98Ui]::SendInt($dlg, [A98Ui]::WM_COMMAND, [IntPtr]1, [IntPtr]::Zero)
+    $t7 = Wait-Transcript 'The dangerous call was allowed.'
+    Write-Host 'PASS: HIGH RISK operation runs after explicit Allow'
+
     # One conversation keeps one file; later rounds overwrite it.
     Start-Sleep -Milliseconds 300
     $all = @(Get-ChildItem $sessions -Filter *.json)
@@ -255,7 +291,7 @@ try {
     # Alt+Up recalls the last prompt, Alt+Down returns to an empty box.
     [void][A98Ui]::SendInt($inputBox, [A98Ui]::WM_SYSKEYDOWN,
                            [IntPtr][A98Ui]::VK_UP, [IntPtr]::Zero)
-    if ([A98Ui]::Text($inputBox) -ne 'write file') {
+    if ([A98Ui]::Text($inputBox) -ne 'dangerous command') {
         throw 'Alt+Up did not recall the previous prompt'
     }
     [void][A98Ui]::SendInt($inputBox, [A98Ui]::WM_SYSKEYDOWN,

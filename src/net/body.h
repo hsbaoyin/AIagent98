@@ -13,7 +13,6 @@ typedef struct {
     int mode; /* 0 = content-length, 1 = chunked, 2 = until EOF */
     int state;
     int done;
-    int saw_cr;
     unsigned long remaining;
     unsigned long total;
     Str line;

@@ -4,6 +4,7 @@
 
 #include <winsock2.h>
 #include <windows.h>
+#include <wincrypt.h>
 #include <time.h>
 
 #include "bearssl.h"
@@ -286,14 +287,34 @@ static const char *tls_error_name(int err)
 }
 
 /*
- * Entropy for the TLS client random and session keys.  Windows 9x offers no
- * cryptographic PRNG, so time, cursor position, QPC, PID/TID and a stack
- * address are hashed together.  This is a deliberate trade-off for the
- * project's threat model ("a dial-up 9x box talking to an HTTPS API"): no
- * attacker without local code execution can realistically predict it, but it
- * is far from a modern CSPRNG seed.  Known and accepted; see the README.
+ * Entropy for the TLS client random and session keys.  Prefer the CryptoAPI
+ * CSPRNG (CryptGenRandom, available since Win95 OSR2/Win98).  CRYPT_VERIFYCONTEXT
+ * avoids needing a user key container, which is important on Win9x.  If the
+ * CSPRNG is unavailable we fall back to the legacy mixing scheme below.
+ *
+ * The legacy fallback hashes time, cursor position, QPC, PID/TID and a stack
+ * address.  It is a deliberate trade-off for the project's threat model
+ * ("a dial-up 9x box talking to an HTTPS API"): no attacker without local code
+ * execution can realistically predict it, but it is far from a modern CSPRNG
+ * seed.  Known and accepted; see the README.
  */
-static void entropy_seed(unsigned char *seed, size_t len)
+static int entropy_crypt_seed(unsigned char *seed, DWORD len)
+{
+    HCRYPTPROV prov = 0;
+    int ok = 0;
+
+    if (!CryptAcquireContextA(&prov, NULL, NULL, PROV_RSA_FULL,
+                              CRYPT_VERIFYCONTEXT)) {
+        return 0;
+    }
+    if (CryptGenRandom(prov, len, (BYTE *)seed)) {
+        ok = 1;
+    }
+    CryptReleaseContext(prov, 0);
+    return ok;
+}
+
+static void entropy_mix_seed(unsigned char *seed, size_t len)
 {
     br_sha256_context sha;
     SYSTEMTIME st;
@@ -357,6 +378,23 @@ static void entropy_seed(unsigned char *seed, size_t len)
     memset(digest, 0, sizeof(digest));
 }
 
+/* Prefer the CSPRNG; warn once (not per connection) before falling back. */
+static void entropy_seed(unsigned char *seed, size_t len)
+{
+    static int warned_weak_entropy = 0;
+
+    memset(seed, 0, len);
+    if (entropy_crypt_seed(seed, (DWORD)len)) {
+        return;
+    }
+    if (!warned_weak_entropy) {
+        warned_weak_entropy = 1;
+        log_warn("CryptoAPI CryptGenRandom unavailable; using weak time/stack "
+                 "entropy for TLS seeds (test/dial-up use only)");
+    }
+    entropy_mix_seed(seed, len);
+}
+
 static NetConn *conn_new(void)
 {
     NetConn *c = (NetConn *)a98_alloc(sizeof(NetConn));
@@ -379,6 +417,10 @@ static void conn_free(NetConn *c)
 
 static const char *version_name(unsigned v, char *buf, size_t cap)
 {
+    if (buf == NULL || cap == 0) {
+        /* Defend against a zero-sized caller buffer: never index buf[-1]. */
+        return "";
+    }
     switch (v) {
     case 0x0301:
         strncpy(buf, "TLS 1.0", cap - 1);
@@ -443,12 +485,59 @@ static void update_session_info(NetConn *c)
     c->handshake_done = 1;
 }
 
+/* Days from 1970-01-01 to a proleptic Gregorian date (Howard Hinnant's
+ * algorithm).  No time_t involved, so there is no 2038 overflow. */
+static long days_from_civil(int y, unsigned m, unsigned d)
+{
+    int era;
+    unsigned yoe;
+    unsigned mp;
+    unsigned doy;
+    unsigned doe;
+
+    y -= (m <= 2);
+    era = y / 400;                 /* y >= 0 for every year we accept below */
+    yoe = (unsigned)(y - era * 400);
+    mp = (m > 2) ? (m - 3) : (m + 9);
+    doy = (153 * mp + 2) / 5 + d - 1;
+    doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    return (long)era * 146097L + (long)doe - 719468L;
+}
+
+/* BearSSL wants days since 0000-01-01 plus seconds since midnight (UTC).
+ * Use GetSystemTime rather than time(): a 32-bit time_t overflow after 2038
+ * (or a failing time()) would otherwise leave validation time unset and make
+ * every certificate look invalid (fail-closed). */
+static void set_validation_time(NetConn *c)
+{
+    SYSTEMTIME st;
+    time_t now;
+
+    GetSystemTime(&st);
+    if (st.wYear >= 1970 && st.wYear <= 9999 &&
+        st.wMonth >= 1 && st.wMonth <= 12 &&
+        st.wDay >= 1 && st.wDay <= 31 &&
+        st.wHour <= 23 && st.wMinute <= 59 && st.wSecond <= 59) {
+        unsigned long days = 719528UL +
+            (unsigned long)days_from_civil((int)st.wYear, st.wMonth, st.wDay);
+        unsigned long secs = (unsigned long)st.wHour * 3600UL +
+                             (unsigned long)st.wMinute * 60UL +
+                             (unsigned long)st.wSecond;
+        br_x509_minimal_set_time(&c->xc, days, secs);
+        return;
+    }
+    /* Last resort only, for a nonsensical system clock. */
+    now = time(NULL);
+    if (now > 0) {
+        br_x509_minimal_set_time(&c->xc,
+            719528UL + (unsigned long)(now / 86400L),
+            (unsigned long)(now % 86400L));
+    }
+}
+
 static int tls_start(NetConn *c, const Url *url, int verify)
 {
     unsigned char seed[48];
-    time_t now;
-    unsigned long days;
-    unsigned long secs;
 
     c->tls = 1;
     c->verify = verify;
@@ -461,13 +550,17 @@ static int tls_start(NetConn *c, const Url *url, int verify)
     br_ssl_client_init_full(&c->cc, &c->xc, TAs, TAs_NUM);
     br_ssl_engine_set_buffer(&c->cc.eng, c->iobuf, NET_IOBUF_SIZE, 1);
 
-    now = time(NULL);
-    if (now > 0) {
-        days = 719528UL + (unsigned long)(now / 86400L);
-        secs = (unsigned long)(now % 86400L);
-        br_x509_minimal_set_time(&c->xc, days, secs);
-    }
+    set_validation_time(c);
     if (!verify) {
+        static int warned_insecure = 0;
+
+        if (!warned_insecure) {
+            warned_insecure = 1;
+            log_warn("SECURITY: TLS certificate chain AND host name verification "
+                     "are DISABLED (tls.verify=0). The connection is open to "
+                     "man-in-the-middle attacks; use ONLY for local testing or "
+                     "self-signed servers.");
+        }
         c->xwc.vtable = &x509_noanchor_vtable;
         c->xwc.inner = (const br_x509_class **)&c->xc.vtable;
         br_ssl_engine_set_x509(&c->cc.eng, (const br_x509_class **)&c->xwc);
@@ -521,7 +614,11 @@ static int tcp_connect(NetConn *c, const Url *url, int timeout_sec, char *err, s
         snprintf(err, errcap, "socket() failed (Winsock error %d)", WSAGetLastError());
         return -1;
     }
-    ioctlsocket(c->sock, FIONBIO, &nonblock);
+    if (ioctlsocket(c->sock, FIONBIO, &nonblock) != 0) {
+        snprintf(err, errcap, "ioctlsocket(FIONBIO) failed (Winsock error %d)",
+                 WSAGetLastError());
+        return -1;
+    }
 
     rc = connect(c->sock, (struct sockaddr *)&sa, sizeof(sa));
     if (rc != 0) {
@@ -550,7 +647,12 @@ static int tcp_connect(NetConn *c, const Url *url, int timeout_sec, char *err, s
     }
     {
         int one = 1;
-        setsockopt(c->sock, IPPROTO_TCP, TCP_NODELAY, (const char *)&one, sizeof(one));
+        if (setsockopt(c->sock, IPPROTO_TCP, TCP_NODELAY,
+                       (const char *)&one, sizeof(one)) != 0) {
+            /* TCP_NODELAY is an optimization, not a correctness requirement. */
+            log_warn("setsockopt(TCP_NODELAY) failed (Winsock error %d)",
+                     WSAGetLastError());
+        }
     }
     {
         struct sockaddr_in peer;

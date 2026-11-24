@@ -97,34 +97,54 @@ int str_append_char(Str *s, char c)
 
 int str_appendf(Str *s, const char *fmt, ...)
 {
-    char tmp[1024];
-    char *big;
+    char small[256];
+    char *buf = small;
+    int rc = -1;
+    size_t size = sizeof(small);
     int n;
-    int rc;
     va_list ap;
 
     if (s == NULL || fmt == NULL) {
         return -1;
     }
-    va_start(ap, fmt);
-    n = vsnprintf(tmp, sizeof(tmp), fmt, ap);
-    va_end(ap);
-    if (n < 0) {
-        tmp[sizeof(tmp) - 1] = '\0';
-        n = (int)strlen(tmp);
+    /* Same doubling retry as a98_strfmt(): on Win9x's CRT vsnprintf() a
+     * truncated result comes back as -1, not as the required byte count.
+     * Reformatting from a strlen() of the clipped text could never grow the
+     * buffer and, worse, appended uninitialised bytes to the Str. */
+    for (;;) {
+        buf[size - 1] = '\0';
+        va_start(ap, fmt);
+        n = vsnprintf(buf, size, fmt, ap);
+        va_end(ap);
+        if (n >= 0 && (size_t)n < size) {
+            rc = str_append(s, buf, (size_t)n);
+            break;
+        }
+        if (n < 0 && strlen(buf) + 1 < size) {
+            break;                 /* encoding error, not truncation */
+        }
+        if (size > (size_t)-1 / 2) {
+            break;
+        }
+        size *= 2;
+        if (buf == small) {
+            buf = (char *)a98_alloc(size);
+        } else {
+            char *bigger = (char *)a98_realloc(buf, size);
+            if (bigger == NULL) {
+                a98_free(buf);
+                buf = NULL;
+                break;
+            }
+            buf = bigger;
+        }
+        if (buf == NULL) {
+            break;
+        }
     }
-    if ((size_t)n < sizeof(tmp)) {
-        return str_append(s, tmp, (size_t)n);
+    if (buf != small) {
+        a98_free(buf);
     }
-    big = (char *)a98_alloc((size_t)n + 1);
-    if (big == NULL) {
-        return -1;
-    }
-    va_start(ap, fmt);
-    vsnprintf(big, (size_t)n + 1, fmt, ap);
-    va_end(ap);
-    rc = str_append(s, big, (size_t)n);
-    a98_free(big);
     return rc;
 }
 

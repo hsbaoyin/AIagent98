@@ -21,6 +21,7 @@
 #include "emoji.h"
 #include "base.h"
 #include "str.h"
+#include "log.h"
 
 #ifndef CFM_BACKCOLOR
 #define CFM_BACKCOLOR 0x04000000
@@ -120,6 +121,7 @@ typedef struct {
 
     /* emoji bitmap cache: small LRU so 9x GDI handles stay bounded */
     struct { int id; HBITMAP bmp; } cache[TV_CACHE_MAX];
+    int cache_age[TV_CACHE_MAX]; /* per-instance LRU age, higher = newer */
     int cache_used;    /* clock counter */
 } TvDoc;
 
@@ -139,11 +141,12 @@ static void cache_clear(TvDoc *d)
             d->cache[i].bmp = NULL;
             d->cache[i].id = 0;
         }
+        d->cache_age[i] = 0;
     }
 }
 
-/* Per-slot age for the little LRU; a higher number means more recently used. */
-static int g_cache_age[TV_CACHE_MAX];
+/* LRU age is per TvDoc instance: two transcript views must not share one
+ * clock, or one view's eviction order corrupts the other's cache. */
 
 static HBITMAP cache_get(TvDoc *d, int id)
 {
@@ -156,7 +159,7 @@ static HBITMAP cache_get(TvDoc *d, int id)
     if (e == NULL) return NULL;
     for (i = 0; i < TV_CACHE_MAX; i++) {
         if (d->cache[i].id == id && d->cache[i].bmp != NULL) {
-            g_cache_age[i] = ++d->cache_used;
+            d->cache_age[i] = ++d->cache_used;
             return d->cache[i].bmp;
         }
     }
@@ -172,14 +175,14 @@ static HBITMAP cache_get(TvDoc *d, int id)
                               TV_EMOJI_PX, LR_LOADFROMFILE);
     if (bmp == NULL) return NULL;
     oldest = 0;
-    oldest_age = g_cache_age[0];
+    oldest_age = d->cache_age[0];
     for (i = 1; i < TV_CACHE_MAX; i++) {
-        if (g_cache_age[i] < oldest_age) { oldest_age = g_cache_age[i]; oldest = i; }
+        if (d->cache_age[i] < oldest_age) { oldest_age = d->cache_age[i]; oldest = i; }
     }
     if (d->cache[oldest].bmp != NULL) DeleteObject(d->cache[oldest].bmp);
     d->cache[oldest].id = id;
     d->cache[oldest].bmp = bmp;
-    g_cache_age[oldest] = ++d->cache_used;
+    d->cache_age[oldest] = ++d->cache_used;
     return bmp;
 }
 
@@ -265,6 +268,8 @@ static int classify_line(TvLine *ln)
 static void tv_append_text(TvDoc *d, const char *text)
 {
     const char *p = text;
+    log_info("tv append len=%lu nlines=%d",
+             (unsigned long)(text != NULL ? strlen(text) : 0), d->nlines);
     TvLine *ln;
     TvRun *r;
     Str buf;
@@ -312,6 +317,7 @@ static void tv_append_text(TvDoc *d, const char *text)
     if (fresh && ln->nruns > 0) { ln->role = classify_line(ln); }
     ln->group_last = d->nlines - 1;
     str_free(&buf);
+    log_info("tv append done nlines=%d", d->nlines);
 }
 
 /* Append an inline emoji run. */
@@ -319,7 +325,7 @@ static void tv_append_emoji(TvDoc *d, const A98EmojiEntry *e)
 {
     TvLine *ln;
     TvRun *r;
-    char tok[64];
+    char tok[A98_EMOJI_MAX_TOKEN + 3]; /* ':' + name + ':' + NUL */
 
     if (e == NULL) return;
     if (d->nlines == 0) {
@@ -339,7 +345,10 @@ static void tv_append_emoji(TvDoc *d, const A98EmojiEntry *e)
     ln->group_last = d->nlines - 1;
 }
 
-/* Rebuild plain ACP text (for WM_GETTEXT / export). */
+/* Rebuild plain ACP text (for WM_GETTEXT / export / clipboard).
+ * With out == NULL this only counts the exact length (including the CRLF
+ * written after every line) and ignores cap.  Callers must use that value to
+ * size the buffer so a single very long line is never estimated short. */
 static size_t tv_plain_text(TvDoc *d, char *out, size_t cap)
 {
     size_t n = 0;
@@ -350,12 +359,14 @@ static size_t tv_plain_text(TvDoc *d, char *out, size_t cap)
             size_t k;
             if (r->text == NULL) continue;
             for (k = 0; r->text[k] != '\0'; k++) {
-                if (n + 1 < cap) out[n++] = r->text[k];
+                if (out != NULL && n + 1 < cap) out[n] = r->text[k];
+                n++;
             }
         }
-        if (n + 2 < cap) { out[n++] = '\r'; out[n++] = '\n'; }
+        if (out != NULL && n + 2 < cap) { out[n] = '\r'; out[n + 1] = '\n'; }
+        n += 2;
     }
-    if (cap > 0) out[n < cap ? n : cap - 1] = '\0';
+    if (out != NULL && cap > 0) out[n < cap ? n : cap - 1] = '\0';
     return n;
 }
 
@@ -624,14 +635,9 @@ static LRESULT CALLBACK tv_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
     case WM_GETTEXTLENGTH:
         if (d == NULL) return 0;
-        {
-            char *buf = (char *)malloc((size_t)d->nlines * 256 + 1024);
-            size_t n;
-            if (buf == NULL) return 0;
-            n = tv_plain_text(d, buf, (size_t)d->nlines * 256 + 1024);
-            free(buf);
-            return (LRESULT)n;
-        }
+        /* Exact count: the old nlines*256+1024 estimate truncated any
+         * transcript containing a single line longer than 256 bytes. */
+        return (LRESULT)tv_plain_text(d, NULL, 0);
 
     case WM_GETTEXT:
         if (d == NULL) return 0;
@@ -644,10 +650,17 @@ static LRESULT CALLBACK tv_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             TEXTMETRICA tm;
             LOGFONTA lf;
             d->font = (HFONT)lp;
+            /* Derive the bold face from the real UI font so face, charset,
+             * height and DBCS settings match; only the weight changes. */
             memset(&lf, 0, sizeof(lf));
-            strcpy(lf.lfFaceName, "MS Sans Serif");
-            lf.lfHeight = -11;
+            if (GetObjectA(d->font, sizeof(lf), &lf) != sizeof(lf)) {
+                memset(&lf, 0, sizeof(lf));
+                strcpy(lf.lfFaceName, "MS Sans Serif");
+                lf.lfHeight = -11;
+                lf.lfCharSet = ANSI_CHARSET;
+            }
             lf.lfWeight = FW_BOLD;
+            if (d->bold_font != NULL) DeleteObject(d->bold_font);
             d->bold_font = CreateFontIndirectA(&lf);
             dc = GetDC(hwnd);
             if (dc != NULL) {
@@ -744,6 +757,25 @@ static LRESULT CALLBACK tv_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                 memmove(d->lines, d->lines + cut,
                         (size_t)(d->nlines - cut) * sizeof(TvLine));
                 d->nlines -= cut;
+                /* Every stored line/selection index shifted down by `cut`;
+                 * the cached emoji bitmaps are keyed by pack id, not line
+                 * index, so they need no change. */
+                for (i = 0; i < d->nlines; i++) {
+                    if (d->lines[i].group_first >= cut)
+                        d->lines[i].group_first -= cut;
+                    else
+                        d->lines[i].group_first = 0;
+                    if (d->lines[i].group_last >= cut)
+                        d->lines[i].group_last -= cut;
+                    else
+                        d->lines[i].group_last = 0;
+                }
+                if (d->sel_anchor_line >= 0)
+                    d->sel_anchor_line = d->sel_anchor_line >= cut
+                                             ? d->sel_anchor_line - cut : -1;
+                if (d->sel_end_line >= 0)
+                    d->sel_end_line = d->sel_end_line >= cut
+                                          ? d->sel_end_line - cut : -1;
                 d->stick_bottom = 1;
                 tv_recalc(d);
             }
@@ -839,19 +871,28 @@ static LRESULT CALLBACK tv_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             if (msg == WM_COPY || (wp == 'C' && (GetKeyState(VK_CONTROL) & 0x8000))) {
                 char *buf;
                 size_t n, cap;
-                cap = (size_t)d->nlines * 256 + 1024;
+                n = tv_plain_text(d, NULL, 0);   /* exact, no estimate */
+                cap = n + 1;
                 buf = (char *)malloc(cap);
                 if (buf != NULL) {
-                    n = tv_plain_text(d, buf, cap);
+                    tv_plain_text(d, buf, cap);
                     if (n > 0 && OpenClipboard(hwnd)) {
                         HGLOBAL h;
-                        char *p;
                         EmptyClipboard();
                         h = GlobalAlloc(GMEM_MOVEABLE, n + 1);
-                        p = (char *)GlobalLock(h);
-                        memcpy(p, buf, n); p[n] = '\0';
-                        GlobalUnlock(h);
-                        SetClipboardData(CF_TEXT, h);
+                        if (h != NULL) {
+                            char *p = (char *)GlobalLock(h);
+                            if (p != NULL) {
+                                memcpy(p, buf, n); p[n] = '\0';
+                                GlobalUnlock(h);
+                                /* On success the clipboard owns h; only free
+                                 * it when SetClipboardData refused it. */
+                                if (SetClipboardData(CF_TEXT, h) == NULL)
+                                    GlobalFree(h);
+                            } else {
+                                GlobalFree(h);
+                            }
+                        }
                         CloseClipboard();
                     }
                     free(buf);

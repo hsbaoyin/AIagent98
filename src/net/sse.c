@@ -62,7 +62,18 @@ static int process_line(SseParser *p, SseEventFn fn, void *ctx)
     }
     colon = (char *)memchr(line, ':', len);
     if (colon == NULL) {
-        /* Field with no value; only "data" is interesting, and it is empty. */
+        /* Per the SSE spec a field with no colon has an empty value.  A bare
+         * "data" line therefore still contributes an empty data line. */
+        if (strcmp(line, "data") == 0) {
+            if (p->data.len + 1 > SSE_MAX_DATA) {
+                p->aborted = 1;
+                return -1;
+            }
+            str_append_char(&p->data, '\n');
+        } else if (strcmp(line, "event") == 0) {
+            str_set(&p->event, "");
+            p->has_event = 1;
+        }
         return 0;
     }
     *colon = '\0';

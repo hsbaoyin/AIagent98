@@ -37,36 +37,53 @@ static const char *arg_str(cJSON *args, const char *name, const char *def)
 }
 
 /* Match a host against the comma-separated [net] allow_hosts list. An empty
- * list allows any host; an entry may start with "." to match a suffix. */
+ * list allows any host; an entry may start with "." to match a suffix.
+ * A suffix needs at least two dots (e.g. ".example.com"): a bare ".com"
+ * would otherwise open the gate to every .com host on the Internet. */
 static int host_allowed(const Config *cfg, const char *host)
 {
     char list[512];
     char *p;
-    size_t i;
     int found = 0;
 
     if (cfg->net_allow_hosts[0] == '\0') return 1;
+    if (host == NULL || host[0] == '\0') return 0;
     strncpy(list, cfg->net_allow_hosts, sizeof(list) - 1);
     list[sizeof(list) - 1] = '\0';
     p = list;
     while (*p != '\0') {
         char *e = p;
+        char *end;
         char *start;
+        int last;
+
         while (*e != '\0' && *e != ',') e++;
-        if (*e == ',') *e = '\0';
+        last = (*e == '\0');
+        /* Trim trailing blanks without walking past the terminator. */
+        end = e;
+        while (end > p && (end[-1] == ' ' || end[-1] == '\t')) end--;
+        *end = '\0';
         start = p;
         while (*start == ' ' || *start == '\t') start++;
         if (*start != '\0') {
             if (a98_strcasecmp(start, host) == 0) { found = 1; break; }
             if (start[0] == '.') {
                 size_t hl = strlen(host), sl = strlen(start);
-                if (hl >= sl &&
-                    a98_strcasecmp(host + hl - sl, start) == 0) { found = 1; break; }
+                size_t dots = 0, j;
+
+                for (j = 0; j < sl; j++) {
+                    if (start[j] == '.') dots++;
+                }
+                if (dots >= 2 && hl >= sl &&
+                    a98_strcasecmp(host + hl - sl, start) == 0) {
+                    found = 1;
+                    break;
+                }
             }
         }
+        if (last) break; /* e points at the NUL: e + 1 would read past it */
         p = e + 1;
     }
-    (void)i;
     return found;
 }
 
@@ -89,6 +106,31 @@ static int net_gate(Agent *a, const char *host, char *err, size_t errcap)
     return 0;
 }
 
+/* net_gate() alone only sees the name the caller typed.  After resolution a
+ * CNAME can lead to a completely different (and disallowed) canonical host,
+ * so re-check the names actually returned by the resolver.  The queried name
+ * has already passed net_gate(); checking the canonical name closes the gap
+ * without rejecting the common case where the resolver echoes the input. */
+static int gate_resolved_host(Agent *a, struct hostent *he,
+                              char *err, size_t errcap)
+{
+    int i;
+
+    if (he == NULL || he->h_name == NULL) {
+        set_err(err, errcap, "name resolution returned no canonical name");
+        return -1;
+    }
+    if (net_gate(a, he->h_name, err, errcap) != 0) {
+        return -1;
+    }
+    for (i = 0; he->h_aliases != NULL && he->h_aliases[i] != NULL; i++) {
+        if (net_gate(a, he->h_aliases[i], err, errcap) != 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
 /* ---- fetch helper ---------------------------------------------------- */
 
 typedef struct {
@@ -96,6 +138,7 @@ typedef struct {
     size_t max;
     size_t total;
     int truncated;
+    int failed;
 } FetchCtx;
 
 static int fetch_sink(void *ctx, const char *data, size_t len)
@@ -103,11 +146,17 @@ static int fetch_sink(void *ctx, const char *data, size_t len)
     FetchCtx *fc = (FetchCtx *)ctx;
     size_t room;
 
+    if (fc->failed) return -1;
     if (fc->total >= fc->max) { fc->truncated = 1; return 0; }
     room = fc->max - fc->total;
     if (len > room) len = room;
-    str_append(fc->body, data, len);
-    fc->total += len;
+    if (len > 0) {
+        if (str_append(fc->body, data, len) != 0) {
+            fc->failed = 1;
+            return -1;
+        }
+        fc->total += len;
+    }
     if (fc->total >= fc->max) fc->truncated = 1;
     return 0;
 }
@@ -136,11 +185,16 @@ static int net_fetch(Agent *a, const char *url, const char *method,
     fc.max = (size_t)a->cfg->net_max_bytes;
     fc.total = 0;
     fc.truncated = 0;
+    fc.failed = 0;
 
     rc = http_request(conn, method, &u, headers, body, body_len,
                       resp, fetch_sink, &fc, err, errcap);
     net_close(conn);
-    if (rc != 0) return -1;
+    if (rc != 0 || fc.failed) {
+        if (rc == 0)
+            set_err(err, errcap, "out of memory while reading the response body");
+        return -1;
+    }
     if (total != NULL) *total = fc.total;
     if (truncated != NULL) *truncated = fc.truncated;
     return 0;
@@ -231,7 +285,14 @@ int tool_http_request_run(Agent *a, cJSON *args, Str *out, char *err, size_t err
             set_err(err, errcap, "cannot write out_file: %s", path);
             return -1;
         }
-        fwrite(str_cstr(&raw), 1, str_cstr(&raw)[0] ? strlen(str_cstr(&raw)) : 0, f);
+        /* A body can contain NUL bytes (ZIP/EXE/picture), so strlen() would
+         * silently truncate it.  Use the Str byte count and check the write. */
+        if (raw.len > 0 && fwrite(raw.data, 1, raw.len, f) != raw.len) {
+            fclose(f);
+            str_free(&raw);
+            set_err(err, errcap, "cannot write out_file: %s (short write)", path);
+            return -1;
+        }
         fclose(f);
         save_raw = 1;
     }
@@ -314,7 +375,12 @@ int tool_http_download_run(Agent *a, cJSON *args, Str *out, char *err, size_t er
         set_err(err, errcap, "cannot write file: %s", path);
         return -1;
     }
-    fwrite(str_cstr(&raw), 1, strlen(str_cstr(&raw)), f);
+    if (raw.len > 0 && fwrite(raw.data, 1, raw.len, f) != raw.len) {
+        fclose(f);
+        str_free(&raw);
+        set_err(err, errcap, "cannot write file: %s (short write)", path);
+        return -1;
+    }
     fclose(f);
     str_appendf(out, "downloaded %lu bytes to %s\n", (unsigned long)total, user);
     if (truncated) str_append_cstr(out, "WARNING: response was truncated\n");
@@ -350,6 +416,7 @@ int tool_dns_resolve_run(Agent *a, cJSON *args, Str *out, char *err, size_t errc
                 WSAGetLastError());
         return -1;
     }
+    if (gate_resolved_host(a, he, err, errcap) != 0) return -1;
     str_appendf(out, "%s -> %s\n", host, he->h_name);
     for (i = 0; he->h_addr_list[i] != NULL; i++) {
         struct in_addr ia;
@@ -399,6 +466,7 @@ int tool_tcp_probe_run(Agent *a, cJSON *args, Str *out, char *err, size_t errcap
         set_err(err, errcap, "cannot resolve '%s'", host);
         return -1;
     }
+    if (gate_resolved_host(a, he, err, errcap) != 0) return -1;
     s = socket(AF_INET, SOCK_STREAM, 0);
     if (s == INVALID_SOCKET) {
         set_err(err, errcap, "socket failed (WSA %d)", WSAGetLastError());
@@ -518,17 +586,18 @@ static const SearchEngine g_search_engines[] = {
 static int find_href(const char *html, const char *marker,
                      char *href, size_t cap)
 {
-    const char *h = marker;
-    const char *tag_end;
+    const char *h;
     size_t n = 0;
     char decoded[A98_MAX_PATH];
 
+    (void)html;
     /* The marker may be inside the <a> (DDG: class="result__a") or on an
      * outer element (Bing: <h2>, Baidu: <h3>). Search forward from the
-     * marker for the next href="..." within a bounded window. */
-    tag_end = marker + 512;
+     * marker for the next href="..." within a bounded window.  Compare
+     * offsets instead of forming "marker + 512", which can point past the
+     * end of a short string. */
     h = strstr(marker, "href=\"");
-    if (h == NULL || h > tag_end) return 0;
+    if (h == NULL || (size_t)(h - marker) > 512) return 0;
     h += 6;
     while (h[n] != '\0' && h[n] != '"' && n < cap - 1) n++;
     href[n] = '\0';

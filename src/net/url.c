@@ -54,6 +54,13 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
         set_err(err, errcap, "URL must start with http:// or https://");
         return -1;
     }
+    /* Only IPv4 literals/hostnames are supported: the parser splits on ':'
+     * and the TLS layer resolves via gethostbyname(AF_INET).  Fail clearly
+     * instead of mis-parsing "[::1]" as host "[" plus a bogus port. */
+    if (*p == '[') {
+        set_err(err, errcap, "IPv6 URLs are not supported");
+        return -1;
+    }
     host_start = p;
     while (*p != '\0' && *p != '/' && *p != '?' && *p != '#' && *p != ':') {
         if (*p == '@') {
@@ -83,11 +90,15 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
         }
         port = 0;
         while (*p >= '0' && *p <= '9') {
-            port = port * 10 + (*p - '0');
-            if (port > 65535) {
+            int digit = *p - '0';
+
+            /* Check before multiplying: a long decimal port can overflow a
+             * signed int before the old post-multiply range check runs. */
+            if (port > (65535 - digit) / 10) {
                 set_err(err, errcap, "port out of range");
                 return -1;
             }
+            port = port * 10 + digit;
             p++;
         }
     } else if (*p == '/' || *p == '?' || *p == '#' || *p == '\0') {
@@ -105,13 +116,19 @@ int url_parse(const char *url, Url *out, char *err, size_t errcap)
     if (*path == '\0' || *path == '#') {
         strcpy(out->path, "/");
     } else if (*path == '?') {
-        if (has_unprintable(path, strlen(path))) {
-            set_err(err, errcap, "invalid character in URL path");
+        size_t n = strlen(path);
+        if (has_unprintable(path, n)) {
+            set_err(err, errcap, "invalid character in URL query");
+            return -1;
+        }
+        /* Silent truncation would corrupt the query string: report it. */
+        if (n + 2 > sizeof(out->path)) {
+            set_err(err, errcap, "URL query too long");
             return -1;
         }
         out->path[0] = '/';
-        strncpy(out->path + 1, path, sizeof(out->path) - 2);
-        out->path[sizeof(out->path) - 1] = '\0';
+        memcpy(out->path + 1, path, n);
+        out->path[n + 1] = '\0';
     } else {
         size_t n = strlen(path);
         const char *hash = strchr(path, '#');

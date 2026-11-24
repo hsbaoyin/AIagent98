@@ -2,6 +2,12 @@
 
 #include <windows.h>
 
+/* Windows 9x headers may not name this bit.  The file system never sets it
+ * there, so defining it locally is safe and keeps the sandbox check portable. */
+#ifndef FILE_ATTRIBUTE_REPARSE_POINT
+#define FILE_ATTRIBUTE_REPARSE_POINT 0x400
+#endif
+
 int a98_path_exe_dir(char *out, size_t cap)
 {
     char buf[A98_MAX_PATH * 2];
@@ -132,6 +138,7 @@ int a98_path_mkdirs(const char *p)
     char tmp[A98_MAX_PATH];
     size_t i;
     size_t len;
+    size_t unc_end = 0;
 
     if (p == NULL || p[0] == '\0') {
         return -1;
@@ -141,14 +148,40 @@ int a98_path_mkdirs(const char *p)
     }
     strcpy(tmp, p);
 
-    /* Create every intermediate directory. Skip the drive prefix. */
+    /* Create every intermediate directory and report failures: previously a
+     * failed parent was ignored and only the final mkdir() decided the result,
+     * which left directories half-created and callers mis-led.  Skip the
+     * drive prefix and the \\server\share part of UNC paths. */
     len = strlen(tmp);
+    if (tmp[0] == '\\' && tmp[1] == '\\') {
+        size_t j = 2;
+        int parts = 0;
+        while (j < len) {
+            if (is_sep(tmp[j])) {
+                while (j < len && is_sep(tmp[j])) {
+                    j++;
+                }
+                if (++parts == 2) {
+                    unc_end = j;
+                    break;
+                }
+            } else {
+                j++;
+            }
+        }
+        if (unc_end == 0 && parts > 0) {
+            unc_end = len;         /* share is the last component */
+        }
+    }
     for (i = 0; i < len; i++) {
-        if (is_sep(tmp[i]) && i > 0) {
+        if (is_sep(tmp[i]) && i > 0 && i >= unc_end) {
             char saved = tmp[i];
             tmp[i] = '\0';
             if (tmp[i - 1] != ':' && tmp[0] != '\0') {
-                a98_path_mkdir(tmp);
+                if (a98_path_mkdir(tmp) != 0) {
+                    tmp[i] = saved;
+                    return -1;
+                }
             }
             tmp[i] = saved;
         }
@@ -206,14 +239,34 @@ void a98_path_dirname(const char *p, char *out, size_t cap)
     out[n] = '\0';
 }
 
+/* Case folding must stay ASCII-only: on Win9x a path may be GBK/CP936, and a
+ * GBK trail byte can be in 0x41..0x5A.  Folding that byte would corrupt the
+ * character and make the two compared paths differ.  High bytes are therefore
+ * left untouched together with the byte following them (UTF-8 continuation
+ * bytes are never A..Z, so the same rule is safe there too). */
 static void lower_ascii(char *s)
 {
+    int skip = 0;
     while (*s != '\0') {
-        if (*s >= 'A' && *s <= 'Z') {
-            *s = (char)(*s - 'A' + 'a');
+        unsigned char c = (unsigned char)*s;
+        if (skip) {
+            skip = 0;
+        } else if (c >= 0x80) {
+            skip = 1;
+        } else if (c >= 'A' && c <= 'Z') {
+            *s = (char)(c - 'A' + 'a');
         }
         s++;
     }
+}
+
+/* GetFileAttributesA() is available on Win9x; junctions/symlinks are not, so
+ * FILE_ATTRIBUTE_REPARSE_POINT is never returned there.  An inaccessible or
+ * not-yet-existing component (INVALID_HANDLE_VALUE) is not a redirect. */
+static int has_reparse_point(const char *path)
+{
+    DWORD attr = GetFileAttributesA(path);
+    return attr != 0xFFFFFFFFUL && (attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0;
 }
 
 int a98_path_resolve_in_root(const char *root, const char *user_path,
@@ -268,6 +321,39 @@ int a98_path_resolve_in_root(const char *root, const char *user_path,
     if (full_lc[rlen] != '\0' && full_lc[rlen] != '\\') {
         return 0;
     }
+
+    /* GetFullPathNameA() only normalizes text: an NTFS junction or symbolic
+     * link inside the workspace can still redirect a lexically safe path
+     * outside it.  Walk every real component from the workspace root down,
+     * using GetFileAttributesA() (Win9x-safe).  `full` is temporarily cut at
+     * each separator and restored immediately, so no extra stack buffer is
+     * needed beyond the five 520-byte ones already present. */
+    {
+        size_t flen = strlen(full);
+        size_t k;
+
+        if (rlen <= flen) {
+            char saved = full[rlen];
+            full[rlen] = '\0';
+            if (has_reparse_point(full)) {
+                full[rlen] = saved;
+                return 0;
+            }
+            full[rlen] = saved;
+        }
+        for (k = rlen + 1; k <= flen; k++) {
+            if (k == flen || is_sep(full[k])) {
+                char saved = full[k];
+                full[k] = '\0';
+                if (has_reparse_point(full)) {
+                    full[k] = saved;
+                    return 0;
+                }
+                full[k] = saved;
+            }
+        }
+    }
+
     if (strlen(full) >= cap) {
         return -1;
     }
