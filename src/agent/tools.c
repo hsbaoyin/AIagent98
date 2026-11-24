@@ -33,12 +33,33 @@ static const char *arg_str(cJSON *args, const char *name, const char *def)
     return v != NULL ? v : def;
 }
 
+/* Like json_bool(), but looks the key up case-insensitively so that e.g. both
+ * "ReadOnly" and "readonly" are accepted.  *present reports whether the key
+ * was found with a boolean or numeric value (mirrors set_attr's old check). */
+static int json_bool_ci(cJSON *obj, const char *name, int def, int *present)
+{
+    cJSON *item;
+    if (present != NULL) *present = 0;
+    if (obj == NULL) return def;
+    item = cJSON_GetObjectItem(obj, name); /* case-insensitive key lookup */
+    if (item == NULL) return def;
+    if (cJSON_IsBool(item)) {
+        if (present != NULL) *present = 1;
+        return cJSON_IsTrue(item) ? 1 : 0;
+    }
+    if (cJSON_IsNumber(item)) {
+        if (present != NULL) *present = 1;
+        return item->valuedouble != 0.0;
+    }
+    return def;
+}
+
 int tools_resolve_path(Agent *a, const char *user, char *out, size_t cap,
                         char *err, size_t errcap)
 {
     char joined[A98_MAX_PATH * 2];
     char full[A98_MAX_PATH * 2];
-    char *local;
+    char *local = NULL;
     const char *fs;
     DWORD n;
     int rc;
@@ -233,6 +254,87 @@ static int tool_list_dir(Agent *a, cJSON *args, Str *out, char *err, size_t errc
     return 0;
 }
 
+/* ---- read cache ---------------------------------------------------- */
+/* An unchanged re-read wastes a whole tool round and leads some models into
+ * a read / re-read loop.  We keep only a fingerprint, not the file contents:
+ * a hit returns a short notice and the model can ask for a different line
+ * range when it really needs the text again.  Any mutating tool clears it. */
+#define READ_CACHE_MAX 16
+
+typedef struct {
+    char path[A98_MAX_PATH];
+    int start_line;
+    int max_lines;
+    DWORD size;
+    FILETIME mtime;
+    int used;
+} ReadCacheEntry;
+
+static ReadCacheEntry g_read_cache[READ_CACHE_MAX];
+
+void tools_read_cache_clear(void)
+{
+    int i;
+    for (i = 0; i < READ_CACHE_MAX; i++) {
+        g_read_cache[i].used = 0;
+    }
+}
+
+static void read_cache_fingerprint(const char *path, DWORD *size, FILETIME *mtime)
+{
+    HANDLE h;
+
+    *size = 0;
+    memset(mtime, 0, sizeof(*mtime));
+    h = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                    NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (h == INVALID_HANDLE_VALUE) return;
+    GetFileTime(h, NULL, NULL, mtime);
+    *size = GetFileSize(h, NULL);
+    CloseHandle(h);
+}
+
+static ReadCacheEntry *read_cache_find(const char *path, int start_line,
+                                       int max_lines, DWORD size,
+                                       const FILETIME *mtime)
+{
+    int i;
+
+    for (i = 0; i < READ_CACHE_MAX; i++) {
+        ReadCacheEntry *e = &g_read_cache[i];
+        if (!e->used) continue;
+        if (strcmp(e->path, path) == 0 && e->start_line == start_line &&
+            e->max_lines == max_lines && e->size == size &&
+            e->mtime.dwLowDateTime == mtime->dwLowDateTime &&
+            e->mtime.dwHighDateTime == mtime->dwHighDateTime) {
+            return e;
+        }
+    }
+    return NULL;
+}
+
+static void read_cache_remember(const char *path, int start_line, int max_lines,
+                                DWORD size, const FILETIME *mtime)
+{
+    int i;
+    int slot = 0;
+    ReadCacheEntry *e;
+
+    for (i = 0; i < READ_CACHE_MAX; i++) {
+        if (!g_read_cache[i].used) { slot = i; break; }
+    }
+    if (i == READ_CACHE_MAX) slot = 0;   /* oldest slot wins, no LRU bookkeeping */
+    e = &g_read_cache[slot];
+    memset(e, 0, sizeof(*e));
+    strncpy(e->path, path, sizeof(e->path) - 1);
+    e->path[sizeof(e->path) - 1] = '\0';
+    e->start_line = start_line;
+    e->max_lines = max_lines;
+    e->size = size;
+    e->mtime = *mtime;
+    e->used = 1;
+}
+
 static int tool_read_file(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 {
     char path[A98_MAX_PATH];
@@ -272,9 +374,35 @@ static int tool_read_file(Agent *a, cJSON *args, Str *out, char *err, size_t err
     if (max_lines > 2000) {
         max_lines = 2000;
     }
-    data = read_text_file(path, 1024 * 1024, &len, &truncated, err, errcap);
-    if (data == NULL) {
-        return -1;
+    {
+        DWORD fingerprint_size;
+        FILETIME fingerprint_time;
+        ReadCacheEntry *cached;
+        int use_cache = a != NULL && a->cfg != NULL && a->cfg->read_cache;
+
+        if (use_cache) {
+            read_cache_fingerprint(path, &fingerprint_size, &fingerprint_time);
+            cached = read_cache_find(path, start_line, max_lines,
+                                     fingerprint_size, &fingerprint_time);
+            if (cached != NULL) {
+                str_append_cstr(out,
+                    "[unchanged since the previous read in this conversation; "
+                    "content omitted]\nUse head/tail with a different line "
+                    "range if you need specific lines.\n");
+                return 0;
+            }
+        } else {
+            memset(&fingerprint_time, 0, sizeof(fingerprint_time));
+            fingerprint_size = 0;
+        }
+        data = read_text_file(path, 1024 * 1024, &len, &truncated, err, errcap);
+        if (data == NULL) {
+            return -1;
+        }
+        if (use_cache) {
+            read_cache_remember(path, start_line, max_lines,
+                                fingerprint_size, &fingerprint_time);
+        }
     }
 
     while (pos < len) {
@@ -595,40 +723,56 @@ static int re_char_eq(char pc, char tc, int cs)
     return tolower((unsigned char)pc) == tolower((unsigned char)tc);
 }
 
-static int re_here(const char *p, const char *t, int cs)
+/* A pattern such as "a*a*...*b" against a long run of 'a' backtracks
+ * exponentially.  Bound both the recursion depth (protect the 9x stack) and
+ * the total number of steps (protect the CPU); exceeding either limit reports
+ * "no match" instead of crashing.  The agent is single-threaded, so a module
+ * step counter reset at each top-level call is sufficient. */
+#define RE_MAX_DEPTH 128
+#define RE_MAX_STEPS 100000L
+static long re_steps;
+
+static int re_here(const char *p, const char *t, int cs, int depth)
 {
     char pc, next;
     int i;
 
+    if (depth > RE_MAX_DEPTH || ++re_steps > RE_MAX_STEPS) return 0;
     if (*p == '\0') return 1;
     if (*p == '$' && p[1] == '\0') return *t == '\0';
     pc = *p;
     next = p[1];
     if (next == '*' || next == '+' || next == '?') {
         i = 0;
-        while (re_char_eq(pc, t[i], cs)) i++;
+        while (re_char_eq(pc, t[i], cs)) {
+            if (++re_steps > RE_MAX_STEPS) return 0;
+            i++;
+        }
         if (next == '+' && i == 0) return 0;
         if (next == '?') {
             if (i > 1) i = 1;
             for (; i >= 0; i--)
-                if (re_here(p + 2, t + i, cs)) return 1;
+                if (re_here(p + 2, t + i, cs, depth + 1)) return 1;
         } else {
             for (; i >= 0; i--)
-                if (re_here(p + 2, t + i, cs)) return 1;
+                if (re_here(p + 2, t + i, cs, depth + 1)) return 1;
         }
         return 0;
     }
     if (!re_char_eq(pc, *t, cs)) return 0;
-    return re_here(p + 1, t + 1, cs);
+    return re_here(p + 1, t + 1, cs, depth + 1);
 }
 
 static int mini_regex(const char *pat, const char *text, int cs)
 {
-    if (pat[0] == '^') return re_here(pat + 1, text, cs);
+    re_steps = 0;
+    if (pat[0] == '^') return re_here(pat + 1, text, cs, 0);
     for (; *text != '\0'; text++) {
-        if (re_here(pat, text, cs)) return 1;
+        if (re_steps > RE_MAX_STEPS) return 0;
+        if (re_here(pat, text, cs, 0)) return 1;
     }
-    return re_here(pat, text, cs);
+    if (re_steps > RE_MAX_STEPS) return 0;
+    return re_here(pat, text, cs, 0);
 }
 
 /* Emit one line (bounded) from `data` at line number `want`. */
@@ -820,6 +964,48 @@ static int tool_search_files(Agent *a, cJSON *args, Str *out, char *err, size_t 
     return 0;
 }
 
+/* Token separators for the dangerous-command filter.  Quotes are separators
+ * too, so a quoted command (or path) still yields a clean command token. */
+static int cmd_tok_sep(char c)
+{
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n' ||
+           c == '"' || c == '\'';
+}
+
+/* Normalise one command-line token to a bare command name: keep the basename
+ * after any '\' or '/' (COMMAND.COM accepts both as path separators) and drop
+ * a trailing .com/.exe/.bat/.cmd extension.  `tok` must be lowercased and
+ * NUL-terminated by the caller. */
+static void cmd_token_name(const char *tok, char *out, size_t cap)
+{
+    const char *base = tok;
+    const char *p, *dot;
+    size_t n, extlen;
+    static const char *const exe_ext[] = {
+        ".com", ".exe", ".bat", ".cmd", NULL
+    };
+    int i;
+
+    for (p = tok; *p != '\0'; p++) {
+        if (*p == '\\' || *p == '/') base = p + 1;
+    }
+    n = strlen(base);
+    dot = strrchr(base, '.');
+    if (dot != NULL) {
+        for (i = 0; exe_ext[i] != NULL; i++) {
+            extlen = strlen(exe_ext[i]);
+            if ((size_t)(dot - base) + extlen == n &&
+                a98_strcasecmp(dot, exe_ext[i]) == 0) {
+                n = (size_t)(dot - base);
+                break;
+            }
+        }
+    }
+    if (n >= cap) n = cap - 1;
+    memcpy(out, base, n);
+    out[n] = '\0';
+}
+
 static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 {
     const char *command = arg_str(args, "command", NULL);
@@ -857,36 +1043,104 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
     }
 
     /* Block obviously destructive Win9x shell commands. full_access=1 is the
-     * explicit escape hatch that removes this ban list. The scan must cover
-     * the whole command line: a 511-byte window let `format`/`deltree` hidden
-     * further in (cmdline cap is 4096) slip through. */
+     * explicit escape hatch that removes this ban list. Substring matching
+     * was bypassable with "format.com", "deltree/y" or "C:\DOS\format.com", so
+     * split the whole command line into tokens and compare each token's bare
+     * command name exactly (case-insensitively). */
     if (!a->cfg->full_access) {
         static const char *const banned[] = {
-            "format ", "format\t", "fdisk", "deltree ", "deltree\t",
-            "rmdir /s", "rd /s", "erase /", "del /s", "del /f /s",
-            "regedit /s", "debug ", "sys ", NULL
+            "format", "fdisk", "deltree", "debug", "sys", "regedit", NULL
+        };
+        /* These are only dangerous with a recursive/force switch; keep the
+         * original "del /s", "rd /s", "erase /" style semantics. */
+        static const char *const banned_switch[] = {
+            "del", "erase", "rmdir", "rd", NULL
         };
         char *lower;
-        size_t i, n;
-        int bi;
-        n = strlen(command);
-        lower = (char *)a98_alloc(n + 1);
+        char *toks[128];
+        int ntoks = 0;
+        size_t len, i;
+        int ti, tj, blocked = 0;
+        const char *matched = NULL;
+
+        len = strlen(command);
+        lower = (char *)a98_alloc(len + 1);
         if (lower == NULL) {
             set_err(err, errcap, "oom");
             return -1;
         }
-        for (i = 0; i < n; i++) {
+        for (i = 0; i < len; i++) {
             lower[i] = (char)tolower((unsigned char)command[i]);
         }
-        lower[n] = '\0';
-        for (bi = 0; banned[bi] != NULL; bi++) {
-            if (strstr(lower, banned[bi]) != NULL) {
-                a98_free(lower);
-                set_err(err, errcap,
-                        "blocked dangerous command pattern: %s (refusing to run)",
-                        banned[bi]);
-                return -1;
+        lower[len] = '\0';
+
+        /* Split on whitespace and quotes. */
+        for (i = 0; i <= len; ) {
+            while (i < len && cmd_tok_sep(lower[i])) i++;
+            if (i >= len) break;
+            if (ntoks < (int)A98_ARRAY_LEN(toks)) toks[ntoks++] = lower + i;
+            while (i < len && !cmd_tok_sep(lower[i])) i++;
+            if (i < len) lower[i++] = '\0';
+        }
+
+        for (ti = 0; ti < ntoks; ti++) {
+            char name[64], stem[64];
+            char *slash;
+
+            cmd_token_name(toks[ti], name, sizeof(name));
+            if (name_in_list(name, banned)) {
+                matched = toks[ti];
+                blocked = 1;
+                break;
             }
+
+            /* COMMAND.COM uses '/' both as a path separator and as a switch
+             * prefix.  Also test the stem before the first '/' so the switch
+             * form "deltree/y" cannot hide a banned command, while a switch
+             * like "/s" (empty stem) is ignored. */
+            slash = strchr(toks[ti], '/');
+            if (slash != NULL && slash > toks[ti]) {
+                char saved = *slash;
+                *slash = '\0';
+                cmd_token_name(toks[ti], stem, sizeof(stem));
+                *slash = saved;
+                if (name_in_list(stem, banned)) {
+                    matched = toks[ti];
+                    blocked = 1;
+                    break;
+                }
+                /* Inline recursive switch, e.g. "del/s", "rd/f/s". */
+                if (name_in_list(stem, banned_switch) &&
+                    (slash[1] == 's' || slash[1] == 'f')) {
+                    matched = toks[ti];
+                    blocked = 1;
+                    break;
+                }
+            }
+
+            /* Recursive delete only matters together with /s or /f. */
+            if (name_in_list(name, banned_switch)) {
+                for (tj = ti + 1; tj < ntoks; tj++) {
+                    if (toks[tj][0] != '/') continue;
+                    if (a98_strcasecmp(toks[tj], "/s") == 0 ||
+                        a98_strcasecmp(toks[tj], "/f") == 0 ||
+                        a98_strcasecmp(toks[tj], "/f/s") == 0 ||
+                        a98_strcasecmp(toks[tj], "/s/f") == 0) {
+                        matched = toks[ti];
+                        blocked = 1;
+                        break;
+                    }
+                }
+                if (blocked) break;
+            }
+        }
+
+        if (blocked) {
+            set_err(err, errcap,
+                    "blocked dangerous command: %s (refusing to run)",
+                    matched != NULL ? matched : "unknown");
+            a98_free(lower);
+            return -1;
         }
         a98_free(lower);
     }
@@ -998,7 +1252,9 @@ static int tool_run_command(Agent *a, cJSON *args, Str *out, char *err, size_t e
             TerminateProcess(pi.hProcess, 1);
             break;
         }
-        if ((long)(GetTickCount() - start) >= (long)timeout * 1000L) {
+        /* DWORD subtraction wraps correctly across the 49.7-day tick
+         * rollover; a signed (long) cast fails once GetTickCount wraps. */
+        if ((DWORD)(GetTickCount() - start) >= (DWORD)timeout * 1000UL) {
             timed_out = 1;
             TerminateProcess(pi.hProcess, 1);
             break;
@@ -1584,37 +1840,21 @@ static int tool_set_attr(Agent *a, cJSON *args, Str *out, char *err, size_t errc
 {
     char path[A98_MAX_PATH];
     const char *user = arg_str(args, "path", NULL);
-    DWORD attrs, next; cJSON *j;
-    int has = 0;
+    DWORD attrs, next;
+    int has = 0, present, on;
     if (!user || !user[0]) { set_err(err, errcap, "path is required"); return -1; }
     if (tools_resolve_path(a, user, path, sizeof(path), err, errcap) != 0) return -1;
     attrs = GetFileAttributesA(path);
     if (attrs == INVALID_FILE_ATTRIBUTES) { set_err(err, errcap, "not found"); return -1; }
     next = attrs;
-    j = cJSON_GetObjectItem(args, "readonly");
-    if (j && (cJSON_IsBool(j) || cJSON_IsNumber(j))) {
-        has = 1;
-        if (cJSON_IsTrue(j) || (cJSON_IsNumber(j) && j->valueint)) next |= FILE_ATTRIBUTE_READONLY;
-        else next &= ~FILE_ATTRIBUTE_READONLY;
-    }
-    j = cJSON_GetObjectItem(args, "hidden");
-    if (j && (cJSON_IsBool(j) || cJSON_IsNumber(j))) {
-        has = 1;
-        if (cJSON_IsTrue(j) || (cJSON_IsNumber(j) && j->valueint)) next |= FILE_ATTRIBUTE_HIDDEN;
-        else next &= ~FILE_ATTRIBUTE_HIDDEN;
-    }
-    j = cJSON_GetObjectItem(args, "archive");
-    if (j && (cJSON_IsBool(j) || cJSON_IsNumber(j))) {
-        has = 1;
-        if (cJSON_IsTrue(j) || (cJSON_IsNumber(j) && j->valueint)) next |= FILE_ATTRIBUTE_ARCHIVE;
-        else next &= ~FILE_ATTRIBUTE_ARCHIVE;
-    }
-    j = cJSON_GetObjectItem(args, "system");
-    if (j && (cJSON_IsBool(j) || cJSON_IsNumber(j))) {
-        has = 1;
-        if (cJSON_IsTrue(j) || (cJSON_IsNumber(j) && j->valueint)) next |= FILE_ATTRIBUTE_SYSTEM;
-        else next &= ~FILE_ATTRIBUTE_SYSTEM;
-    }
+    on = json_bool_ci(args, "readonly", 0, &present);
+    if (present) { has = 1; if (on) next |= FILE_ATTRIBUTE_READONLY; else next &= ~FILE_ATTRIBUTE_READONLY; }
+    on = json_bool_ci(args, "hidden", 0, &present);
+    if (present) { has = 1; if (on) next |= FILE_ATTRIBUTE_HIDDEN; else next &= ~FILE_ATTRIBUTE_HIDDEN; }
+    on = json_bool_ci(args, "archive", 0, &present);
+    if (present) { has = 1; if (on) next |= FILE_ATTRIBUTE_ARCHIVE; else next &= ~FILE_ATTRIBUTE_ARCHIVE; }
+    on = json_bool_ci(args, "system", 0, &present);
+    if (present) { has = 1; if (on) next |= FILE_ATTRIBUTE_SYSTEM; else next &= ~FILE_ATTRIBUTE_SYSTEM; }
     if (!has) { set_err(err, errcap, "specify readonly/hidden/archive/system"); return -1; }
     if (attrs & FILE_ATTRIBUTE_DIRECTORY) next |= FILE_ATTRIBUTE_DIRECTORY;
     if (!SetFileAttributesA(path, next)) {
@@ -2140,6 +2380,7 @@ static const ToolDef g_tools[] = {
     {"todo_write", "Write workspace todo list. Requires approval.", schema_todo_write, 1, tool_todo_write},
     /* Extended coding tools */
     {"build", "Run the build command and summarise compiler diagnostics. Needs allow_shell=1.", schema_build, 1, tool_build_run},
+    {"toolchain_probe", "Probe compilers, make tools and build scripts; returns a recommended build command.", schema_toolchain_probe, 0, tool_toolchain_probe_run},
     {"replace_across", "Search-and-replace across many files (dry-run by default).", schema_replace_across, 0, tool_replace_across_run},
     {"outline", "List function and #define definitions in a source file.", schema_outline, 0, tool_outline_run},
     {"restore", "Restore a file from its .bak backup. Requires approval.", schema_restore, 1, tool_restore_run},
@@ -2164,6 +2405,54 @@ const ToolDef *tools_all(int *count)
         *count = A98_ARRAY_LEN(g_tools);
     }
     return g_tools;
+}
+
+/* Tool profiles keep the request body small and stop the model from picking a
+ * network or skill tool for a plain coding task.  The lists are negative for
+ * coding (hide only the clearly non-coding groups) and positive for docs and
+ * network, so adding a new core tool does not silently disappear from the
+ * default profile. */
+static int name_in_cs_list(const char *name, const char *const *list)
+{
+    int i;
+    for (i = 0; list[i] != NULL; i++) {
+        if (strcmp(name, list[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+int tools_profile_allows(const char *profile, const char *name)
+{
+    static const char *const hidden_from_coding[] = {
+        "http_request", "http_download", "dns_resolve", "tcp_probe",
+        "web_search", "gist_upload", "list_skills", "use_skill",
+        "save_skill", NULL
+    };
+    static const char *const docs_tools[] = {
+        "list_dir", "read_file", "search_files", "tree", "wc", "which",
+        "glob", "grep", "head", "tail", "diff", "checksum", "file_info",
+        "disk_info", "session_info", "todo_read", "outline", "list_skills",
+        "use_skill", NULL
+    };
+    static const char *const network_tools[] = {
+        "list_dir", "read_file", "write_file", "search_files", "which",
+        "file_info", "session_info", "http_request", "http_download",
+        "dns_resolve", "tcp_probe", "web_search", "gist_upload", NULL
+    };
+
+    if (name == NULL) return 0;
+    if (profile == NULL || profile[0] == '\0' ||
+        a98_strcasecmp(profile, "full") == 0) return 1;
+    if (a98_strcasecmp(profile, "coding") == 0) {
+        return !name_in_cs_list(name, hidden_from_coding);
+    }
+    if (a98_strcasecmp(profile, "docs") == 0) {
+        return name_in_cs_list(name, docs_tools);
+    }
+    if (a98_strcasecmp(profile, "network") == 0) {
+        return name_in_cs_list(name, network_tools);
+    }
+    return 1;
 }
 
 const ToolDef *tools_find(const char *name)
@@ -2348,6 +2637,23 @@ void tools_format_confirm(const char *name, const char *args_json,
     }
 }
 
+int tools_tool_is_writer(const char *name)
+{
+    static const char *const writers[] = {
+        "write_file", "append_file", "edit", "apply_patch", "delete_file",
+        "rmdir", "rmdir_force", "mkdir", "move_file", "copy_file", "touch",
+        "set_attr", "replace_across", "restore", "snapshot", "todo_write",
+        "http_download", "save_skill", NULL
+    };
+    int i;
+
+    if (name == NULL) return 0;
+    for (i = 0; writers[i] != NULL; i++) {
+        if (strcmp(name, writers[i]) == 0) return 1;
+    }
+    return 0;
+}
+
 int tools_execute(Agent *a, const char *name, const char *args_json,
                   Str *out, char *err, size_t errcap)
 {
@@ -2395,6 +2701,9 @@ int tools_execute(Agent *a, const char *name, const char *args_json,
         log_info("tool %s args=%s", def->name, logbuf);
     }
     rc = def->run(a, args, out, err, errcap);
+    if (rc == 0 && tools_tool_is_writer(name)) {
+        tools_read_cache_clear();
+    }
     cJSON_Delete(args);
     return rc;
 }

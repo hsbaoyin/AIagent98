@@ -77,22 +77,26 @@ static ToolCall *result_call_for_index(ChatResult *r, int index)
     return &r->calls[r->call_count++];
 }
 
-static void append_dup(char **dst, const char *src)
+/* All three helpers report allocation failures so a truncated tool name/id
+ * can never be sent back to the provider (or matched to the wrong call). */
+static int append_dup(char **dst, const char *src)
 {
     char *joined;
 
     if (src == NULL) {
-        return;
+        return 0;
     }
     if (*dst == NULL) {
         *dst = a98_strdup(src);
-        return;
+        return *dst != NULL ? 0 : -1;
     }
     joined = a98_strfmt("%s%s", *dst, src);
-    if (joined != NULL) {
-        a98_free(*dst);
-        *dst = joined;
+    if (joined == NULL) {
+        return -1;
     }
+    a98_free(*dst);
+    *dst = joined;
+    return 0;
 }
 
 /*
@@ -105,30 +109,31 @@ static void append_dup(char **dst, const char *src)
  * A fragment that already begins with what we have is a repeat (keep the
  * longer value); anything else is a real continuation and gets appended.
  */
-static void merge_stream_field(char **dst, const char *frag)
+static int merge_stream_field(char **dst, const char *frag)
 {
     size_t have;
 
     if (frag == NULL || frag[0] == '\0') {
-        return;
+        return 0;
     }
     if (*dst == NULL) {
         *dst = a98_strdup(frag);
-        return;
+        return *dst != NULL ? 0 : -1;
     }
     have = strlen(*dst);
     if (strncmp(*dst, frag, have) == 0) {
         if (frag[have] != '\0') {
             char *full = a98_strdup(frag);
 
-            if (full != NULL) {
-                a98_free(*dst);
-                *dst = full;
+            if (full == NULL) {
+                return -1;
             }
+            a98_free(*dst);
+            *dst = full;
         }
-        return;
+        return 0;
     }
-    append_dup(dst, frag);
+    return append_dup(dst, frag);
 }
 
 static int apply_error_object(cJSON *root, char *err, size_t errcap)
@@ -185,18 +190,34 @@ static int apply_tool_calls_array(ChatResult *out, cJSON *calls, int delta_mode,
             return -1;
         }
         if (delta_mode) {
-            merge_stream_field(&call->id, id);
-            merge_stream_field(&call->name, name);
+            if (merge_stream_field(&call->id, id) != 0 ||
+                merge_stream_field(&call->name, name) != 0) {
+                set_err(err, errcap, "out of memory");
+                return -1;
+            }
         } else {
             if (id != NULL && id[0] != '\0' && call->id == NULL) {
                 call->id = a98_strdup(id);
+                if (call->id == NULL) {
+                    set_err(err, errcap, "out of memory");
+                    return -1;
+                }
             }
             if (name != NULL && name[0] != '\0' && call->name == NULL) {
                 call->name = a98_strdup(name);
+                if (call->name == NULL) {
+                    set_err(err, errcap, "out of memory");
+                    return -1;
+                }
             }
         }
-        if (args != NULL && args[0] != '\0') {
-            str_append_cstr(&call->arguments, args);
+        /* A delta that cannot be stored must fail the whole response: a
+         * partially accumulated arguments string is still valid JSON and
+         * would otherwise send the tool down the wrong path. */
+        if (args != NULL && args[0] != '\0' &&
+            str_append_cstr(&call->arguments, args) != 0) {
+            set_err(err, errcap, "out of memory");
+            return -1;
         }
         i++;
     }
@@ -302,8 +323,11 @@ int openai_apply_full(ChatResult *out, const char *json, size_t len,
         return -1;
     }
     content = cJSON_GetObjectItemCaseSensitive(message, "content");
-    if (cJSON_IsString(content) && content->valuestring != NULL) {
-        str_append_cstr(&out->content, content->valuestring);
+    if (cJSON_IsString(content) && content->valuestring != NULL &&
+        str_append_cstr(&out->content, content->valuestring) != 0) {
+        cJSON_Delete(root);
+        set_err(err, errcap, "out of memory");
+        return -1;
     }
     calls = cJSON_GetObjectItemCaseSensitive(message, "tool_calls");
     if (apply_tool_calls_array(out, calls, 0, err, errcap) != 0) {
@@ -360,7 +384,7 @@ static cJSON *message_to_json(const Message *m)
     return obj;
 }
 
-static cJSON *build_tools(void)
+static cJSON *build_tools(const Config *cfg)
 {
     const ToolDef *defs;
     int count = 0;
@@ -376,10 +400,16 @@ static cJSON *build_tools(void)
         return NULL;
     }
     for (i = 0; i < count; i++) {
-        cJSON *tool = cJSON_CreateObject();
-        cJSON *fn = cJSON_CreateObject();
+        cJSON *tool;
+        cJSON *fn;
         cJSON *params;
 
+        if (!tools_profile_allows(cfg ? cfg->tool_profile : NULL,
+                                  defs[i].name)) {
+            continue;
+        }
+        tool = cJSON_CreateObject();
+        fn = cJSON_CreateObject();
         if (tool == NULL || fn == NULL) {
             cJSON_Delete(tool);
             cJSON_Delete(fn);
@@ -489,7 +519,21 @@ static char *build_system_prompt(const Config *cfg, const char *user_prompt)
         "- Shell: run_command uses the legacy 16-bit COMMAND.COM, NOT "
         "cmd.exe or PowerShell. Do not use 2>&1, &&, ||, stderr pipes, "
         "curl, or tasklist. Prefer the built-in file tools; use ver, mem, "
-        "dir, set, or type for system information.\n");
+        "dir, set, or type for system information.\n"
+        "- Batch scripts: Win9x COMMAND.COM only runs .BAT files; a .CMD file "
+        "is NOT a batch script and gives 'Bad command or file name'. Always "
+        "write scripts as name.BAT and invoke name.BAT (or CALL name.BAT).\n"
+        "- COMMAND.COM batch syntax is the old one: no FOR /F, no SET /A, no "
+        "IF /I, no %~ modifiers, no delayed expansion (!var!), no PUSHD. "
+        "Use plain FOR %%L IN (set) DO, IF EXIST, GOTO :label, CALL :label, "
+        "SHIFT, and %1..%9. Test a small BAT first before building on it; if "
+        "a script fails, fix the script instead of retrying the same command "
+        "with different spellings.\n"
+        "- Work efficiently: do not re-read a file with the same path and "
+        "arguments if its contents are already in the conversation. Re-read "
+        "only after you changed it, or when you need a specific range you "
+        "have not seen. When the requested checks (for example, a test "
+        "command) have passed, stop calling tools and give the final answer.\n");
 
     /* Procedural memory: list available skills (progressive disclosure). */
     if (cfg != NULL) {
@@ -570,7 +614,7 @@ static char *build_request_json(const Config *cfg, const char *system_prompt,
         }
     }
 
-    tools = build_tools();
+    tools = build_tools(cfg);
     if (tools != NULL) {
         cJSON_AddItemToObject(root, "tools", tools);
         cJSON_AddStringToObject(root, "tool_choice", "auto");
@@ -599,6 +643,7 @@ char *api_build_headers(const Config *cfg, int stream)
     Str h;
     const char *p;
     const char *k;
+    int failed = 0;
 
     str_init(&h);
     if (cfg->api_key[0] != '\0') {
@@ -608,20 +653,22 @@ char *api_build_headers(const Config *cfg, int stream)
             log_warn("api.key contains a line break; it was removed from the "
                      "Authorization header");
         }
-        str_append_cstr(&h, "Authorization: Bearer ");
-        for (k = cfg->api_key; *k != '\0'; k++) {
+        if (str_append_cstr(&h, "Authorization: Bearer ") != 0) failed = 1;
+        for (k = cfg->api_key; *k != '\0' && !failed; k++) {
             if (*k != '\r' && *k != '\n') {
-                str_append_char(&h, *k);
+                if (str_append_char(&h, *k) != 0) failed = 1;
             }
         }
-        str_append_cstr(&h, "\r\n");
+        if (str_append_cstr(&h, "\r\n") != 0) failed = 1;
     }
-    str_append_cstr(&h, "Content-Type: application/json\r\n");
-    str_appendf(&h, "Accept: %s\r\n",
-                stream ? "text/event-stream" : "application/json");
+    if (str_append_cstr(&h, "Content-Type: application/json\r\n") != 0) failed = 1;
+    if (str_appendf(&h, "Accept: %s\r\n",
+                    stream ? "text/event-stream" : "application/json") != 0) {
+        failed = 1;
+    }
     if (cfg->extra_headers[0] != '\0') {
         p = cfg->extra_headers;
-        while (*p != '\0') {
+        while (*p != '\0' && !failed) {
             const char *start = p;
             size_t len;
             while (*p != '\0' && *p != '|' && *p != '\n') {
@@ -640,15 +687,23 @@ char *api_build_headers(const Config *cfg, int stream)
 
                 for (i = 0; i < len; i++) {
                     if (start[i] != '\r' && start[i] != '\n') {
-                        str_append_char(&h, start[i]);
+                        if (str_append_char(&h, start[i]) != 0) {
+                            failed = 1;
+                            break;
+                        }
                     }
                 }
-                str_append_cstr(&h, "\r\n");
+                if (!failed && str_append_cstr(&h, "\r\n") != 0) failed = 1;
             }
             if (*p == '|' || *p == '\n') {
                 p++;
             }
         }
+    }
+    /* A half-built header block would produce a malformed request. */
+    if (failed) {
+        str_free(&h);
+        return NULL;
     }
     return str_detach(&h);
 }
@@ -759,7 +814,7 @@ static int body_sink(void *vctx, const char *data, size_t len)
         }
         return 0;
     }
-    if (s->raw.len + len > 4 * 1024 * 1024) {
+    if (len > 4 * 1024 * 1024 || s->raw.len > 4 * 1024 * 1024 - len) {
         set_err(s->err, sizeof(s->err), "response body is too large");
         s->failed = 1;
         return -1;
@@ -981,6 +1036,319 @@ done_sink:
     return rc;
 }
 
+/* ------------------------------------------------------------------ */
+/* Plain-text tool call salvage                                        */
+/* ------------------------------------------------------------------ */
+/*
+ * Some OpenAI-compatible runtimes answer with the tool call written into
+ * `content` instead of the native `tool_calls` field, and they disagree on
+ * the spelling: TOOLS: [{...}], DSML <invoke> tags, {"args":...}, flattened
+ * {"name":"read_file","path":"..."}, read_file({...}), and so on.  When a
+ * native call is absent we try these forms before treating the reply as a
+ * final answer.  Every candidate must name a real tool, so ordinary prose
+ * that happens to contain braces cannot turn into a tool call.
+ */
+
+static const char *salvage_find_ci(const char *hay, const char *needle)
+{
+    size_t n = strlen(needle);
+
+    if (n == 0) return hay;
+    for (; *hay != '\0'; hay++) {
+        if (a98_strncasecmp(hay, needle, n) == 0) return hay;
+    }
+    return NULL;
+}
+
+/* Return a heap copy of the first balanced open..close region, honouring JSON
+ * string quoting.  The copy includes both delimiters. */
+static char *salvage_balanced(const char *start, char open, char close)
+{
+    int depth = 0;
+    int in_str = 0;
+    int escaped = 0;
+    const char *p;
+
+    for (p = start; *p != '\0'; p++) {
+        if (in_str) {
+            if (escaped) escaped = 0;
+            else if (*p == '\\') escaped = 1;
+            else if (*p == '"') in_str = 0;
+            continue;
+        }
+        if (*p == '"') { in_str = 1; continue; }
+        if (*p == open) depth++;
+        else if (*p == close) {
+            depth--;
+            if (depth == 0) return a98_strndup(start, (size_t)(p - start) + 1);
+        }
+    }
+    return NULL;
+}
+
+static int salvage_add_call(ChatResult *out, const char *name,
+                            const char *args_text)
+{
+    ToolCall *call;
+    char *normalized;
+    cJSON *parsed;
+    int index;
+
+    if (out == NULL || name == NULL || tools_find(name) == NULL ||
+        out->call_count >= 32) {
+        return 0;
+    }
+    parsed = cJSON_Parse(args_text != NULL && args_text[0] != '\0'
+                         ? args_text : "{}");
+    if (parsed == NULL || !cJSON_IsObject(parsed)) {
+        if (parsed != NULL) cJSON_Delete(parsed);
+        parsed = cJSON_CreateObject();
+    }
+    if (parsed == NULL) return 0;
+    normalized = cJSON_PrintUnformatted(parsed);
+    cJSON_Delete(parsed);
+    if (normalized == NULL) return 0;
+
+    index = out->call_count;
+    call = result_call_for_index(out, index);
+    if (call == NULL) {
+        cJSON_free(normalized);
+        return 0;
+    }
+    call->id = a98_strfmt("call_%d", index);
+    call->name = a98_strdup(name);
+    str_append_cstr(&call->arguments, normalized);
+    cJSON_free(normalized);
+    return (call->id != NULL && call->name != NULL) ? 1 : 0;
+}
+
+/* Normalise the arguments of one JSON tool object.  Accepts a JSON string,
+ * an object under "arguments" or "args", and flattened top-level keys. */
+static char *salvage_item_args(cJSON *item)
+{
+    cJSON *v = cJSON_GetObjectItemCaseSensitive(item, "arguments");
+    cJSON *parsed;
+
+    if (v == NULL) v = cJSON_GetObjectItemCaseSensitive(item, "args");
+    if (v != NULL && cJSON_IsString(v) && v->valuestring != NULL) {
+        parsed = cJSON_Parse(v->valuestring);
+        if (parsed != NULL && cJSON_IsObject(parsed)) {
+            char *s = cJSON_PrintUnformatted(parsed);
+            cJSON_Delete(parsed);
+            return s;
+        }
+        if (parsed != NULL) cJSON_Delete(parsed);
+        return a98_strdup("{}");
+    }
+    if (v != NULL && cJSON_IsObject(v)) {
+        return cJSON_PrintUnformatted(v);
+    }
+    {
+        cJSON *obj = cJSON_CreateObject();
+        cJSON *child;
+
+        if (obj == NULL) return NULL;
+        child = item->child;
+        while (child != NULL) {
+            const char *k = child->string;
+            if (k != NULL && strcmp(k, "name") != 0 &&
+                strcmp(k, "function") != 0 && strcmp(k, "id") != 0 &&
+                strcmp(k, "type") != 0 && strcmp(k, "index") != 0) {
+                cJSON_AddItemToObject(obj, k, cJSON_Duplicate(child, 1));
+            }
+            child = child->next;
+        }
+        {
+            char *s = cJSON_PrintUnformatted(obj);
+            cJSON_Delete(obj);
+            return s;
+        }
+    }
+}
+
+static int salvage_from_json(const char *text, ChatResult *out)
+{
+    const char *p = text;
+    int added = 0;
+
+    while (*p != '\0') {
+        char open = *p;
+        char close;
+        char *blob;
+        cJSON *root;
+
+        if (open != '[' && open != '{') { p++; continue; }
+        close = open == '[' ? ']' : '}';
+        blob = salvage_balanced(p, open, close);
+        if (blob == NULL) { p++; continue; }
+        root = cJSON_Parse(blob);
+        cJSON_free(blob);
+        if (root != NULL) {
+            if (cJSON_IsArray(root)) {
+                cJSON *item;
+                cJSON_ArrayForEach(item, root) {
+                    cJSON *fn = cJSON_GetObjectItemCaseSensitive(item, "function");
+                    cJSON *src = fn != NULL ? fn : item;
+                    const char *name = json_string(src, "name");
+                    char *args = salvage_item_args(src);
+
+                    added += salvage_add_call(out, name, args);
+                    if (args != NULL) cJSON_free(args);
+                }
+            } else if (cJSON_IsObject(root)) {
+                cJSON *fn = cJSON_GetObjectItemCaseSensitive(root, "function");
+                cJSON *src = fn != NULL ? fn : root;
+                const char *name = json_string(src, "name");
+                if (name != NULL) {
+                    char *args = salvage_item_args(src);
+                    added += salvage_add_call(out, name, args);
+                    if (args != NULL) cJSON_free(args);
+                }
+            }
+            cJSON_Delete(root);
+        }
+        if (added > 0) return added;
+        p++;
+    }
+    return 0;
+}
+
+/* DSML: <|DSML|invoke name="read_file"><|DSML|parameter name="path"
+ * string="true">file.c</|DSML|parameter></|DSML|invoke> */
+static int salvage_from_dsml(const char *text, ChatResult *out)
+{
+    const char *p = text;
+    int added = 0;
+
+    while ((p = salvage_find_ci(p, "invoke")) != NULL) {
+        const char *gt = strchr(p, '>');
+        char name[128];
+        cJSON *args;
+        const char *q;
+
+        if (gt == NULL) break;
+        name[0] = '\0';
+        for (q = p; q < gt; q++) {
+            if (a98_strncasecmp(q, "name=", 5) == 0) {
+                q += 5;
+                if (*q == '"' || *q == '\'') {
+                    char quote = *q++;
+                    const char *end = strchr(q, quote);
+                    if (end != NULL && (size_t)(end - q) < sizeof(name)) {
+                        memcpy(name, q, (size_t)(end - q));
+                        name[end - q] = '\0';
+                    }
+                }
+                break;
+            }
+        }
+        args = cJSON_CreateObject();
+        q = gt + 1;
+        if (args != NULL) {
+            while (*q != '\0') {
+                const char *pa = salvage_find_ci(q, "parameter");
+                const char *pgt;
+                const char *pend;
+                const char *na;
+
+                if (pa == NULL) break;
+                pgt = strchr(pa, '>');
+                if (pgt == NULL) break;
+                pend = salvage_find_ci(pgt + 1, "</");
+                if (pend == NULL) break;
+                na = NULL;
+                for (na = pa; na < pgt; na++) {
+                    if (a98_strncasecmp(na, "name=", 5) == 0) {
+                        na += 5;
+                        if (*na == '"' || *na == '\'') {
+                            char quote = *na++;
+                            const char *ne = strchr(na, quote);
+                            if (ne != NULL && ne < pgt) {
+                                char key[128];
+                                size_t klen = (size_t)(ne - na);
+                                char *value;
+                                size_t vlen;
+
+                                if (klen >= sizeof(key)) { na = pgt; break; }
+                                memcpy(key, na, klen);
+                                key[klen] = '\0';
+                                while (pgt + 1 < pend &&
+                                       (*(pgt + 1) == ' ' || *(pgt + 1) == '\r' ||
+                                        *(pgt + 1) == '\n')) pgt++;
+                                vlen = (size_t)(pend - (pgt + 1));
+                                value = a98_strndup(pgt + 1, vlen);
+                                if (value != NULL) {
+                                    config_trim(value);
+                                    cJSON_AddStringToObject(args, key, value);
+                                    a98_free(value);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                q = pend + 2;
+            }
+            if (name[0] != '\0') {
+                char *argtext = cJSON_PrintUnformatted(args);
+                added += salvage_add_call(out, name, argtext);
+                if (argtext != NULL) cJSON_free(argtext);
+            }
+            cJSON_Delete(args);
+        }
+        p = gt + 1;
+    }
+    return added;
+}
+
+/* read_file({"path":"x"}) and read_file: {"path":"x"} */
+static int salvage_from_named(const char *text, ChatResult *out)
+{
+    const ToolDef *defs;
+    int count = 0;
+    int i;
+    int added = 0;
+
+    defs = tools_all(&count);
+    for (i = 0; i < count; i++) {
+        const char *p = text;
+
+        while ((p = salvage_find_ci(p, defs[i].name)) != NULL) {
+            const char *q = p + strlen(defs[i].name);
+
+            while (*q == ' ' || *q == '\t') q++;
+            if (*q == ':' || *q == '(') {
+                q++;
+                while (*q == ' ' || *q == '\t' || *q == '\r' || *q == '\n') q++;
+                if (*q == '{') {
+                    char *blob = salvage_balanced(q, '{', '}');
+                    if (blob != NULL) {
+                        added += salvage_add_call(out, defs[i].name, blob);
+                        cJSON_free(blob);
+                    }
+                }
+            }
+            p++;
+        }
+    }
+    return added;
+}
+
+int api_salvage_tool_calls(ChatResult *out)
+{
+    const char *text;
+    int added = 0;
+
+    if (out == NULL || out->call_count != 0 || out->content.len == 0) {
+        return 0;
+    }
+    text = str_cstr(&out->content);
+    added = salvage_from_dsml(text, out);
+    if (added == 0) added = salvage_from_json(text, out);
+    if (added == 0) added = salvage_from_named(text, out);
+    return added;
+}
+
 int api_chat(const Config *cfg, const char *system_prompt,
              const MessageList *messages, ChatResult *out,
              ApiTextFn on_text, void *ctx, volatile int *cancel,
@@ -1052,6 +1420,14 @@ int api_chat(const Config *cfg, const char *system_prompt,
     }
 
 done:
+    if (rc == 0 && cfg != NULL && cfg->tool_call_fallback &&
+        api_salvage_tool_calls(out) > 0) {
+        log_warn("salvaged tool call(s) from a plain-text model reply; "
+                 "set tool_call_fallback=0 to enforce native tool_calls");
+        /* The raw text was just a differently encoded tool call.  Do not let
+         * the agent treat it as a final answer as well. */
+        str_clear(&out->content);
+    }
     a98_free(extra);
     if (req != NULL) {
         cJSON_free(req);

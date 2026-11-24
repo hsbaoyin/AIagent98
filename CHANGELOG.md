@@ -5,8 +5,62 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Round-efficiency controls in `[agent]`: `tool_call_fallback`,
+  `read_cache`, `nudge_on_success` and `tool_profile` (all editable in
+  Tools -> Settings...). Defaults are enabled with the `coding` profile.
+- Plain-text tool-call salvage: models that write tool calls into `content`
+  instead of native `tool_calls` are understood in DSML, JSON (`arguments` or
+  `args`), flattened and `name({...})` forms. Only real tool names are accepted.
+- An unchanged-read cache skips re-reading a byte-identical file in the same
+  conversation; any successful mutating tool (or a new/loaded session) clears
+  it. A system hint is appended when acceptance checks pass after a file change.
+- `toolchain_probe` tool: one call reports available compilers, make tools,
+  build scripts and a recommended command, replacing several exploratory reads.
+- Structured conversation compaction: summaries use fixed `Task / Files read /
+  Files changed / Last test command / Last test result / Outstanding work /
+  Do not re-read` fields, with a deterministic local fallback when the summary
+  API call fails.
+- CLI `/stats` reports rounds, tool calls, failures, blocks and hints from the
+  last turn; `/continue` loads the last session. GUI and CLI both show a
+  `Run completed: ...` summary and per-round tool counts.
+- A reproducible benchmark under `tests/bench/` with mock and live modes, three
+  coding tasks (`csv_parse`, `bugfix`, `multifile`) and a 100-point rubric
+  covering compile, visible tests, hidden tests, efficiency and file integrity.
+
+### Changed
+
+- `agent.max_steps` now defaults to `0` (unlimited) instead of `32`. A finite
+  value used to abort a long task in the middle of its tool rounds and surface
+  as an error, which looked like the conversation had stopped. The loop guard
+  still bounds repeated calls and repeated rounds; a hard cap remains available
+  by setting `max_steps` to 1..200 in the INI or Settings dialog. The stop
+  message now also explains how to continue.
+- The built-in system prompt now tells the model not to re-read unchanged files
+  and to stop calling tools once the requested checks have passed. This removes
+  a common source of wasted tool rounds (read → re-read → hit `max_steps`
+  before producing the final answer).
+
 ### Fixed
 
+- Release validation is no longer permanently broken: `check_pe.ps1` treated
+  `ole32.dll` / `oleaut32.dll` as NT-only imports, but OLE2 is a stock Windows
+  9x system DLL (`emoji_ui.c` uses `CreateILockBytesOnHGlobal` /
+  `StgCreateDocfileOnILockBytes`). They are off the blacklist now, and
+  `prepare_release.ps1` regenerates the build files, does a full build, runs
+  `check_pe.ps1`, the C unit tests and the Python/PowerShell smokes in order,
+  aborting on the first failure.
+- Documentation now says **46** tools (the size of `g_tools[]`), not 47/43;
+  the README also clarifies that the self-drawn GDI transcript removes RichEdit
+  *OLE objects* but the EXE still links `ole32` for Win9x OLE2 structured
+  storage, which is not an NT-only dependency.
+- Test coverage: `test_tools.c` now asserts real negative behaviour (banned
+  `format`/`deltree` shell commands, `full_access` sandbox reporting, the
+  confirmation callback and `auto_confirm`) and the sandbox escape canary is
+  derived from each case's resolved absolute path; `test_emoji.c` no longer
+  reports success when an unexpected SKIP occurs; `smoke_tools.py` labels its
+  string checks as presence-only checks.
 - The emoji picker crashed the whole program the moment an emoji was
   confirmed (Insert button, Enter or double-click) on 64-bit host builds:
   `emoji_proc` stored the dialog's `PickCtx*` in the `DWLP_USER` slot with

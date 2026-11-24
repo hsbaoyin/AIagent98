@@ -50,4 +50,9 @@ int openai_apply_chunk(ChatResult *out, const char *json, size_t len,
 int openai_apply_full(ChatResult *out, const char *json, size_t len,
                       char *err, size_t errcap);
 
+/* Salvage tool calls written into message content instead of the native
+ * tool_calls field. Returns the number of calls recovered (0 = none).
+ * Exposed for unit tests. */
+int api_salvage_tool_calls(ChatResult *out);
+
 #endif /* A98_API_OPENAI_H */

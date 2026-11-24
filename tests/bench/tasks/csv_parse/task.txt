@@ -1,0 +1,12 @@
+Implement the function csv_parse_int_list() declared in include/strutil.h in the workspace.
+
+Specification:
+- Parse a comma-separated list of integers from `text` into `out`.
+- At most `max` items may be written.
+- Whitespace (spaces and tabs) around the whole string and around each number is allowed.
+- A valid token is an optional '+' or '-' followed by one or more decimal digits.
+- Return the number of items parsed, or -1 if any token is empty/invalid/malformed, if the input is NULL, or if there are more than max items.
+- Empty input or whitespace-only input returns 0.
+- Do NOT change the signature in include/strutil.h.
+
+You may edit any file in the workspace, add helpers, and run commands. Run `run_tests.bat` (or `make test`) and make sure all visible tests pass before you finish. Consider edge cases carefully. When you are done, reply with a short summary of what you changed and the test result.

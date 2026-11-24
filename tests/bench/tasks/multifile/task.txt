@@ -1,0 +1,21 @@
+Implement the two-function feature declared in include/idset.h. One function
+belongs in src/idset.c, the other in src/idfmt.c.
+
+idset_add(int *ids, int *count, int capacity, int id):
+- Add `id` to the array `ids`, whose used length is `*count` and capacity is
+  `capacity`. On success store the id at the end, increment `*count`, return 0.
+- Return -1 and change nothing if ids/count is NULL, capacity or *count is
+  invalid (*count must be 0..capacity), id is negative, the array is full, or
+  id is already present (no duplicates).
+
+idfmt_write(const int *ids, int count, char *out, size_t out_size):
+- Write the ids as a compact bracketed list, e.g. "[1,2,3]", to `out` and
+  NUL-terminate it. An empty list formats as "[]".
+- Return the number of characters written (not counting the NUL), or -1 if
+  out is NULL, out_size is 0, count is negative, ids is NULL when count > 0,
+  an id is negative, or the buffer is too small.
+- Do NOT change include/idset.h.
+
+Run `run_tests.bat` (or `make test`) and make sure all visible tests pass
+before you finish. Then reply with a short summary of both changes and the
+test result.

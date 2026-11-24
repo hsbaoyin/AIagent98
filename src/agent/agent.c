@@ -10,6 +10,21 @@
 
 #define MAX_TOOL_OUTPUT 16384
 
+/* Error sink shared by every entry point in this file.  Callers are allowed
+ * to pass err == NULL when they do not want the message; never touch it in
+ * that case (same convention as the tools and api_openai.c). */
+static void set_err(char *err, size_t cap, const char *fmt, ...)
+{
+    va_list ap;
+
+    if (err == NULL || cap == 0) {
+        return;
+    }
+    va_start(ap, fmt);
+    vsnprintf(err, cap, fmt, ap);
+    va_end(ap);
+}
+
 static void emit(Agent *a, AgentEventType type, const char *text)
 {
     if (a->on_event != NULL) {
@@ -29,6 +44,43 @@ static void emit_delta(Agent *a, const char *text, size_t len)
         emit(a, AGENT_EV_TEXT, copy);
         a98_free(copy);
     }
+}
+
+void agent_stats(const Agent *a, AgentStats *out)
+{
+    if (a == NULL || out == NULL) {
+        return;
+    }
+    *out = a->stats;
+}
+
+static void emit_run_stats(Agent *a, const char *reason)
+{
+    char buf[256];
+
+    snprintf(buf, sizeof(buf),
+             "Run %s: %d round(s), %d tool call(s), %d failed, "
+             "%d blocked, %d hint(s)",
+             reason ? reason : "finished", a->stats.rounds,
+             a->stats.tool_calls, a->stats.failed_calls,
+             a->stats.blocked_calls, a->stats.nudge_count);
+    emit(a, AGENT_EV_INFO, buf);
+}
+
+/* Only command/build results can prove that an acceptance check passed; a
+ * read_file result may merely contain the words inside a test source file. */
+static int tool_reports_success(const char *name, const char *text)
+{
+    if (text == NULL) return 0;
+    if (strcmp(name, "build") == 0) {
+        return strstr(text, "BUILD OK") != NULL;
+    }
+    if (strcmp(name, "run_command") == 0) {
+        if (strstr(text, "exit code: 0") == NULL) return 0;
+        return strstr(text, "passed") != NULL ||
+               strstr(text, "BUILD OK") != NULL;
+    }
+    return 0;
 }
 
 static int text_cb(void *ctx, const char *text, size_t len)
@@ -68,6 +120,7 @@ void agent_new_conversation(Agent *a)
 {
     if (a != NULL) {
         msglist_clear(&a->messages);
+        tools_read_cache_clear();
     }
 }
 
@@ -232,6 +285,60 @@ static size_t context_bytes(const MessageList *list)
     return total;
 }
 
+/* Deterministic fallback when the summary API call is unavailable.  Keeping
+ * the same field layout means the model sees the same shape either way. */
+static char *local_structured_summary(const MessageList *list, int to_remove)
+{
+    Str s;
+    int i;
+    int have_task = 0;
+    int have_tool = 0;
+    const char *last_command = "none";
+    const char *last_result = "none";
+
+    str_init(&s);
+    str_append_cstr(&s, "Task: ");
+    for (i = 0; i < to_remove; i++) {
+        const Message *m = &list->items[i];
+        if (m->role == MSG_USER && m->content != NULL && m->content[0] != '\0') {
+            str_append_cstr(&s, m->content);
+            have_task = 1;
+            break;
+        }
+    }
+    if (!have_task) str_append_cstr(&s, "(see earlier messages)");
+    str_append_cstr(&s, "\nFiles read: (paths are in the earlier tool calls)\n");
+    str_append_cstr(&s, "Files changed: ");
+    for (i = 0; i < to_remove; i++) {
+        const Message *m = &list->items[i];
+        if (m->role == MSG_ASSISTANT && m->tool_calls_json != NULL) {
+            if (strstr(m->tool_calls_json, "write_file") != NULL ||
+                strstr(m->tool_calls_json, "edit") != NULL ||
+                strstr(m->tool_calls_json, "apply_patch") != NULL) {
+                str_append_cstr(&s, "yes (see earlier tool calls)\n");
+                have_tool = 1;
+                break;
+            }
+        }
+    }
+    if (!have_tool) str_append_cstr(&s, "none\n");
+    for (i = 0; i < to_remove; i++) {
+        const Message *m = &list->items[i];
+        if (m->role != MSG_TOOL || m->name == NULL) continue;
+        if (strcmp(m->name, "run_command") == 0 ||
+            strcmp(m->name, "build") == 0) {
+            last_command = m->name;
+            last_result = m->content != NULL ? m->content : "";
+        }
+    }
+    str_appendf(&s, "Last test command: %s\nLast test result: %.300s\n",
+                last_command, last_result);
+    str_append_cstr(&s,
+        "Outstanding work: continue from the kept messages; do not assume "
+        "tests passed\nDo not re-read: files already read above unless changed\n");
+    return str_detach(&s);
+}
+
 /* Compact old messages into one summary via an extra API call. Returns 0 if
  * nothing happened or compaction succeeded, -1 only on a hard error that
  * should stop the run. Never aborts the run on a failed summary. */
@@ -265,11 +372,16 @@ static int maybe_compact(Agent *a, char *err, size_t errcap)
         int to_remove = a->messages.count - keep;
         int i;
         static const char *sum_sys =
-            "You summarize conversations concisely. Produce a compact but "
-            "faithful summary of the exchange below: key facts, decisions, "
-            "file paths and code changes, and outstanding tasks. Keep it "
-            "short enough to fit in a few hundred words. Output only the "
-            "summary, no preamble.";
+            "You summarize agent conversations. Output ONLY these fields, "
+            "one per line, in this exact order:\n"
+            "Task: <what the user asked for>\n"
+            "Files read: <paths, comma separated>\n"
+            "Files changed: <paths and what was done>\n"
+            "Last test command: <command or none>\n"
+            "Last test result: <pass/fail with key output>\n"
+            "Outstanding work: <what remains, or none>\n"
+            "Do not re-read: <paths already read and unchanged>\n"
+            "Be faithful and brief; never invent a result.";
         msglist_add(&prompt, MSG_USER, "Summarize the following conversation:");
         for (i = 0; i < to_remove; i++) {
             const Message *m = &a->messages.items[i];
@@ -294,8 +406,11 @@ static int maybe_compact(Agent *a, char *err, size_t errcap)
         if (api_chat(cfg, sum_sys, &prompt, &res, NULL, NULL, a->cancel,
                      sum_err, sizeof(sum_err)) == 0 &&
             res.content.len > 0) {
-            str_append(&summary, str_cstr(&res.content), res.content.len);
-            if (msglist_compact(&a->messages, str_cstr(&summary), keep) == 0) {
+            if (str_append(&summary, str_cstr(&res.content),
+                           res.content.len) != 0) {
+                log_warn("compaction failed: out of memory building summary");
+            } else if (msglist_compact(&a->messages, str_cstr(&summary),
+                                       keep) == 0) {
                 char info[128];
                 snprintf(info, sizeof(info),
                          "Compacted conversation: %d messages kept + 1 summary",
@@ -306,8 +421,21 @@ static int maybe_compact(Agent *a, char *err, size_t errcap)
                 log_warn("compaction failed to rebuild message list");
             }
         } else {
-            log_warn("compaction summary request failed: %s", sum_err);
-            /* Non-fatal: keep the full history and carry on. */
+            char *fallback = local_structured_summary(&a->messages, to_remove);
+
+            log_warn("compaction summary request failed (%s); using a local "
+                     "structured summary", sum_err);
+            if (fallback != NULL &&
+                msglist_compact(&a->messages, fallback, keep) == 0) {
+                char info[128];
+                snprintf(info, sizeof(info),
+                         "Compacted conversation locally: %d messages kept "
+                         "+ 1 summary", keep);
+                emit(a, AGENT_EV_INFO, info);
+            } else {
+                log_warn("local compaction could not rebuild the message list");
+            }
+            a98_free(fallback);
         }
         str_free(&summary);
         chat_result_free(&res);
@@ -325,21 +453,14 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
     Str round_guard_sig;
     int guard_count = 0;
     int round_guard_count = 0;
+    int saw_write = 0;
 
     if (a == NULL || a->cfg == NULL || user_text == NULL) {
         return -1;
     }
-    {
-        /* Every error path below calls snprintf(err, errcap, ...): give it a
-         * real buffer even when the caller does not want the message. */
-        static char discard[1];
-
-        if (err == NULL) {
-            err = discard;
-            errcap = 0;
-        }
-    }
-    if (errcap > 0) {
+    /* All error reporting goes through set_err(), which handles a NULL err
+     * itself, so no local scratch buffer is needed here. */
+    if (err != NULL && errcap > 0) {
         err[0] = '\0';
     }
     if (a->workspace[0] == '\0') {
@@ -347,12 +468,13 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
         a->workspace[sizeof(a->workspace) - 1] = '\0';
     }
     agent_ensure_dirs(a);
+    memset(&a->stats, 0, sizeof(a->stats));
     str_init(&guard_sig);
     str_init(&round_guard_sig);
     if (msglist_add(&a->messages, MSG_USER, user_text) == NULL) {
         str_free(&guard_sig);
         str_free(&round_guard_sig);
-        snprintf(err, errcap, "out of memory");
+        set_err(err, errcap, "out of memory");
         return -1;
     }
     /* max_steps == 0 means "no limit": stop only when the model finishes or
@@ -368,18 +490,23 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
         int round_block = 0;
 
         if (!unlimited && step >= a->cfg->max_steps) {
+            emit_run_stats(a, "stopped at max_steps");
             str_free(&guard_sig);
             str_free(&round_guard_sig);
-            snprintf(err, errcap, "stopped after %d tool rounds (max_steps)",
-                     a->cfg->max_steps);
+            set_err(err, errcap,
+                    "stopped after %d tool rounds (max_steps); send another "
+                    "message to continue, or set max_steps=0 for unlimited",
+                    a->cfg->max_steps);
             return -1;
         }
         if (a->cancel != NULL && *a->cancel) {
+            emit_run_stats(a, "cancelled");
             str_free(&guard_sig);
             str_free(&round_guard_sig);
-            snprintf(err, errcap, "cancelled by user");
+            set_err(err, errcap, "cancelled by user");
             return -1;
         }
+        a->stats.rounds++;
         /* Compact before sending if the conversation has grown too large. */
         maybe_compact(a, err, errcap);
         if (unlimited) {
@@ -398,7 +525,7 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
             str_free(&guard_sig);
             str_free(&round_guard_sig);
             if (err != NULL && errcap > 0 && err[0] == '\0') {
-                snprintf(err, errcap, "API request failed");
+                set_err(err, errcap, "API request failed");
             }
             return -1;
         }
@@ -429,7 +556,7 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
             chat_result_free(&res);
             str_free(&guard_sig);
             str_free(&round_guard_sig);
-            snprintf(err, errcap, "out of memory");
+            set_err(err, errcap, "out of memory");
             return -1;
         }
         cJSON_free(calls_json);
@@ -438,10 +565,12 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
             if (res.content.len == 0) {
                 chat_result_free(&res);
                 str_free(&guard_sig);
+                emit_run_stats(a, "failed (empty response)");
                 str_free(&round_guard_sig);
-                snprintf(err, errcap, "model returned an empty response");
+                set_err(err, errcap, "model returned an empty response");
                 return -1;
             }
+            emit_run_stats(a, "completed");
             chat_result_free(&res);
             str_free(&guard_sig);
             str_free(&round_guard_sig);
@@ -500,12 +629,14 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                 int allowed = 1;
                 int blocked = 0;
                 int block_repeat = 0;
+                int executed = 0;
 
+                a->stats.tool_calls++;
                 if (a->cancel != NULL && *a->cancel) {
                     chat_result_free(&res);
                     str_free(&guard_sig);
                     str_free(&round_guard_sig);
-                    snprintf(err, errcap, "cancelled by user");
+                    set_err(err, errcap, "cancelled by user");
                     return -1;
                 }
                 summary = a98_strfmt("%s(%s)", name, args);
@@ -552,6 +683,8 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                                     "arguments or a different tool, or finish "
                                     "and answer the user.", name, block_repeat);
                     }
+                    a->stats.blocked_calls++;
+                    a->stats.failed_calls++;
                     log_warn("loop guard: blocked repeated tool call %s (x%d)",
                              name, block_repeat);
                 } else {
@@ -572,11 +705,27 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                         }
                     }
                     if (!allowed) {
+                        a->stats.failed_calls++;
                         str_append_cstr(&out, "Tool execution denied by the user.");
                     } else if (tools_execute(a, name, args, &out, tool_err,
                                              sizeof(tool_err)) != 0) {
+                        a->stats.failed_calls++;
                         str_appendf(&out, "Tool error: %s", tool_err);
+                    } else {
+                        executed = 1;
+                        if (tools_tool_is_writer(name)) saw_write = 1;
                     }
+                }
+                if (executed && saw_write && a->cfg != NULL &&
+                    a->cfg->nudge_on_success &&
+                    tool_reports_success(name, str_cstr(&out))) {
+                    str_append_cstr(&out,
+                        "\n[system hint] Acceptance checks passed after the "
+                        "last file change. Stop calling tools and give the "
+                        "final answer now.");
+                    a->stats.nudge_count++;
+                    emit(a, AGENT_EV_INFO,
+                         "Acceptance checks passed; hint sent to the model.");
                 }
                 truncate_output(&out);
                 /* Tool text can carry local-code-page paths (list_dir echoes
@@ -601,7 +750,7 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
                     chat_result_free(&res);
                     str_free(&guard_sig);
                     str_free(&round_guard_sig);
-                    snprintf(err, errcap, "out of memory");
+                    set_err(err, errcap, "out of memory");
                     return -1;
                 }
                 str_free(&out);
@@ -610,10 +759,11 @@ int agent_run(Agent *a, const char *user_text, char *err, size_t errcap)
         chat_result_free(&res);
 
         if (guard_tripped) {
+            emit_run_stats(a, "stopped by loop guard");
             str_free(&guard_sig);
             str_free(&round_guard_sig);
-            snprintf(err, errcap,
-                     "loop guard stopped the run: the model kept repeating "
+            set_err(err, errcap,
+                    "loop guard stopped the run: the model kept repeating "
                      "the same tool call");
             return -1;
         }
@@ -677,7 +827,7 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     }
     root = cJSON_CreateObject();
     if (root == NULL) {
-        snprintf(err, errcap, "out of memory");
+        set_err(err, errcap, "out of memory");
         return -1;
     }
     cJSON_AddNumberToObject(root, "version", 1);
@@ -715,7 +865,7 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     text = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
     if (text == NULL) {
-        snprintf(err, errcap, "could not encode the session");
+        set_err(err, errcap, "could not encode the session");
         return -1;
     }
 
@@ -723,7 +873,7 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     f = fopen(tmp, "wb");
     if (f == NULL) {
         cJSON_free(text);
-        snprintf(err, errcap, "cannot write %s", tmp);
+        set_err(err, errcap, "cannot write %s", tmp);
         return -1;
     }
     if (fwrite(text, 1, strlen(text), f) != strlen(text)) {
@@ -733,13 +883,13 @@ int agent_save_session(Agent *a, const char *path, char *err, size_t errcap)
     cJSON_free(text);
     if (!ok) {
         remove(tmp);
-        snprintf(err, errcap, "failed to write the session file");
+        set_err(err, errcap, "failed to write the session file");
         return -1;
     }
     remove(path);
     if (rename(tmp, path) != 0) {
         remove(tmp);
-        snprintf(err, errcap, "cannot replace %s", path);
+        set_err(err, errcap, "cannot replace %s", path);
         return -1;
     }
     log_info("session saved: %s (%d messages)", path, a->messages.count);
@@ -759,19 +909,19 @@ int agent_load_session(Agent *a, const char *path, char *err, size_t errcap)
     }
     text = read_file_all(path, 8 * 1024 * 1024, &len);
     if (text == NULL) {
-        snprintf(err, errcap, "cannot read %s", path);
+        set_err(err, errcap, "cannot read %s", path);
         return -1;
     }
     root = json_parse(text, len);
     a98_free(text);
     if (root == NULL) {
-        snprintf(err, errcap, "session file is not valid JSON");
+        set_err(err, errcap, "session file is not valid JSON");
         return -1;
     }
     arr = cJSON_GetObjectItemCaseSensitive(root, "messages");
     if (!cJSON_IsArray(arr)) {
         cJSON_Delete(root);
-        snprintf(err, errcap, "session file has no messages array");
+        set_err(err, errcap, "session file has no messages array");
         return -1;
     }
     msglist_clear(&a->messages);
@@ -812,6 +962,7 @@ int agent_load_session(Agent *a, const char *path, char *err, size_t errcap)
         a98_free(tc_text);
     }
     cJSON_Delete(root);
+    tools_read_cache_clear();
     log_info("session loaded: %s (%d messages)", path, a->messages.count);
     return 0;
 }

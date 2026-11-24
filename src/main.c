@@ -184,14 +184,20 @@ static void export_write_utf8(FILE *f, const char *text)
 
 static void on_event(void *ctx, AgentEventType type, const char *text)
 {
-    (void)ctx;
+    Agent *a = (Agent *)ctx;
+
     switch (type) {
     case AGENT_EV_TEXT:
         console_write_utf8(text);
         break;
-    case AGENT_EV_ROUND:
-        console_line_utf8("\n[round ", text);
+    case AGENT_EV_ROUND: {
+        char buf[160];
+        snprintf(buf, sizeof(buf), "%s (tools=%d, failed=%d)",
+                 text ? text : "", a != NULL ? a->stats.tool_calls : 0,
+                 a != NULL ? a->stats.failed_calls : 0);
+        console_line_utf8("\n[round ", buf);
         break;
+    }
     case AGENT_EV_TOOL_START:
         console_line_utf8("\n[tool] ", text);
         break;
@@ -208,9 +214,51 @@ static void on_event(void *ctx, AgentEventType type, const char *text)
 
 static int g_auto_yes = 0;
 
+/* Read one answer line into `out`, trimming leading/trailing whitespace.
+ * Returns 0 on EOF/error.  If the user typed more than the buffer holds, the
+ * rest of that line is drained here: leaving it in stdin would make the next
+ * read at the main prompt look like a command the user never intended. */
+static int read_answer(char *out, size_t cap)
+{
+    char line[256];
+    size_t n;
+    char *s;
+
+    if (out == NULL || cap == 0) {
+        return 0;
+    }
+    out[0] = '\0';
+    if (fgets(line, (int)sizeof(line), stdin) == NULL) {
+        return 0;
+    }
+    n = strlen(line);
+    if (n > 0 && line[n - 1] != '\n') {
+        int ch;
+        /* No newline in the buffer: discard the overflow up to EOL/EOF. */
+        while ((ch = fgetc(stdin)) != '\n' && ch != EOF) {
+            /* discard */
+        }
+    }
+    while (n > 0 && (line[n - 1] == '\n' || line[n - 1] == '\r' ||
+                     line[n - 1] == ' ' || line[n - 1] == '\t')) {
+        line[--n] = '\0';
+    }
+    s = line;
+    while (*s == ' ' || *s == '\t') {
+        s++;
+    }
+    n = strlen(s);
+    if (n >= cap) {
+        n = cap - 1;
+    }
+    memcpy(out, s, n);
+    out[n] = '\0';
+    return 1;
+}
+
 static int on_confirm(void *ctx, const char *tool, const char *args_json)
 {
-    char line[32];
+    char answer[64];
     char summary[1024];
     int danger = 0;
     (void)ctx;
@@ -229,13 +277,18 @@ static int on_confirm(void *ctx, const char *tool, const char *args_json)
     fputs("\n=============================\n", stdout);
     fputs(danger >= 2 ? "Allow? type YES to confirm: " : "Allow? [y/N]: ", stdout);
     fflush(stdout);
-    if (fgets(line, (int)sizeof(line), stdin) == NULL) {
+    if (!read_answer(answer, sizeof(answer))) {
         return 0;
     }
     if (danger >= 2) {
-        return (strncmp(line, "YES", 3) == 0 || strncmp(line, "yes", 3) == 0);
+        /* Exact, case-sensitive match: YES/yes/Yes only.  "YESplease" and
+         * other prefixes are no longer accepted for high-risk actions. */
+        return (strcmp(answer, "YES") == 0 || strcmp(answer, "yes") == 0 ||
+                strcmp(answer, "Yes") == 0);
     }
-    return (line[0] == 'y' || line[0] == 'Y');
+    return (strcmp(answer, "y") == 0 || strcmp(answer, "Y") == 0 ||
+            strcmp(answer, "yes") == 0 || strcmp(answer, "Yes") == 0 ||
+            strcmp(answer, "YES") == 0);
 }
 
 static void mask_key(const char *key, char *out, size_t cap)
@@ -251,11 +304,145 @@ static void mask_key(const char *key, char *out, size_t cap)
         return;
     }
     n = strlen(key);
-    if (n <= 8) {
-        snprintf(out, cap, "****(%u chars)", (unsigned)n);
+    /* Never print leading characters: for OpenAI-style keys they reveal the
+     * "sk-" prefix and the key format.  For long keys only the length and the
+     * last four characters are shown, so the user can still tell keys apart. */
+    if (n > 8) {
+        snprintf(out, cap, "****(%u chars, tail=%.4s)", (unsigned)n, key + n - 4);
     } else {
-        snprintf(out, cap, "%.4s***%s", key, key + n - 4);
+        snprintf(out, cap, "****(%u chars)", (unsigned)n);
     }
+}
+
+/* Case-insensitive check for query/fragment parameter names that carry
+ * credentials. */
+static int url_secret_param(const char *name, size_t len)
+{
+    static const char *const names[] = {
+        "key", "api_key", "apikey", "api-key", "token", "access_token",
+        "refresh_token", "auth", "authorization", "secret", "password",
+        "pass", "pwd", "code", "sig", "signature"
+    };
+    size_t i;
+
+    for (i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        const char *nm = names[i];
+        size_t k;
+        if (strlen(nm) != len) {
+            continue;
+        }
+        for (k = 0; k < len; k++) {
+            char a = name[k];
+            char b = nm[k];
+            if (a >= 'A' && a <= 'Z') {
+                a = (char)(a - 'A' + 'a');
+            }
+            if (b >= 'A' && b <= 'Z') {
+                b = (char)(b - 'A' + 'a');
+            }
+            if (a != b) {
+                break;
+            }
+        }
+        if (k == len) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Copy `url` into `out` with credentials removed before display:
+ *   - userinfo ("https://user:pass@host/...") is dropped;
+ *   - values of key/token/access_token/... query and fragment parameters
+ *     become "***".
+ * The copy is truncated safely to `cap`. */
+static void redact_url(const char *url, char *out, size_t cap)
+{
+    const char *p;
+    const char *userinfo = NULL;
+    size_t o = 0;
+
+    if (out == NULL || cap == 0) {
+        return;
+    }
+    out[0] = '\0';
+    if (url == NULL || url[0] == '\0') {
+        return;
+    }
+
+    /* Find userinfo, if present, in the authority section.  The scheme itself
+     * is kept; only "user:pass@" is dropped below. */
+    p = strstr(url, "://");
+    if (p != NULL) {
+        const char *r = p + 3;
+        while (*r != '\0' && *r != '/' && *r != '?' && *r != '#' && *r != '@') {
+            r++;
+        }
+        if (*r == '@') {
+            userinfo = p + 3;
+        }
+    }
+
+    /* Copy through the path up to the first query/fragment marker. */
+    p = url;
+    while (*p != '\0' && *p != '?' && *p != '#' && o + 1 < cap) {
+        if (p == userinfo) {
+            while (*p != '\0' && *p != '@') {
+                p++;
+            }
+            if (*p == '@') {
+                p++;
+            }
+            userinfo = NULL;
+            continue;
+        }
+        out[o++] = *p++;
+    }
+
+    /* '?' (query) and '#' (fragment) use the same name=value&... syntax. */
+    while ((*p == '?' || *p == '#') && o + 1 < cap) {
+        out[o++] = *p++;
+        while (*p != '\0' && *p != '?' && *p != '#' && o + 1 < cap) {
+            const char *param = p;
+            const char *eq = NULL;
+            size_t i;
+            size_t name_len;
+
+            while (*p != '\0' && *p != '&' && *p != ';' &&
+                   *p != '?' && *p != '#') {
+                if (*p == '=' && eq == NULL) {
+                    eq = p;
+                }
+                p++;
+            }
+            name_len = (eq != NULL) ? (size_t)(eq - param) : (size_t)(p - param);
+            if (eq != NULL && url_secret_param(param, name_len)) {
+                /* Keep "name=" but replace the value with a fixed mask. */
+                for (i = 0; i <= name_len && o + 1 < cap; i++) {
+                    out[o++] = param[i];
+                }
+                {
+                    const char *mask = "***";
+                    size_t m;
+                    for (m = 0; mask[m] != '\0' && o + 1 < cap; m++) {
+                        out[o++] = mask[m];
+                    }
+                }
+            } else {
+                size_t plen = (size_t)(p - param);
+                for (i = 0; i < plen && o + 1 < cap; i++) {
+                    out[o++] = param[i];
+                }
+            }
+            if (*p == '&' || *p == ';') {
+                if (o + 1 < cap) {
+                    out[o++] = *p;
+                }
+                p++;
+            }
+        }
+    }
+    out[o] = '\0';
 }
 
 static void print_usage_argv(void)
@@ -276,20 +463,50 @@ static void ensure_workspace(const char *path)
     CreateDirectoryA(path, NULL);
 }
 
+/* Split an interactive command into its token (ending at the first whitespace
+ * or at the NUL) and the argument that follows it.  Returns the token length. */
+static size_t command_token(const char *cmd, const char **arg_out)
+{
+    size_t n = 0;
+
+    while (cmd[n] != '\0' && cmd[n] != ' ' && cmd[n] != '\t') {
+        n++;
+    }
+    if (arg_out != NULL) {
+        const char *a = cmd + n;
+        while (*a == ' ' || *a == '\t') {
+            a++;
+        }
+        *arg_out = a;
+    }
+    return n;
+}
+
+/* Exact comparison of the command token against a literal command name. */
+static int token_equals(const char *cmd, size_t toklen, const char *name)
+{
+    size_t n = strlen(name);
+    return toklen == n && strncmp(cmd, name, n) == 0;
+}
+
 static void print_help(void)
 {
     printf("Commands:\n");
     printf("  /help              Show this help\n");
     printf("  /new               Start a new conversation\n");
-    printf("  /stop              Cancel current request (also Ctrl+C)\n");
+    printf("  /stop              Show how to cancel (use Ctrl+C for a running request)\n");
     printf("  /save [path]       Save session\n");
     printf("  /load [path]       Load session\n");
+    printf("  /continue          Load the last session (/load with no path)\n");
+    printf("  /stats             Show rounds/tool calls from the last run\n");
     printf("  /export [path]     Export transcript as text\n");
-    printf("  /config            Show config (API key masked)\n");
+    printf("  /config            Show config (API key masked, URL credentials redacted)\n");
     printf("  /tools             List available tools\n");
     printf("  /workspace [path]  Show or set workspace for this process\n");
     printf("  /model [name]      Show or set model for this process\n");
     printf("  /quit              Exit\n");
+    printf("Note: /save, /load and /export accept a path typed by you; they are NOT\n");
+    printf("      restricted to the agent workspace sandbox (the model cannot call them).\n");
 }
 
 int main(int argc, char **argv)
@@ -301,6 +518,7 @@ int main(int argc, char **argv)
     char input[4096];
     char err[512];
     char key_masked[128];
+    char api_base_redacted[640];
     Config cfg;
     Agent agent;
     int have_key;
@@ -376,12 +594,13 @@ int main(int argc, char **argv)
 
     if (net_init() != 0) {
         fprintf(stderr, "Failed to initialize network (Winsock).\n");
+        log_shutdown();
         return 1;
     }
 
     agent_init(&agent, &cfg);
     agent.on_event = on_event;
-    agent.event_ctx = NULL;
+    agent.event_ctx = &agent;
     agent.on_confirm = on_confirm;
     agent.confirm_ctx = NULL;
     agent.cancel = &g_cancel;
@@ -392,7 +611,8 @@ int main(int argc, char **argv)
     printf("Log: %s\n", log_path);
     printf("Workspace: %s\n", cfg.workspace);
     printf("Model: %s\n", cfg.model);
-    printf("API base: %s\n", cfg.api_base);
+    redact_url(cfg.api_base, api_base_redacted, sizeof(api_base_redacted));
+    printf("API base: %s\n", api_base_redacted);
     if (g_auto_yes) {
         printf("WARNING: --yes is set; tool confirms are auto-allowed.\n");
     }
@@ -406,11 +626,11 @@ int main(int argc, char **argv)
 
     if (oneshot) {
         char *cmd;
+        int status = 1;
+
         if (!have_key) {
             fprintf(stderr, "api.key is not set.\n");
-            agent_free(&agent);
-            net_cleanup();
-            return 1;
+            goto oneshot_cleanup;
         }
         g_cancel = 0;
         cmd = input_to_utf8(opt_message);
@@ -422,16 +642,21 @@ int main(int argc, char **argv)
             if (err[0]) console_line_utf8("[error] ", err);
             else printf("\n[error] agent_run failed\n");
             a98_free(cmd);
-            agent_free(&agent);
-            net_cleanup();
-            return 1;
+            goto oneshot_cleanup;
         }
         console_flush_utf8();
         printf("\n");
         a98_free(cmd);
+        status = 0;
+
+oneshot_cleanup:
+        /* All oneshot exits must release the console's pending UTF-8 buffer,
+         * the agent, Winsock and the log file just like the interactive path. */
+        str_free(&g_pending);
         agent_free(&agent);
         net_cleanup();
-        return 0;
+        log_shutdown();
+        return status;
     }
 
     for (;;) {
@@ -461,18 +686,26 @@ int main(int argc, char **argv)
         }
 
         if (cmd[0] == '/') {
-            if (strcmp(cmd, "/help") == 0) {
+            const char *arg;
+            size_t toklen = command_token(cmd, &arg);
+
+            if (arg[0] == '\0' && token_equals(cmd, toklen, "/help")) {
                 print_help();
-            } else if (strcmp(cmd, "/quit") == 0 || strcmp(cmd, "/exit") == 0) {
+            } else if (arg[0] == '\0' &&
+                       (token_equals(cmd, toklen, "/quit") ||
+                        token_equals(cmd, toklen, "/exit"))) {
                 a98_free(cmd);
                 break;
-            } else if (strcmp(cmd, "/new") == 0) {
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/new")) {
                 agent_new_conversation(&agent);
                 printf("[info] New conversation started.\n");
-            } else if (strcmp(cmd, "/stop") == 0) {
-                g_cancel = 1;
-                printf("[info] Cancel requested.\n");
-            } else if (strcmp(cmd, "/tools") == 0) {
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/stop")) {
+                /* agent_run() runs synchronously on this thread, so stdin at
+                 * this prompt cannot be used to interrupt a request already in
+                 * flight; only the console Ctrl+C handler sets g_cancel.  Say
+                 * so instead of pretending /stop cancels anything. */
+                printf("[info] /stop cannot interrupt a running request; press Ctrl+C instead.\n");
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/tools")) {
                 int count = 0, ti;
                 const ToolDef *all = tools_all(&count);
                 printf("Available tools (%d):\n", count);
@@ -481,17 +714,16 @@ int main(int argc, char **argv)
                            all[ti].description ? all[ti].description : "",
                            all[ti].needs_confirm ? " [confirm]" : "");
                 }
-            } else if (strcmp(cmd, "/config") == 0) {
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/config")) {
                 mask_key(cfg.api_key, key_masked, sizeof(key_masked));
+                redact_url(cfg.api_base, api_base_redacted, sizeof(api_base_redacted));
                 printf("Config path: %s\n", ini_path);
                 printf("api.base=%s\napi.model=%s\napi.key=%s\nworkspace=%s\n"
                        "tls.verify=%d\nallow_shell=%d\n",
-                       cfg.api_base, cfg.model, key_masked,
+                       api_base_redacted, cfg.model, key_masked,
                        cfg.workspace, cfg.tls_verify, cfg.allow_shell);
-            } else if (strncmp(cmd, "/workspace", 10) == 0) {
-                const char *arg = cmd + 10;
-                while (*arg == ' ') arg++;
-                if (*arg == '\0') {
+            } else if (token_equals(cmd, toklen, "/workspace")) {
+                if (arg[0] == '\0') {
                     printf("workspace=%s\n", cfg.workspace);
                 } else {
                     strncpy(cfg.workspace, arg, sizeof(cfg.workspace) - 1);
@@ -501,21 +733,17 @@ int main(int argc, char **argv)
                     agent.workspace[sizeof(agent.workspace) - 1] = '\0';
                     printf("[info] workspace set to %s\n", cfg.workspace);
                 }
-            } else if (strncmp(cmd, "/model", 6) == 0) {
-                const char *arg = cmd + 6;
-                while (*arg == ' ') arg++;
-                if (*arg == '\0') {
+            } else if (token_equals(cmd, toklen, "/model")) {
+                if (arg[0] == '\0') {
                     printf("model=%s\n", cfg.model);
                 } else {
                     strncpy(cfg.model, arg, sizeof(cfg.model) - 1);
                     cfg.model[sizeof(cfg.model) - 1] = '\0';
                     printf("[info] model set to %s\n", cfg.model);
                 }
-            } else if (strncmp(cmd, "/save", 5) == 0) {
-                const char *arg = cmd + 5;
+            } else if (token_equals(cmd, toklen, "/save")) {
                 const char *sp;
-                while (*arg == ' ') arg++;
-                if (*arg == '\0') {
+                if (arg[0] == '\0') {
                     agent_last_session_path(sess_path, sizeof(sess_path));
                     sp = sess_path;
                 } else {
@@ -527,11 +755,9 @@ int main(int argc, char **argv)
                 } else {
                     printf("[error] Save failed: %s\n", err[0] ? err : "unknown");
                 }
-            } else if (strncmp(cmd, "/load", 5) == 0) {
-                const char *arg = cmd + 5;
+            } else if (token_equals(cmd, toklen, "/load")) {
                 const char *sp;
-                while (*arg == ' ') arg++;
-                if (*arg == '\0') {
+                if (arg[0] == '\0') {
                     agent_last_session_path(sess_path, sizeof(sess_path));
                     sp = sess_path;
                 } else {
@@ -543,12 +769,29 @@ int main(int argc, char **argv)
                 } else {
                     printf("[error] Load failed: %s\n", err[0] ? err : "unknown");
                 }
-            } else if (strncmp(cmd, "/export", 7) == 0) {
-                const char *arg = cmd + 7;
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/continue")) {
+                agent_last_session_path(sess_path, sizeof(sess_path));
+                err[0] = '\0';
+                if (agent_load_session(&agent, sess_path, err, sizeof(err)) == 0) {
+                    printf("[info] Continued from %s\n", sess_path);
+                } else {
+                    printf("[error] Continue failed: %s\n",
+                           err[0] ? err : "unknown");
+                }
+            } else if (arg[0] == '\0' && token_equals(cmd, toklen, "/stats")) {
+                AgentStats st;
+                agent_stats(&agent, &st);
+                printf("Last run: %d round(s), %d tool call(s), %d failed, "
+                       "%d blocked, %d hint(s)\n",
+                       st.rounds, st.tool_calls, st.failed_calls,
+                       st.blocked_calls, st.nudge_count);
+            } else if (token_equals(cmd, toklen, "/export")) {
                 FILE *ef;
                 int mi;
-                while (*arg == ' ') arg++;
-                if (*arg == '\0') {
+                /* The path is typed by the user at the prompt, not supplied by
+                 * the model, so it is deliberately NOT confined to the
+                 * agent workspace sandbox. */
+                if (arg[0] == '\0') {
                     printf("usage: /export path.txt\n");
                 } else {
                     ef = fopen(arg, "wb");

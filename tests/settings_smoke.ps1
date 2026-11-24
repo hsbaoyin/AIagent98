@@ -11,6 +11,9 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+# Always resolve the mock server relative to this script, not to whatever
+# directory the caller happened to start PowerShell in.
+$root = Split-Path -Parent $PSScriptRoot
 
 Add-Type @"
 using System;
@@ -43,6 +46,22 @@ public class A98SettingsUi {
     public const uint WM_CLOSE = 0x0010;
     public const uint CB_GETCURSEL = 0x0147;
     public const uint CB_SETCURSEL = 0x014E;
+    public const uint BM_GETCHECK = 0x00F0;
+    public const uint BM_SETCHECK = 0x00F1;
+    public const int BST_UNCHECKED = 0;
+    public const int BST_CHECKED = 1;
+    public const int IDC_TOOL_PROFILE = 2070;
+    public const int IDC_TOOL_CALL_FALLBACK = 2072;
+    public const int IDC_READ_CACHE = 2073;
+    public const int IDC_NUDGE_ON_SUCCESS = 2074;
+
+    public static int Checked(IntPtr h) {
+        return (int)SendInt(h, BM_GETCHECK, IntPtr.Zero, IntPtr.Zero);
+    }
+
+    public static void SetCheck(IntPtr h, int state) {
+        SendInt(h, BM_SETCHECK, (IntPtr)state, IntPtr.Zero);
+    }
 
     public const int IDOK = 1;
     public const int IDCANCEL = 2;
@@ -81,9 +100,13 @@ $iniBackup = [IO.File]::ReadAllText($iniPath)
 $mock = $null
 $p = $null
 try {
+    $mockScript = Join-Path $root 'tests\mock_openai.js'
+    if (-not (Test-Path $mockScript)) {
+        throw "missing mock server: $mockScript"
+    }
     $mock = Start-Process -FilePath 'node' `
-        -ArgumentList @('tests\mock_openai.js', "$Port") `
-        -WorkingDirectory (Resolve-Path '.') -PassThru
+        -ArgumentList @("`"$mockScript`"", "$Port") `
+        -WorkingDirectory $root -PassThru
     # Poll the port like retry_smoke/loop_smoke do; a fixed 800 ms sleep made
     # the test flaky whenever node started slowly.
     $deadline = (Get-Date).AddSeconds($TimeoutSec)
@@ -136,6 +159,10 @@ try {
     $headers = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_EXTRA_HEADERS)
     $test = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_TEST)
     $result = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_TEST_RESULT)
+    $profile = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_TOOL_PROFILE)
+    $fallback = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_TOOL_CALL_FALLBACK)
+    $readCache = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_READ_CACHE)
+    $nudge = [A98SettingsUi]::GetDlgItem($dlg, [A98SettingsUi]::IDC_NUDGE_ON_SUCCESS)
 
     $idx = [int]([A98SettingsUi]::SendInt($provider, [A98SettingsUi]::CB_GETCURSEL,
                                          [IntPtr]::Zero, [IntPtr]::Zero))
@@ -189,6 +216,11 @@ try {
                                     [IntPtr]::Zero, '0')
     [void][A98SettingsUi]::SendText($headers, [A98SettingsUi]::WM_SETTEXT,
                                     [IntPtr]::Zero, 'X-Smoke: yes')
+    [void][A98SettingsUi]::SendText($profile, [A98SettingsUi]::WM_SETTEXT,
+                                    [IntPtr]::Zero, 'docs')
+    [A98SettingsUi]::SetCheck($fallback, [A98SettingsUi]::BST_UNCHECKED)
+    [A98SettingsUi]::SetCheck($readCache, [A98SettingsUi]::BST_CHECKED)
+    [A98SettingsUi]::SetCheck($nudge, [A98SettingsUi]::BST_UNCHECKED)
     [void][A98SettingsUi]::SendInt($dlg, [A98SettingsUi]::WM_COMMAND,
                                    [IntPtr][A98SettingsUi]::IDOK,
                                    [IntPtr]::Zero)
@@ -200,12 +232,16 @@ try {
                           'temperature=1.25',
                           'max_steps=0',
                           'system_prompt=Smoke system prompt',
-                          'extra_headers=X-Smoke: yes')) {
+                          'extra_headers=X-Smoke: yes',
+                          'tool_profile=docs',
+                          'tool_call_fallback=0',
+                          'read_cache=1',
+                          'nudge_on_success=0')) {
         if (-not $saved.Contains($needle)) {
             throw "settings were not saved: missing '$needle'"
         }
     }
-    Write-Host 'PASS: system prompt, temperature and headers saved to INI'
+    Write-Host 'PASS: system prompt, temperature, headers and efficiency settings saved to INI'
 
     [void][A98SettingsUi]::PostMessageA($hwnd, [A98SettingsUi]::WM_CLOSE,
                                         [IntPtr]::Zero, [IntPtr]::Zero)

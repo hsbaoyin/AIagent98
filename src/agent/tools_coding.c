@@ -17,6 +17,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <limits.h>
 
 static void set_err(char *err, size_t cap, const char *fmt, ...)
 {
@@ -31,6 +32,21 @@ static const char *arg_str(cJSON *args, const char *name, const char *def)
 {
     const char *v = json_string(args, name);
     return v != NULL ? v : def;
+}
+
+/* Read a JSON number as a 64-bit unsigned value with basic range checks.
+ * cJSON stores numbers as double (exact up to 2^53, ample for file offsets). */
+static unsigned long long json_uint64(cJSON *obj, const char *name,
+                                      unsigned long long def)
+{
+    cJSON *it = cJSON_GetObjectItemCaseSensitive(obj, name);
+    double d;
+    if (it == NULL || !cJSON_IsNumber(it)) return def;
+    d = it->valuedouble;
+    if (d < 0.0) return 0;
+    /* 2^63 is beyond signed 64-bit: treat as out of range. */
+    if (d >= 9223372036854775808.0) return def;
+    return (unsigned long long)d;
 }
 
 /* ---- build: run the shell and parse compiler diagnostics ------------- */
@@ -123,9 +139,122 @@ const ToolDef tool_build = {
     schema_build, 1, tool_build_run
 };
 
+/* ---- toolchain_probe: answer "how do I build this?" in one call ------- */
+
+const char schema_toolchain_probe[] =
+    "{\"type\":\"object\",\"properties\":{},\"required\":[]}";
+
+int tool_toolchain_probe_run(Agent *a, cJSON *args, Str *out, char *err,
+                             size_t errcap)
+{
+    static const char *const programs[] = {
+        "gcc", "cc", "g++", "cl", "tcc", "clang",
+        "make", "mingw32-make", "nmake", NULL
+    };
+    static const char *const build_files[] = {
+        "Makefile", "makefile", "build_ow.cmd", "build_ow.bat",
+        "run_tests.bat", NULL
+    };
+    int i;
+    int have_gcc = 0;
+    int have_cc = 0;
+    int have_cl = 0;
+    int have_make = 0;
+    int have_nmake = 0;
+
+    A98_UNUSED(args);
+    A98_UNUSED(err);
+    A98_UNUSED(errcap);
+    str_append_cstr(out, "Toolchain probe:\n");
+    for (i = 0; programs[i] != NULL; i++) {
+        cJSON *call = cJSON_CreateObject();
+        char *json;
+        Str raw;
+        char local_err[256];
+        const char *path;
+
+        if (call == NULL) continue;
+        cJSON_AddStringToObject(call, "name", programs[i]);
+        json = cJSON_PrintUnformatted(call);
+        cJSON_Delete(call);
+        if (json == NULL) continue;
+        str_init(&raw);
+        local_err[0] = '\0';
+        if (tools_execute(a, "which", json, &raw, local_err,
+                          sizeof(local_err)) == 0 && raw.len > 0) {
+            path = str_cstr(&raw);
+            str_appendf(out, "%-12s %s", programs[i], path);
+            if (path[strlen(path) - 1] != '\n') str_append_cstr(out, "\n");
+            if (strcmp(programs[i], "gcc") == 0 ||
+                strcmp(programs[i], "g++") == 0) have_gcc = 1;
+            if (strcmp(programs[i], "cc") == 0) have_cc = 1;
+            if (strcmp(programs[i], "cl") == 0) have_cl = 1;
+            if (strcmp(programs[i], "make") == 0 ||
+                strcmp(programs[i], "mingw32-make") == 0) have_make = 1;
+            if (strcmp(programs[i], "nmake") == 0) have_nmake = 1;
+        } else {
+            str_appendf(out, "%-12s not found on PATH\n", programs[i]);
+        }
+        str_free(&raw);
+        cJSON_free(json);
+    }
+    str_append_cstr(out, "Workspace build files:\n");
+    for (i = 0; build_files[i] != NULL; i++) {
+        char resolved[A98_MAX_PATH];
+        char local_err[256];
+
+        local_err[0] = '\0';
+        if (tools_resolve_path(a, build_files[i], resolved, sizeof(resolved),
+                               local_err, sizeof(local_err)) == 0 &&
+            a98_path_exists(resolved)) {
+            str_appendf(out, "  %s (present)\n", build_files[i]);
+        }
+    }
+    str_append_cstr(out, "Recommended command: ");
+    if (have_make) {
+        str_append_cstr(out, "make (use `make test` if the Makefile has a "
+                             "test target)\n");
+    } else if (have_gcc) {
+        str_append_cstr(out, "gcc -std=c99 -Wall -Iinclude <sources> -o <exe>\n");
+    } else if (have_cc) {
+        str_append_cstr(out, "cc -Iinclude <sources> -o <exe>\n");
+    } else if (have_cl) {
+        str_append_cstr(out, "cl /Iinclude <sources>\n");
+    } else if (have_nmake) {
+        str_append_cstr(out, "nmake (no gcc/cc/cl on PATH)\n");
+    } else {
+        str_append_cstr(out, "none; no compiler or make tool found on PATH\n");
+    }
+    return 0;
+}
+
+const ToolDef tool_toolchain_probe = {
+    "toolchain_probe",
+    "Probe PATH and the workspace for compilers, make tools and build scripts; "
+    "returns a recommended build command.",
+    schema_toolchain_probe, 0, tool_toolchain_probe_run
+};
+
 /* ---- file walking helpers ------------------------------------------- */
 
 typedef int (*FileFn)(const char *full, const char *rel, void *ctx);
+
+/* True if any component of `path` is the ".snapshots" folder. Checking every
+ * component (instead of only the top level) stops a snapshot from walking
+ * into older snapshots and copying them again. */
+static int path_has_snapshots(const char *path)
+{
+    const char *p = path;
+    while (*p != '\0') {
+        const char *comp = p;
+        while (*p != '\0' && *p != '\\' && *p != '/') p++;
+        if ((size_t)(p - comp) == 10 &&
+            a98_strncasecmp(comp, ".snapshots", 10) == 0)
+            return 1;
+        if (*p != '\0') p++;
+    }
+    return 0;
+}
 
 static void walk_files(const char *dir, const char *prefix, FileFn fn, void *ctx,
                        int depth)
@@ -135,14 +264,10 @@ static void walk_files(const char *dir, const char *prefix, FileFn fn, void *ctx
     char rel[A98_MAX_PATH];
     WIN32_FIND_DATAA fd;
     HANDLE h;
-    int skip_snapshots;
 
     if (depth > 16) return;
-    skip_snapshots = (prefix[0] == '\0' &&
-                      a98_strcasecmp(strrchr(dir, '\\') != NULL ?
-                                     strrchr(dir, '\\') + 1 : dir,
-                                     ".snapshots") == 0);
-    if (skip_snapshots) return;
+    /* Skip the whole .snapshots tree, wherever it appears in the path. */
+    if (path_has_snapshots(dir)) return;
 
     if (snprintf(pattern, sizeof(pattern), "%s\\*", dir) >= (int)sizeof(pattern))
         return;
@@ -236,19 +361,54 @@ static char *file_to_utf8(const char *path, long *size)
 
 static int write_utf8_text(const char *path, const char *text)
 {
+    static unsigned long tmp_seq = 0;
     char *local = a98_utf8_to_acp(text);
     const char *src = local != NULL ? local : text;
-    FILE *f = fopen(path, "wb");
+    char tmp[A98_MAX_PATH + 32];
     const char *p;
+    FILE *f;
+    int failed = 0;
+
+    /* Write a uniquely named temp file in the same directory so the final
+     * rename stays on one volume and never truncates the live file on error. */
+    if (snprintf(tmp, sizeof(tmp), "%s~%lu.%lu.tmp", path,
+                 (unsigned long)GetTickCount(), ++tmp_seq) >= (int)sizeof(tmp)) {
+        a98_free(local);
+        return -1;
+    }
+    f = fopen(tmp, "wb");
     if (f == NULL) { a98_free(local); return -1; }
     for (p = src; *p != '\0'; p++) {
-        if (*p == '\n' && (p == src || p[-1] != '\r')) fputc('\r', f);
-        fputc(*p, f);
+        if (*p == '\n' && (p == src || p[-1] != '\r')) {
+            if (fputc('\r', f) == EOF) { failed = 1; break; }
+        }
+        if (fputc(*p, f) == EOF) { failed = 1; break; }
     }
-    fclose(f);
+    if (fclose(f) != 0) failed = 1;
+    if (failed) {
+        DeleteFileA(tmp);
+        a98_free(local);
+        return -1;
+    }
+    /* Atomically replace the target. On Win9x MoveFile may fail when the
+     * destination exists, so remove it and retry before giving up. */
+    if (!MoveFileA(tmp, path)) {
+        DeleteFileA(path);
+        if (!MoveFileA(tmp, path)) {
+            DeleteFileA(tmp);
+            a98_free(local);
+            return -1;
+        }
+    }
     a98_free(local);
     return 0;
 }
+
+/* Bounds for cross-file replacement: keep the result size representable in a
+ * 32-bit size_t and put an explicit ceiling on allocations. */
+#define A98_REPL_MAX_ITEM   (4U * 1024U * 1024U)    /* replacement text length */
+#define A98_REPL_MAX_COUNT  (16U * 1024U * 1024U)   /* number of matches */
+#define A98_REPL_MAX_RESULT (64U * 1024U * 1024U)   /* result buffer bytes */
 
 static int replace_cb(const char *full, const char *rel, void *ctx)
 {
@@ -262,7 +422,11 @@ static int replace_cb(const char *full, const char *rel, void *ctx)
 
     if (rc->files_hit >= rc->max_files) return 0;
     if (rc->include != NULL && rc->include[0] != '\0') {
-        strcpy(base, strrchr(rel, '\\') != NULL ? strrchr(rel, '\\') + 1 : rel);
+        const char *slash = strrchr(rel, '\\');
+        /* Bounded copy: never overrun base even for a very long rel path. */
+        if (snprintf(base, sizeof(base), "%s",
+                     slash != NULL ? slash + 1 : rel) >= (int)sizeof(base))
+            return 0;
         if (!glob_match(rc->include, base)) return 0;
     }
     text = file_to_utf8(full, &size);
@@ -277,34 +441,77 @@ static int replace_cb(const char *full, const char *rel, void *ctx)
         char *result;
         size_t plen = strlen(rc->pattern);
         size_t rlen = strlen(rc->replacement);
-        size_t need = strlen(text) + (rlen > plen ? (rlen - plen) * (size_t)count : 0) + 1;
-        size_t o = 0;
+        size_t tlen = strlen(text);
+        unsigned long long need64, delta = 0;
+        size_t need, o = 0;
         const char *src = text;
+        int overflow = 0;
+
+        if (rlen > A98_REPL_MAX_ITEM || (size_t)count > A98_REPL_MAX_COUNT) {
+            set_err(rc->err, rc->errcap, "replacement too large: %s", rel);
+            a98_free(text);
+            return 0;
+        }
+        /* 64-bit intermediate: (rlen - plen) * count used to wrap in 32-bit
+         * size_t and allocated far too little for the writes below. */
+        if (rlen > plen)
+            delta = (unsigned long long)(rlen - plen) * (unsigned long long)count;
+        need64 = (unsigned long long)tlen + delta + 1ULL;
+        if (need64 > (unsigned long long)(size_t)-1 ||
+            need64 > (unsigned long long)A98_REPL_MAX_RESULT) {
+            set_err(rc->err, rc->errcap, "replacement result too large: %s", rel);
+            a98_free(text);
+            return 0;
+        }
+        need = (size_t)need64;
         result = (char *)a98_alloc(need);
-        if (result != NULL) {
-            while ((p = strstr(src, rc->pattern)) != NULL) {
-                memcpy(result + o, src, (size_t)(p - src));
-                o += (size_t)(p - src);
-                memcpy(result + o, rc->replacement, rlen);
-                o += rlen;
-                src = p + plen;
+        if (result == NULL) {
+            set_err(rc->err, rc->errcap, "out of memory: %s", rel);
+            a98_free(text);
+            return 0;
+        }
+        while ((p = strstr(src, rc->pattern)) != NULL) {
+            size_t chunk = (size_t)(p - src);
+            /* Subtraction form avoids overflow when adding o + chunk + rlen. */
+            if (o > need || chunk > need - o || rlen > need - o - chunk) {
+                overflow = 1;
+                break;
             }
-            strcpy(result + o, src);
-            if (!rc->dry_run) {
-                if (write_utf8_text(full, result) == 0) {
-                    rc->files_hit++;
-                    rc->replacements += count;
-                    str_appendf(rc->out, "%s: %d replacement(s)\n", rel, count);
-                } else {
-                    set_err(rc->err, rc->errcap, "cannot write: %s", rel);
-                }
-            } else {
+            memcpy(result + o, src, chunk);
+            o += chunk;
+            memcpy(result + o, rc->replacement, rlen);
+            o += rlen;
+            src = p + plen;
+        }
+        if (!overflow) {
+            size_t chunk = strlen(src);
+            /* need - o must leave room for the trailing NUL. */
+            if (chunk >= need - o) overflow = 1;
+            else {
+                memcpy(result + o, src, chunk + 1);
+                o += chunk;
+            }
+        }
+        if (overflow) {
+            set_err(rc->err, rc->errcap, "replacement overflow: %s", rel);
+            a98_free(result);
+            a98_free(text);
+            return 0;
+        }
+        if (!rc->dry_run) {
+            if (write_utf8_text(full, result) == 0) {
                 rc->files_hit++;
                 rc->replacements += count;
-                str_appendf(rc->out, "%s: %d match(es) [dry run]\n", rel, count);
+                str_appendf(rc->out, "%s: %d replacement(s)\n", rel, count);
+            } else {
+                set_err(rc->err, rc->errcap, "cannot write: %s", rel);
             }
-            a98_free(result);
+        } else {
+            rc->files_hit++;
+            rc->replacements += count;
+            str_appendf(rc->out, "%s: %d match(es) [dry run]\n", rel, count);
         }
+        a98_free(result);
     }
     (void)name;
     a98_free(text);
@@ -378,7 +585,7 @@ int tool_outline_run(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 
     p = text;
     while (*p != '\0' && count < max_items) {
-        const char *e = strchr(p, '\n');
+        char *e = strchr(p, '\n');
         size_t len = e != NULL ? (size_t)(e - p) : strlen(p);
         char line[2048];
         size_t n = len < sizeof(line) - 1 ? len : sizeof(line) - 1;
@@ -598,7 +805,10 @@ const char schema_hexdump[] =
 int tool_hexdump_run(Agent *a, cJSON *args, Str *out, char *err, size_t errcap)
 {
     char path[A98_MAX_PATH];
-    long offset = (long)json_int(args, "offset", 0);
+    unsigned long long off64 = json_uint64(args, "offset", 0);
+    /* fseek() takes a 32-bit long here, so clamp rather than wrap negative. */
+    long offset = (off64 > (unsigned long long)LONG_MAX) ?
+                  LONG_MAX : (long)off64;
     int length = json_int(args, "length", 256);
     unsigned char buf[4096];
     FILE *f;

@@ -1,8 +1,9 @@
 # Loop-control smoke test for AIagent98.
 #
-# Starts tests\mock_openai.js and runs the CLI three times:
+# Starts tests\mock_openai.js and runs the CLI four times:
 #   1. max_steps=0 with a task that needs 40 tool rounds (must not be cut
 #      at the old 8/24/32 limits),
+#   1b. the same task with no max_steps key (the default must be unlimited),
 #   2. a model that repeats the exact same tool call (the loop guard must
 #      block the third call and stop the run on the fourth),
 #   3. max_steps=3 with the same 40-round task (must stop after three).
@@ -32,7 +33,8 @@ $mock = Join-Path $root 'tests\mock_openai.js'
 $log = Join-Path $Dir 'agent98.log'
 $ini = Join-Path $Dir 'agent98.ini'
 
-function Write-Ini([int]$Steps) {
+function Write-Ini([int]$Steps, [switch]$OmitSteps) {
+    $stepsLine = if ($OmitSteps) { '' } else { "max_steps=$Steps" }
     $text = @"
 [api]
 base=http://127.0.0.1:$Port/v1
@@ -45,7 +47,7 @@ temperature=0.7
 workspace=.\workspace
 allow_shell=0
 allow_outside=0
-max_steps=$Steps
+$stepsLine
 connect_timeout=10
 request_timeout=30
 [tls]
@@ -59,7 +61,7 @@ level=3
 function Run-Agent([string]$inputText) {
     Push-Location $Dir
     try {
-        return ($inputText + "`n/quit`n" | & $exe 2>&1 | Out-String)
+        return ($inputText + "`n/stats`n/quit`n" | & $exe 2>&1 | Out-String)
     } finally {
         Pop-Location
     }
@@ -102,7 +104,30 @@ try {
     if ($out -match 'max_steps') {
         throw "unlimited run was stopped by max_steps:`n$out"
     }
+    if ($out -notmatch 'Run completed: 41 round') {
+        throw "run summary was not emitted:`n$out"
+    }
+    if ($out -notmatch 'Last run: 41 round\(s\), 40 tool call\(s\)') {
+        throw "CLI /stats did not report the last run:`n$out"
+    }
+    Write-Host 'PASS: run summary and CLI /stats report tool rounds'
     Write-Host 'PASS: max_steps=0 allows 40 tool rounds'
+
+    # 1b. Default config (no max_steps key) must be unlimited as well.
+    Write-Ini 0 -OmitSteps
+    Remove-Item $log -Force -ErrorAction SilentlyContinue
+    $out = Run-Agent 'count up 40'
+    if ($out -notmatch 'Counted 40 steps\.') {
+        throw "default max_steps run did not finish:`n$out"
+    }
+    $rounds = Round-Count $out
+    if ($rounds -ne 41) {
+        throw "expected 41 rounds with default max_steps, got ${rounds}:`n$out"
+    }
+    if ($out -match 'max_steps') {
+        throw "default max_steps was stopped by the old cap:`n$out"
+    }
+    Write-Host 'PASS: default max_steps allows 40 tool rounds'
 
     # 2. Loop guard: the third identical call is blocked, the fourth stops.
     $out = Run-Agent 'loop forever'

@@ -30,7 +30,7 @@ local models included. No relay PC, no proxy, no patched system libraries.
 ## English
 
 > **New in this release:** the transcript is now self-drawn and renders emoji
-> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 47
+> as GDI bitmaps, fixing the Win9x RichEdit OLE GPF; tools grew from 31 to 46
 > with coding and network tools (`web_search` auto-falls back through Bing /
 > Baidu / DuckDuckGo, so it works in China and abroad); long conversations are
 > auto-compacted into a summary; all 24 settings live in a tabbed dialog; and
@@ -54,7 +54,7 @@ A chat client on a retro PC is a demo: you ask a question, it prints an answer,
 the answer is gone. The reason to put an agent on a 1998 machine is that the
 machine has files, and the model can reach them.
 
-- 47 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
+- 46 local tools (`read_file`, `write_file`, `grep`, `glob`, `apply_patch`,
   `run_command`, ...) run on the 9x box itself, not on a server somewhere else
 - every path is resolved through `GetFullPathName` and checked against the
   workspace root, so `..` cannot walk out of the sandbox (`allow_outside=0`,
@@ -67,7 +67,7 @@ machine has files, and the model can reach them.
   so the files it produces open correctly in Win98 Notepad, `EDIT` and
   `COMMAND.COM`
 
-#### Tool set (47)
+#### Tool set (46)
 
 The full reference is in [`TOOLS.md`](TOOLS.md). Read/search tools
 (`list_dir`, `read_file`, `head`, `tail`, `file_info`, `search_files`, `grep`,
@@ -92,8 +92,13 @@ The console client adds `/tools`, `/stop`, `/export <file>` (CP_ACP + CRLF),
 
 - **Self-drawn transcript:** emoji are plain GDI bitmaps, not RichEdit OLE
   objects — no more Win9x GPF when the model sends an emoji. Chat-style bubbles,
-  coloured role labels, code bands and collapsible tool calls.
-- **47 tools (up from 31):** coding tools (`build`, `replace_across`, `outline`,
+  coloured role labels, code bands and collapsible tool calls. This does *not*
+  mean the EXE has no `ole32.dll` dependency: `src/gui/emoji_ui.c` still uses
+  OLE2 structured storage (`CreateILockBytesOnHGlobal` /
+  `StgCreateDocfileOnILockBytes`) for the picture-RTF helper. OLE2 is a built-in
+  Windows 9x system component (unlike `ntdll.dll` or `api-ms-win-*`), so
+  linking `ole32.lib` is fully 9x-compatible and is not an NT-only dependency.
+- **46 tools (up from 31):** coding tools (`build`, `replace_across`, `outline`,
   `restore`, `snapshot`, `hexdump`), network tools (`http_request`,
   `http_download`, `dns_resolve`, `tcp_probe`, `web_search`, `gist_upload`), and
   skill tools (`list_skills`, `use_skill`, `save_skill`). `web_search` auto-falls
@@ -231,8 +236,14 @@ temperature=0.7
 [agent]
 workspace=C:\AIagent98
 allow_shell=0
-; 0 = no limit (stop with the GUI Stop button), otherwise 1..200
-max_steps=32
+; 0 = no limit (the default; stop with the GUI Stop button), otherwise 1..200
+max_steps=0
+; round-efficiency switches (all default to 1)
+tool_call_fallback=1
+read_cache=1
+nudge_on_success=1
+; tools advertised to the model: full, coding (default), network or docs
+tool_profile=coding
 [tls]
 verify=1
 [log]
@@ -332,8 +343,11 @@ The transcript is a **self-drawn control** (`src/gui/transcript_view.c`), not a
 RichEdit. This matters: the old design streamed each emoji into RichEdit as an
 OLE `\pict` object, and on real Windows 98/Me inserting the first picture took
 the whole process down with a GPF inside RichEdit's OLE insert. Drawing the
-emoji as a plain GDI `BitBlt` removes OLE entirely and is stable on 9x. The
-control emulates the few `EM_*` messages the GUI already used, so the agent
+emoji as a plain GDI `BitBlt` removes those RichEdit OLE *objects* and is stable
+on 9x. The binary still links `ole32.lib` for the in-memory structured storage
+in `src/gui/emoji_ui.c`; OLE2 ships with Windows 9x, so this is not an NT-only
+dependency. The control emulates the few `EM_*` messages the GUI already used,
+so the agent
 loop, markdown colouring, session replay and export are unchanged. It also
 gives chat-style bubbles, coloured role labels, code bands, collapsible tool
 calls, mouse selection and Ctrl+C copy.
@@ -356,9 +370,12 @@ IE3 or later (98/Me ship them).
 #### Agent loop and loop guard
 
 One user turn is a loop of API rounds followed by tool execution. `max_steps`
-bounds the number of tool rounds; the default is 32, and `0` means unlimited,
-so the run continues until the model answers or the user presses **Stop**
-(Ctrl+C in the CLI). The GUI and INI accept 0 or 1..200.
+bounds the number of tool rounds; the default is `0` (unlimited), so a long
+task is never cut off in the middle: the run continues until the model answers
+or the user presses **Stop** (Ctrl+C in the CLI). The GUI and INI accept 0 or
+1..200. A finite value is a hard per-turn cap; when it is reached the turn ends
+with an error, and sending another message (for example "continue") resumes
+from the preserved history.
 
 A high or unlimited limit is safe because a loop guard watches the tool calls.
 If the model sends the same tool name with the same arguments three times in a
@@ -372,6 +389,36 @@ two calls (`read_file`, `list_dir`, `read_file`, ...) never repeats the same
 call twice in a row. If a round issues exactly the same set of calls as the
 previous round, the third such round is answered with an error and a fourth one
 stops the run. The two guards count independently.
+
+#### Round-efficiency controls
+
+Four `[agent]` settings reduce tool rounds without changing the tool protocol:
+
+- `tool_call_fallback=1` (default) recovers tool calls that a provider wrote
+  into plain message text instead of `tool_calls`, including DSML, JSON with
+  `arguments`/`args`, flattened arguments and `read_file({...})` forms.
+- `read_cache=1` (default) short-circuits a byte-identical re-read of the same
+  path and line range in the current conversation. A successful writer tool,
+  a new conversation or `/load` clears the cache.
+- `nudge_on_success=1` (default) appends a hint to the tool result when a
+  `build` or `run_command` result shows that acceptance checks passed after a
+  file change, so the model stops calling tools and answers.
+- `tool_profile=coding` (default) controls which tools are advertised in the
+  API request. Other profiles are `full`, `network` and `docs`. Filtering only
+  changes the advertised list; a saved session or skill can still execute any
+  registered tool.
+
+`toolchain_probe` answers "how do I build this?" in one call by checking PATH
+and workspace build files. Conversation compaction now writes a structured
+summary (`Task`, `Files read`, `Files changed`, `Last test command`,
+`Last test result`, `Outstanding work`, `Do not re-read`) and falls back to a
+local summary if the extra API call fails. The transcript shows
+`Run completed: N round(s)...` at the end of a turn; the CLI also offers
+`/stats` for the last turn and `/continue` to reload the last session.
+
+To score a real coding run locally, use
+`powershell -NoProfile -ExecutionPolicy Bypass -File tests\bench\run_bench.ps1 -Mock`
+(or omit `-Mock` for the live bridge). See `tests/bench/README.md`.
 
 #### Network retries and text encoding
 
@@ -557,8 +604,11 @@ repository root; the expected last line is `all emoji tests passed`.
 #### Tool registry check
 
 `tests/smoke_tools.py` is a dependency-free structural check (Python 3) that all
-47 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
-helpers are present, and that the file's braces balance:
+46 tools are registered in `src/agent/tools.c`, that the grep/glob/redaction
+helpers are present, and that the file's braces balance. The safety-critical
+assertions (dangerous shell commands, sandbox escapes, confirmation) are
+*behavioural* tests in `tests/test_tools.c` and the GUI smoke scripts, not just
+text searches in this file:
 
 ```bat
 python tests\smoke_tools.py
@@ -584,7 +634,7 @@ under `third_party/` keep their original licenses.
 ## 简体中文
 
 > **本版新特性**：对话区改为自绘，emoji 用 GDI 位图绘制，根治 Win9x 上
-> RichEdit OLE 插入图片导致的崩溃；工具从 31 个增至 43 个，新增编程与网络
+> RichEdit OLE 插入图片导致的崩溃；工具从 31 个增至 46 个，新增编程与网络
 > 工具（`web_search` 会在 Bing / 百度 / DuckDuckGo 之间自动回退，国内外都能
 > 用）；长对话自动摘要压缩；全部 24 项配置集中在三标签页设置对话框；可选
 > 的 `full_access` / `auto_confirm` 危险模式（默认关闭）。
@@ -604,7 +654,7 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 在复古机器上跑一个聊天客户端只是个演示：问一句，它打一段字，然后没了。
 在 1998 年的机器上跑 agent 的意义在于 —— 这台机器上有文件，而模型能碰到它们。
 
-- 47 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
+- 46 个本地工具（`read_file`、`write_file`、`grep`、`glob`、`apply_patch`、
   `run_command` 等）都在 9x 本机执行，不是转发到某台服务器
 - **技能（过程记忆）**：可复用的流程以 `SKILL.md` 文件的形式插件化存放在
   `workspace\skills\`，增删不用重编译。模型用 `use_skill` 加载完整流程、用
@@ -617,7 +667,7 @@ AIagent98 把整件事放在 9x 机器上：DNS、TCP、带 ECDHE 和 AES-GCM �
 - `write_file` 会把 UTF-8 转成本地 ANSI 代码页、把 LF 转成 DOS CRLF，写出来
   的文件在 Win98 记事本、`EDIT` 和 `COMMAND.COM` 里都能正常打开
 
-#### 工具集（47 个）
+#### 工具集（46 个）
 
 完整说明见 [`TOOLS.md`](TOOLS.md)。只读/搜索类（`list_dir`、`read_file`、
 `head`、`tail`、`file_info`、`search_files`、`grep`、`glob`、`tree`、`wc`、
@@ -752,8 +802,8 @@ temperature=0.7
 [agent]
 workspace=C:\AIagent98
 allow_shell=0
-; 0 = 不限步数（用 GUI 的 Stop 按钮中断），否则为 1~200
-max_steps=32
+; 0 = 不限步数（默认值，用 GUI 的 Stop 按钮中断），否则为 1~200
+max_steps=0
 [tls]
 verify=1
 [log]
@@ -844,8 +894,12 @@ Win9x 没有彩色 emoji 字体，本地 ANSI 代码页也存不下 emoji 码位
 对话区现在是**自绘控件**（`src/gui/transcript_view.c`），不再是 RichEdit。这点很
 关键：旧设计把每张 emoji 作为 OLE `\pict` 对象流进 RichEdit，而真机 Win98/Me 上
 插第一张图就把整个进程带崩（RichEdit 内部 GPF）。改成用 GDI `BitBlt` 直接画位图
-后彻底抛开 OLE，在 9x 上稳定。控件模拟了 GUI 原本用的那几个 `EM_*` 消息，所以
-agent 循环、Markdown 着色、会话回放和导出都不用改。它还带来气泡式卡片、彩色
+后不再往 RichEdit 插 OLE 对象，在 9x 上稳定。注意程序仍链接 `ole32.lib`：
+`src/gui/emoji_ui.c` 用 OLE2 结构化存储（`CreateILockBytesOnHGlobal` /
+`StgCreateDocfileOnILockBytes`）实现图片 RTF 辅助函数，而 OLE2 是 Win9x 自带的
+系统组件，和 `ntdll.dll`、`api-ms-win-*` 那种 NT 专有依赖不是一回事。控件模拟了
+GUI 原本用的那几个 `EM_*` 消息，所以 agent 循环、Markdown 着色、会话回放和导出
+都不用改。它还带来气泡式卡片、彩色
 角色标签、代码底色带、可折叠的工具调用、鼠标选择和 Ctrl+C 复制。
 
 面板要用的 24 px 素材就在仓库里：`assets/emoji/bmp/24` 放了全部 1219 个 BMP
@@ -864,8 +918,10 @@ IE3 以上的 comctl32，98/Me 自带。
 #### Agent 循环与死循环保护
 
 一轮用户对话由多次 API 请求和工具执行组成。`max_steps` 限制工具轮数，默认
-32；填 0 表示不限，直到模型给出最终回答或用户点击 **Stop**（CLI 中按
-Ctrl+C）。GUI 和 INI 都接受 0 或 1~200。
+为 0（不限），直到模型给出最终回答或用户点击 **Stop**（CLI 中按 Ctrl+C），
+因此长任务不会中途被切断。GUI 和 INI 都接受 0 或 1~200。如果手动填了有限
+值，达到上限时本轮会报错结束；再发一条消息（例如“继续”）即可从保留的
+会话历史接着跑。
 
 上限调高或设为不限后，由循环保护（Loop Guard）兜底：如果模型连续 3 次用
 完全相同的工具名和参数调用，第 3 次不再执行，而是把错误结果返回给模型，
@@ -877,6 +933,32 @@ Ctrl+C）。GUI 和 INI 都接受 0 或 1~200。
 `list_dir`、`read_file`……），单看调用层面永远不重复。若某一轮发出的工具
 调用集合与上一轮完全相同，第 3 次这样的轮次会被拦截并返回错误，第 4 次
 终止本轮对话。两层保护的计数互不影响。
+
+#### 减少轮数的设置
+
+`[agent]` 段新增四个设置，不改变工具协议即可减少无谓轮数：
+
+- `tool_call_fallback=1`（默认）：某些服务把工具调用写在普通文本而不是
+  `tool_calls` 字段里；此项可识别 DSML、带 `arguments`/`args` 的 JSON、
+  平铺参数以及 `read_file({...})` 等写法。
+- `read_cache=1`（默认）：同一轮对话中对同一路径、同一行范围的逐字节重复
+  读取会被直接跳过；任何成功的写入工具、新对话或 `/load` 都会清空缓存。
+- `nudge_on_success=1`（默认）：文件改动后 `build` 或 `run_command` 的结果
+  显示验收检查通过时，会给工具结果追加提示，让模型停止调用工具并作答。
+- `tool_profile=coding`（默认）：控制 API 请求中声明哪些工具。其他可选值为
+  `full`、`network`、`docs`。过滤只影响声明列表；已保存的会话或技能仍可
+  调用任何已注册工具。
+
+`toolchain_probe` 一次调用即可检查 PATH、工程里的构建脚本和编译器，并给出
+推荐命令。对话压缩现在生成结构化摘要（`Task`、`Files read`、
+`Files changed`、`Last test command`、`Last test result`、`Outstanding work`、
+`Do not re-read`）；额外的摘要 API 调用失败时会在本地生成同等格式的摘要。
+每轮结束时对话区显示 `Run completed: N round(s)...`；CLI 还提供 `/stats`
+查看上一轮的统计，以及 `/continue` 重新载入最近的会话。
+
+本地复现真实编码打分可运行
+`powershell -NoProfile -ExecutionPolicy Bypass -File tests\bench\run_bench.ps1 -Mock`
+（去掉 `-Mock` 则走在线桥接）。详见 `tests/bench/README.md`。
 
 #### 网络重试与文本编码
 
@@ -1042,8 +1124,9 @@ build\cmake\test_emoji.exe
 #### 工具注册检查
 
 `tests/smoke_tools.py` 是不依赖第三方库的静态检查（Python 3），确认
-`src/agent/tools.c` 里注册了全部 47 个工具、grep/glob/脱敏辅助函数存在、
-且大括号配对：
+`src/agent/tools.c` 里注册了全部 46 个工具、grep/glob/脱敏辅助函数存在、
+且大括号配对。它只是结构检查；危险命令拦截、沙箱越界和确认回调这些
+安全断言是 `tests/test_tools.c` 与 GUI 冒烟脚本里的真实行为测试：
 
 ```bat
 python tests\smoke_tools.py

@@ -67,9 +67,23 @@
 #define HANGUL_CHARSET 129
 #endif
 
-#define A98_WM_EVENT   (WM_APP + 1)
-#define A98_WM_DONE    (WM_APP + 2)
-#define A98_WM_CONFIRM (WM_APP + 3)
+#define A98_WM_EVENT        (WM_APP + 1)
+#define A98_WM_DONE         (WM_APP + 2)
+#define A98_WM_CONFIRM      (WM_APP + 3)
+#define A98_WM_TEST_RESULT  (WM_APP + 4)
+
+/* Dialogs store a context POINTER in DWLP_USER.  Win9x has no
+ * SetWindowLongPtrA export; a 32-bit LONG is pointer-sized there. */
+#ifndef DWLP_USER
+#define DWLP_USER 0x0008
+#endif
+#ifdef _WIN64
+#define A98_DLG_GETPTR(dlg, idx) GetWindowLongPtrA(dlg, idx)
+#define A98_DLG_SETPTR(dlg, idx, v) SetWindowLongPtrA(dlg, idx, (LONG_PTR)(v))
+#else
+#define A98_DLG_GETPTR(dlg, idx) GetWindowLongA(dlg, idx)
+#define A98_DLG_SETPTR(dlg, idx, v) SetWindowLongA(dlg, idx, (LONG)(v))
+#endif
 
 /* RichEdit-only messages used for the auto-scroll pin.  EM_EXLINEFROMCHAR
  * turns RichEdit's character-based EM_GETFIRSTVISIBLELINE into a line
@@ -147,10 +161,10 @@ typedef struct {
 } UiEvent;
 
 typedef struct {
-    char tool[64];
-    char *args;
+    char *tool;      /* strdup'ed copy owned by this request */
+    char *args;      /* strdup'ed copy owned by this request */
     HANDLE event;
-    int result;
+    int *result;     /* separate heap slot owned by the worker */
 } ConfirmReq;
 
 typedef struct {
@@ -552,6 +566,10 @@ static void transcript_insert_run(App *app, const char *text, COLORREF color,
     CHARRANGE cr;
     LONG start;
     LONG end;
+    /* Record only the length, never the text: the transcript can contain
+     * API keys, private prompts or prompt-injection payloads. */
+    log_info("tv insert_run len=%lu",
+             (unsigned long)(text != NULL ? strlen(text) : 0));
 
     /* Move to the end.  Whether the control collapses the selection or
      * selects everything, cpMax is the end of the text. */
@@ -578,6 +596,7 @@ static void transcript_insert_run(App *app, const char *text, COLORREF color,
     cr.cpMin = end;
     cr.cpMax = end;
     SendMessageA(app->transcript, EM_EXSETSEL, 0, (LPARAM)&cr);
+    log_info("tv run done");
 }
 
 /* Append folded text, drawing every ":shortcode:" the pack knows as an
@@ -1027,6 +1046,9 @@ static void render_history(App *app)
     transcript_clear(app);
     for (i = 0; i < app->agent.messages.count; i++) {
         Message *m = &app->agent.messages.items[i];
+        log_info("render_history: msg %d/%d role=%d len=%lu", i,
+                 app->agent.messages.count, (int)m->role,
+                 (unsigned long)(m->content != NULL ? strlen(m->content) : 0));
         if (m->role == MSG_USER) {
             transcript_line_colored(app, "You: ", COL_YOU, 1,
                                     m->content != NULL ? m->content : "",
@@ -1088,6 +1110,7 @@ static void status_update(App *app)
     static const char spin[] = "|/-\\";
     char c;
 
+    log_info("status_update: enter");
     if (app == NULL || app->statusbar == NULL) {
         return;
     }
@@ -1119,6 +1142,7 @@ static void status_update(App *app)
     snprintf(buf, sizeof(buf), "Workspace: %s", acp != NULL ? acp : "");
     SendMessageA(app->statusbar, SB_SETTEXT, 2, (LPARAM)buf);
     a98_free(acp);
+    log_info("status_update: done");
 }
 
 static void status_set(App *app, const char *utf8)
@@ -1457,8 +1481,13 @@ static void auto_save_session(App *app)
         log_warn("GUI auto-save failed: %s", err);
         return;
     }
+    /* Progress probes: a crash in auto-save used to leave only the
+     * "session saved" line in the log with no clue which step faulted. */
+    log_info("auto-save: scanning sessions");
     session_scan(app);
+    log_info("auto-save: filling session combo");
     session_combo_fill(app, app->session_path);
+    log_info("auto-save: done");
 }
 
 /* ------------------------------------------------------------------ */
@@ -1492,60 +1521,79 @@ static void gui_on_event(void *ctx, AgentEventType type, const char *text)
 static int gui_confirm(void *ctx, const char *tool, const char *args_json)
 {
     App *app = (App *)ctx;
-    ConfirmReq req;
+    ConfirmReq *req;
+    HANDLE ev;
+    HANDLE waits[2];
+    int *result_slot;
+    DWORD w;
+    int answer = 0;
 
     if (app == NULL) {
         return 0;
     }
-    memset(&req, 0, sizeof(req));
-    copy_str(req.tool, sizeof(req.tool), tool != NULL ? tool : "");
-    req.args = a98_strdup(args_json != NULL ? args_json : "{}");
-    if (req.args == NULL) {
+    /* The request is heap allocated and its strings are our own copies: the
+     * UI thread takes ownership of req/tool/args as soon as PostMessage
+     * succeeds, so returning from this function can never invalidate them. */
+    req = (ConfirmReq *)a98_alloc(sizeof(*req));
+    if (req == NULL) {
         return 0;
     }
-    req.event = CreateEventA(NULL, FALSE, FALSE, NULL);
-    if (req.event == NULL) {
-        a98_free(req.args);
+    memset(req, 0, sizeof(*req));
+    result_slot = (int *)a98_alloc(sizeof(*result_slot));
+    if (result_slot == NULL) {
+        a98_free(req);
         return 0;
     }
-    if (!PostMessageA(app->hwnd, A98_WM_CONFIRM, 0, (LPARAM)&req)) {
-        CloseHandle(req.event);
-        a98_free(req.args);
+    *result_slot = 0;
+    req->tool = a98_strdup(tool != NULL ? tool : "");
+    req->args = a98_strdup(args_json != NULL ? args_json : "{}");
+    req->result = result_slot;
+    if (req->tool == NULL || req->args == NULL) {
+        a98_free(req->tool);
+        a98_free(req->args);
+        a98_free(result_slot);
+        a98_free(req);
         return 0;
     }
-    /* The UI thread keeps using `req` (a stack frame of this thread) and
-     * req.args until it signals this event, so the wait must never be
-     * abandoned while the window is alive.  But the wait may not be infinite:
-     * only the UI thread can signal the event, and it stops pumping messages
-     * during WM_DESTROY -- a plain INFINITE wait there hung the worker forever
-     * and turned the 3 s teardown timeout into a deadlock.  The shutdown event
-     * is set first in WM_DESTROY, so a confirm that will never be dispatched
-     * (window gone) wakes up here and is denied. */
-    {
-        HANDLE waits[2];
-        DWORD w;
-
-        waits[0] = req.event;
-        waits[1] = app->shutdown_event;
-        for (;;) {
-            w = WaitForMultipleObjects(2, waits, FALSE, INFINITE);
-            if (w == WAIT_OBJECT_0) {
-                break;              /* answered by the UI thread */
-            }
-            if (w == WAIT_OBJECT_0 + 1) {
-                req.result = 0;     /* teardown: deny and move on */
-                break;
-            }
-            /* WAIT_FAILED (event handle lost) or an unexpected code: deny
-             * rather than hang.  The UI thread can no longer be inside the
-             * dialog here -- it shares this thread's view of app->cancel. */
-            req.result = 0;
+    ev = CreateEventA(NULL, FALSE, FALSE, NULL);
+    req->event = ev;
+    if (ev == NULL) {
+        a98_free(req->tool);
+        a98_free(req->args);
+        a98_free(result_slot);
+        a98_free(req);
+        return 0;
+    }
+    if (!PostMessageA(app->hwnd, A98_WM_CONFIRM, 0, (LPARAM)req)) {
+        CloseHandle(ev);
+        a98_free(req->tool);
+        a98_free(req->args);
+        a98_free(result_slot);
+        a98_free(req);
+        return 0;
+    }
+    /* From here on the UI thread owns req and its strings; it frees them
+     * after writing *result_slot and signalling ev (or the WM_DESTROY drain
+     * frees them if the message is never dispatched).  This thread keeps only
+     * the event handle and the result slot, both freed below.  That handshake
+     * makes every normal/shutdown/failure path free exactly once.  The wait
+     * must be bounded by shutdown_event: only the UI thread can signal ev,
+     * and it stops pumping messages during WM_DESTROY. */
+    waits[0] = ev;
+    waits[1] = app->shutdown_event;
+    for (;;) {
+        w = WaitForMultipleObjects(2, waits, FALSE, INFINITE);
+        if (w == WAIT_OBJECT_0) {
+            answer = *result_slot;      /* UI wrote before SetEvent(ev) */
             break;
         }
+        /* WAIT_OBJECT_0+1 (shutdown), WAIT_FAILED or an unexpected code:
+         * deny rather than hang. */
+        break;
     }
-    CloseHandle(req.event);
-    a98_free(req.args);
-    return req.result;
+    CloseHandle(ev);
+    a98_free(result_slot);
+    return answer;
 }
 
 static DWORD WINAPI worker_proc(void *param)
@@ -1889,11 +1937,15 @@ static void do_session_select(App *app, int idx)
         copy_str(app->session_path, sizeof(app->session_path),
                  app->sessions[idx].path);
         render_history(app);
+        log_info("do_session_select: rendering info line");
         transcript_line_colored(app, "\r\n[info] Loaded session: ",
                                 COL_ROUND, 0, u != NULL ? u : "",
                                 COL_ROUND, 0);
+        log_info("do_session_select: freeing name");
         a98_free(u);
+        log_info("do_session_select: setting status");
         status_set(app, "Session loaded");
+        log_info("do_session_select: done");
     } else {
         u = a98_acp_to_utf8(err[0] ? err : "unknown error");
         transcript_line_colored(app, "\r\n[error] Load failed: ",
@@ -2076,24 +2128,39 @@ static void do_export(App *app)
         return;
     }
 
-    len = GetWindowTextLengthA(app->transcript);
-    if (len < 0) {
-        len = 0;
+    /* WM_GETTEXTLENGTH on the self-drawn view now returns the exact length
+     * (CRLF included).  RichEdit still reports a paragraph break as one CR
+     * while WM_GETTEXT expands it to CRLF, so reserve 2x and retry if the
+     * text actually filled the buffer -- a long single line can otherwise be
+     * estimated short and silently truncated. */
+    {
+        size_t want = 0;
+        for (;;) {
+            len = GetWindowTextLengthA(app->transcript);
+            if (len < 0) {
+                len = 0;
+            }
+            cap = len * 2 + 2;
+            if ((size_t)cap < want) cap = (int)want;
+            if ((size_t)cap > 0x3FFFFFFFU) cap = 0x7FFFFFFE;
+            buf = (char *)a98_alloc((size_t)cap + 1);
+            if (buf == NULL) {
+                msgbox_utf8(app->hwnd, "Out of memory.", MB_OK | MB_ICONERROR);
+                return;
+            }
+            buf[0] = '\0';
+            GetWindowTextA(app->transcript, buf, cap);
+            buf[cap] = '\0';
+            if (strlen(buf) + 2 < (size_t)cap || cap >= 0x7FFFFFFE) {
+                break;             /* complete, or nothing more we can do */
+            }
+            a98_free(buf);
+            /* Grow for the next attempt: the length estimate itself did not
+             * change, so without this the retry would loop forever. */
+            want = (size_t)cap * 2;
+            if (want > 0x3FFFFFFFU) want = 0x3FFFFFFFU;
+        }
     }
-    /* RichEdit stores paragraph breaks as CR but WM_GETTEXT expands them to
-     * CRLF, so the returned text can be up to twice as long as the length
-     * reported by WM_GETTEXTLENGTH. */
-    if ((size_t)len > 0x3FFFFFFFU) {
-        cap = 0x7FFFFFFE;
-    } else {
-        cap = len * 2 + 1;
-    }
-    buf = (char *)a98_alloc((size_t)cap + 1);
-    if (buf == NULL) {
-        msgbox_utf8(app->hwnd, "Out of memory.", MB_OK | MB_ICONERROR);
-        return;
-    }
-    GetWindowTextA(app->transcript, buf, cap);
 
     /* The transcript control already holds CP_ACP text.  Normalise the
      * paragraph separators to CRLF for Win9x Notepad. */
@@ -2164,22 +2231,96 @@ static void do_open_workspace(App *app)
     a98_free(acp);
 }
 
+/* Context for the non-blocking connection test.  Everything is a copy: the
+ * worker never touches the dialog's controls or the shared Config. */
+typedef struct {
+    HWND dlg;
+    Url url;
+    int verify;
+    char api_key[512];
+    char extra_headers[512];
+} TestCtx;
+
+static DWORD WINAPI settings_test_thread(void *param)
+{
+    TestCtx *t = (TestCtx *)param;
+    Config tmpcfg;
+    char *headers;
+    char err[512];
+    char result[320];
+    HttpResponse resp;
+    NetConn *conn;
+    int rc;
+    char *out;
+
+    memset(&tmpcfg, 0, sizeof(tmpcfg));
+    copy_str(tmpcfg.api_key, sizeof(tmpcfg.api_key), t->api_key);
+    copy_str(tmpcfg.extra_headers, sizeof(tmpcfg.extra_headers),
+             t->extra_headers);
+    headers = api_build_headers(&tmpcfg, 0);
+    err[0] = '\0';
+    if (headers == NULL) {
+        strcpy(result, "Failed: out of memory.");
+    } else {
+        conn = net_open(&t->url, t->verify, 8, 12, err, sizeof(err));
+        if (conn == NULL) {
+            snprintf(result, sizeof(result), "Failed: %s",
+                     err[0] != '\0' ? err : "cannot connect");
+        } else {
+            memset(&resp, 0, sizeof(resp));
+            rc = http_request(conn, "GET", &t->url, headers, NULL, 0, &resp,
+                              NULL, NULL, err, sizeof(err));
+            net_close(conn);
+            if (rc != 0) {
+                snprintf(result, sizeof(result), "Failed: %s",
+                         err[0] != '\0' ? err : "request failed");
+            } else if (resp.status == 200) {
+                strcpy(result, "Connected successfully (HTTP 200).");
+            } else if (resp.status == 401 || resp.status == 403) {
+                snprintf(result, sizeof(result),
+                         "Authentication failed (HTTP %d). Check the API key.",
+                         resp.status);
+            } else if (resp.status == 404) {
+                strcpy(result,
+                       "Endpoint not found (HTTP 404). Check the API base URL.");
+            } else if (resp.status == 429) {
+                strcpy(result, "Reachable, but rate limited (HTTP 429).");
+            } else if (resp.status >= 500) {
+                snprintf(result, sizeof(result),
+                         "Server error (HTTP %d). The endpoint is reachable.",
+                         resp.status);
+            } else {
+                snprintf(result, sizeof(result), "HTTP %d %s", resp.status,
+                         resp.reason);
+            }
+        }
+        a98_free(headers);
+    }
+    out = a98_strdup(result);
+    /* The dialog may have been closed while the socket was blocked; then the
+     * PostMessage fails and the result is dropped here. */
+    if (out != NULL && !PostMessageA(t->dlg, A98_WM_TEST_RESULT, 0,
+                                     (LPARAM)out)) {
+        a98_free(out);
+    }
+    a98_free(t);
+    return 0;
+}
+
 static void settings_test_connection(HWND dlg, App *app)
 {
-    Config tmpcfg;
     char *base;
     char *key;
     char *extra;
-    char *headers;
     char urlbuf[900];
     char err[512];
-    char result[320];
+    char result[160];
     Url url;
-    HttpResponse resp;
-    NetConn *conn;
+    TestCtx *t;
+    HANDLE th;
+    DWORD tid;
     size_t len;
     int verify;
-    int rc;
 
     (void)app;
     base = dlg_text_utf8(dlg, IDC_API_BASE);
@@ -2231,56 +2372,52 @@ static void settings_test_connection(HWND dlg, App *app)
         goto done;
     }
 
-    memset(&tmpcfg, 0, sizeof(tmpcfg));
-    copy_str(tmpcfg.api_key, sizeof(tmpcfg.api_key), key);
-    copy_str(tmpcfg.extra_headers, sizeof(tmpcfg.extra_headers), extra);
-    headers = api_build_headers(&tmpcfg, 0);
-    if (headers == NULL) {
-        dlg_set_utf8(dlg, IDC_TEST_RESULT, "Out of memory.");
-        goto done;
-    }
-
     verify = IsDlgButtonChecked(dlg, IDC_TLS_VERIFY) == BST_CHECKED;
     dlg_set_utf8(dlg, IDC_TEST_RESULT, "Testing connection...");
     UpdateWindow(dlg);
     SetCursor(LoadCursorA(NULL, IDC_WAIT));
+    EnableWindow(GetDlgItem(dlg, IDC_TEST), FALSE);
 
-    /* This runs on the UI thread, so keep the worst case short. */
-    conn = net_open(&url, verify, 8, 12, err, sizeof(err));
-    if (conn == NULL) {
-        snprintf(result, sizeof(result), "Failed: %s",
-                 err[0] != '\0' ? err : "cannot connect");
-    } else {
-        memset(&resp, 0, sizeof(resp));
-        rc = http_request(conn, "GET", &url, headers, NULL, 0, &resp,
-                          NULL, NULL, err, sizeof(err));
-        net_close(conn);
-        if (rc != 0) {
-            snprintf(result, sizeof(result), "Failed: %s",
-                     err[0] != '\0' ? err : "request failed");
-        } else if (resp.status == 200) {
-            strcpy(result, "Connected successfully (HTTP 200).");
-        } else if (resp.status == 401 || resp.status == 403) {
-            snprintf(result, sizeof(result),
-                     "Authentication failed (HTTP %d). Check the API key.",
-                     resp.status);
-        } else if (resp.status == 404) {
-            strcpy(result,
-                   "Endpoint not found (HTTP 404). Check the API base URL.");
-        } else if (resp.status == 429) {
-            strcpy(result, "Reachable, but rate limited (HTTP 429).");
-        } else if (resp.status >= 500) {
-            snprintf(result, sizeof(result),
-                     "Server error (HTTP %d). The endpoint is reachable.",
-                     resp.status);
-        } else {
-            snprintf(result, sizeof(result), "HTTP %d %s", resp.status,
-                     resp.reason);
-        }
+    t = (TestCtx *)a98_alloc(sizeof(*t));
+    if (t == NULL) {
+        EnableWindow(GetDlgItem(dlg, IDC_TEST), TRUE);
+        SetCursor(LoadCursorA(NULL, IDC_ARROW));
+        dlg_set_utf8(dlg, IDC_TEST_RESULT, "Out of memory.");
+        goto done;
     }
-    a98_free(headers);
-    SetCursor(LoadCursorA(NULL, IDC_ARROW));
-    dlg_set_utf8(dlg, IDC_TEST_RESULT, result);
+    memset(t, 0, sizeof(*t));
+    t->dlg = dlg;
+    t->url = url;
+    t->verify = verify;
+    copy_str(t->api_key, sizeof(t->api_key), key);
+    copy_str(t->extra_headers, sizeof(t->extra_headers), extra);
+
+#ifdef __WATCOMC__
+    {
+        unsigned crt_tid = 0;
+        unsigned long h = _beginthreadex(NULL, 0,
+                                         (unsigned (__stdcall *)(void *))
+                                         settings_test_thread,
+                                         t, 0, &crt_tid);
+        th = (HANDLE)h;
+        tid = (DWORD)crt_tid;
+    }
+#else
+    th = CreateThread(NULL, 0, settings_test_thread, t, 0, &tid);
+#endif
+    if (th == NULL) {
+        snprintf(result, sizeof(result),
+                 "Cannot start test thread (error %lu).",
+                 (unsigned long)GetLastError());
+        dlg_set_utf8(dlg, IDC_TEST_RESULT, result);
+        EnableWindow(GetDlgItem(dlg, IDC_TEST), TRUE);
+        SetCursor(LoadCursorA(NULL, IDC_ARROW));
+        a98_free(t);
+        goto done;
+    }
+    /* Detached thread: the answer arrives via A98_WM_TEST_RESULT. */
+    CloseHandle(th);
+    (void)tid;
 
 done:
     a98_free(base);
@@ -2308,7 +2445,7 @@ static void do_settings(App *app)
 /* Show only the controls belonging to the selected settings tab. */
 static void settings_show_tab(HWND dlg, int sel)
 {
-    static const int page[3][24] = {
+    static const int page[3][32] = {
         { IDC_L_PROVIDER, IDC_PROVIDER, IDC_L_PRESET, IDC_L_API_BASE,
           IDC_API_BASE, IDC_L_API_KEY, IDC_API_KEY, IDC_L_MODEL, IDC_MODEL,
           IDC_L_PROMPT, IDC_SYSTEM_PROMPT, IDC_L_TEMP, IDC_TEMPERATURE,
@@ -2320,7 +2457,9 @@ static void settings_show_tab(HWND dlg, int sel)
           IDC_L_REQTO, IDC_REQUEST_TIMEOUT, IDC_L_LOG, IDC_LOG_LEVEL,
           IDC_L_COMPACT_TH, IDC_COMPACT_THRESHOLD, IDC_L_COMPACT_KEEP,
           IDC_COMPACT_KEEP,
-          IDC_FULL_ACCESS, IDC_AUTO_CONFIRM, IDC_L_WARN1, IDC_L_WARN2, 0 },
+          IDC_FULL_ACCESS, IDC_AUTO_CONFIRM, IDC_L_TOOL_PROFILE,
+          IDC_TOOL_PROFILE, IDC_TOOL_CALL_FALLBACK, IDC_READ_CACHE,
+          IDC_NUDGE_ON_SUCCESS, IDC_L_WARN1, IDC_L_WARN2, 0 },
         { IDC_NET_ALLOW, IDC_L_HOSTS, IDC_NET_ALLOW_HOSTS, IDC_L_MAXBYTES,
           IDC_NET_MAX_BYTES, IDC_L_SEARCHURL, IDC_NET_SEARCH_URL, IDC_L_TOKEN,
           IDC_NET_GITHUB_TOKEN, IDC_L_NET1, IDC_L_NET2, IDC_L_NET3, 0 }
@@ -2400,6 +2539,13 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                        app->cfg.allow_outside ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_EMOJI_INLINE,
                        app->cfg.emoji_inline ? BST_CHECKED : BST_UNCHECKED);
+        dlg_set_utf8(dlg, IDC_TOOL_PROFILE, app->cfg.tool_profile);
+        CheckDlgButton(dlg, IDC_TOOL_CALL_FALLBACK,
+                       app->cfg.tool_call_fallback ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_READ_CACHE,
+                       app->cfg.read_cache ? BST_CHECKED : BST_UNCHECKED);
+        CheckDlgButton(dlg, IDC_NUDGE_ON_SUCCESS,
+                       app->cfg.nudge_on_success ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_NET_ALLOW,
                        app->cfg.net_allow ? BST_CHECKED : BST_UNCHECKED);
         CheckDlgButton(dlg, IDC_STREAM,
@@ -2422,6 +2568,27 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
         dlg_set_utf8(dlg, IDC_TEST_RESULT, "");
         center_window(dlg);
         return TRUE;
+    }
+
+    case A98_WM_TEST_RESULT:
+        /* Posted by the connection-test worker: never blocks the UI thread. */
+        if (lp != 0) {
+            dlg_set_utf8(dlg, IDC_TEST_RESULT, (const char *)lp);
+            a98_free((char *)lp);
+        }
+        EnableWindow(GetDlgItem(dlg, IDC_TEST), TRUE);
+        SetCursor(LoadCursorA(NULL, IDC_ARROW));
+        return TRUE;
+
+    case WM_DESTROY: {
+        /* A test result posted just as the dialog closed would otherwise be
+         * discarded with the window, taking its heap string with it. */
+        MSG drain;
+        while (PeekMessageA(&drain, dlg, A98_WM_TEST_RESULT,
+                            A98_WM_TEST_RESULT, PM_REMOVE)) {
+            a98_free((char *)drain.lParam);
+        }
+        return 0;
     }
 
     case WM_NOTIFY:
@@ -2574,7 +2741,7 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
             app->cfg.max_steps =
                 (int)GetDlgItemInt(dlg, IDC_MAX_STEPS, &ok, FALSE);
             if (!ok) {
-                app->cfg.max_steps = 32;
+                app->cfg.max_steps = 0;
             } else if (app->cfg.max_steps > 200) {
                 app->cfg.max_steps = 200;
             }
@@ -2603,6 +2770,28 @@ static INT_PTR CALLBACK settings_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
                 IsDlgButtonChecked(dlg, IDC_ALLOW_OUTSIDE) == BST_CHECKED;
             app->cfg.emoji_inline =
                 IsDlgButtonChecked(dlg, IDC_EMOJI_INLINE) == BST_CHECKED;
+            {
+                char *profile = dlg_text_utf8(dlg, IDC_TOOL_PROFILE);
+
+                if (profile != NULL) {
+                    config_trim(profile);
+                    if (a98_strcasecmp(profile, "full") == 0)
+                        strcpy(app->cfg.tool_profile, "full");
+                    else if (a98_strcasecmp(profile, "network") == 0)
+                        strcpy(app->cfg.tool_profile, "network");
+                    else if (a98_strcasecmp(profile, "docs") == 0)
+                        strcpy(app->cfg.tool_profile, "docs");
+                    else
+                        strcpy(app->cfg.tool_profile, "coding");
+                    a98_free(profile);
+                }
+            }
+            app->cfg.tool_call_fallback =
+                IsDlgButtonChecked(dlg, IDC_TOOL_CALL_FALLBACK) == BST_CHECKED;
+            app->cfg.read_cache =
+                IsDlgButtonChecked(dlg, IDC_READ_CACHE) == BST_CHECKED;
+            app->cfg.nudge_on_success =
+                IsDlgButtonChecked(dlg, IDC_NUDGE_ON_SUCCESS) == BST_CHECKED;
             app->cfg.net_allow =
                 IsDlgButtonChecked(dlg, IDC_NET_ALLOW) == BST_CHECKED;
 
@@ -2809,12 +2998,15 @@ static void tools_fill_skills(HWND dlg, App *app, int select)
 /* Skill editor dialog. */
 static INT_PTR CALLBACK skill_edit_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
 {
-    SkillEditCtx *ctx = (SkillEditCtx *)lp;
-    (void)wp;
+    /* WM_COMMAND's lParam is the control HWND, never the SKILL_EDIT context.
+     * Keep the context in DWLP_USER from WM_INITDIALOG onward. */
+    SkillEditCtx *ctx = (SkillEditCtx *)A98_DLG_GETPTR(dlg, DWLP_USER);
     switch (msg) {
     case WM_INITDIALOG: {
         SkillList skills;
         const Skill *s;
+        ctx = (SkillEditCtx *)lp;
+        A98_DLG_SETPTR(dlg, DWLP_USER, ctx);
         /* g_dlg_app provides the active app for reading an existing skill. */
         App *app = g_dlg_app;
         if (ctx != NULL && ctx->name[0] != '\0' && !ctx->is_new && app != NULL) {
@@ -2975,6 +3167,10 @@ static INT_PTR CALLBACK about_proc(HWND dlg, UINT msg, WPARAM wp, LPARAM lp)
     (void)lp;
     switch (msg) {
     case WM_INITDIALOG:
+        /* Version and build stamp come from base.h so the About box always
+         * matches the binary that is actually running. */
+        SetDlgItemTextA(dlg, IDC_ABOUT_VERSION, "AIagent98 v" A98_VERSION);
+        SetDlgItemTextA(dlg, IDC_ABOUT_BUILD,   "Build: " A98_BUILD_STAMP);
         center_window(dlg);
         return TRUE;
     case WM_COMMAND:
@@ -3745,7 +3941,9 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         if (!app->closing) {
             auto_save_session(app);
         }
+        log_info("WM_DONE: updating status");
         update_status(app);
+        log_info("WM_DONE: handled");
         if (app->closing) {
             DestroyWindow(hwnd);
             return 0;
@@ -3760,20 +3958,26 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
             if (app->cancel) {
                 /* Stop was pressed before the dialog appeared; deny without
                  * bothering the user. */
-                req->result = 0;
+                if (req->result != NULL) *req->result = 0;
             } else {
                 g_confirm_tool = req->tool;
                 g_confirm_args = req->args;
                 /* DialogBoxParamA returns -1 when it cannot create the dialog
                  * (resource/loading failure); anything but an explicit
                  * IDOK-style 1 must count as "denied", never "allowed". */
-                req->result = (DialogBoxParamA(app->hinst,
-                                               MAKEINTRESOURCEA(IDD_CONFIRM),
-                                               hwnd, confirm_proc, 0) == 1);
+                if (req->result != NULL)
+                    *req->result = (DialogBoxParamA(app->hinst,
+                                                    MAKEINTRESOURCEA(IDD_CONFIRM),
+                                                    hwnd, confirm_proc, 0) == 1);
                 g_confirm_tool = NULL;
                 g_confirm_args = NULL;
             }
-            SetEvent(req->event);
+            if (req->event != NULL) SetEvent(req->event);
+            /* Ownership hand-off complete: the worker keeps only `event` and
+             * `result`; req + its strings are ours to release. */
+            a98_free(req->tool);
+            a98_free(req->args);
+            a98_free(req);
         }
         return 0;
     }
@@ -3867,10 +4071,18 @@ static LRESULT CALLBACK main_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
                     }
                 } else if (drain.message == A98_WM_DONE) {
                     a98_free((char *)drain.lParam);
+                } else if (drain.message == A98_WM_CONFIRM) {
+                    /* req is heap owned by the UI thread once posted.  The
+                     * shutdown event wakes the worker, which closes the event
+                     * and frees the result slot itself; we release the struct
+                     * and its strings here. */
+                    ConfirmReq *req = (ConfirmReq *)drain.lParam;
+                    if (req != NULL) {
+                        a98_free(req->tool);
+                        a98_free(req->args);
+                        a98_free(req);
+                    }
                 }
-                /* A98_WM_CONFIRM: req lives on the worker's stack; the
-                 * worker cleans it up itself once the shutdown event wakes
-                 * it.  Never touch it from here. */
             }
         }
         PostQuitMessage(0);
@@ -3961,6 +4173,8 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     int rich;
     int i;
     int win_x, win_y, win_w, win_h, win_max;
+    int ole_ok = 0, net_ok = 0, agent_ok = 0, log_ok = 0;
+    int rc = 1;
 
     (void)prev;
     (void)cmdline;
@@ -3969,7 +4183,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     app->hinst = hinst;
     /* RichEdit stores an inline emoji picture as an OLE object, so the UI
      * thread has to have OLE up before the transcript exists. */
-    OleInitialize(NULL);
+    ole_ok = (OleInitialize(NULL) >= 0);
 
     /* One instance at a time: two processes would race the INI writes and
      * the session auto-save.  A second launch just raises the first one. */
@@ -3986,11 +4200,8 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
             MessageBoxA(NULL, "AIagent98 is already running.", "AIagent98",
                         MB_OK | MB_ICONINFORMATION);
         }
-        if (app->single_mutex != NULL) {
-            CloseHandle(app->single_mutex);
-            app->single_mutex = NULL;
-        }
-        return 0;
+        rc = 0;
+        goto cleanup;
     }
 
     if (a98_path_exe_dir(app->exe_dir, sizeof(app->exe_dir)) != 0) {
@@ -4004,7 +4215,9 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
      * during startup, this file is the only clue we get on Windows 9x. */
     a98_path_join(log_path, sizeof(log_path), app->exe_dir, "agent98.log");
     log_init(log_path, LOG_LEVEL_DEBUG);
-    log_info("AIagent98 GUI starting (version %s)", A98_VERSION);
+    log_ok = 1;
+    log_info("AIagent98 GUI starting (version %s, build %s)",
+             A98_VERSION, A98_BUILD_STAMP);
     log_info("Executable directory: %s", app->exe_dir);
 
     config_default_path(app->ini_path, sizeof(app->ini_path));
@@ -4018,8 +4231,9 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (net_init() != 0) {
         msgbox_utf8(NULL, "Failed to initialise Winsock.",
                     MB_OK | MB_ICONERROR);
-        return 1;
+        goto cleanup;
     }
+    net_ok = 1;
 
     /* Set from WM_DESTROY; lets gui_confirm unblock when the UI thread stops
      * pumping messages.  Created before the window so a confirm request can
@@ -4028,14 +4242,14 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (app->shutdown_event == NULL) {
         msgbox_utf8(NULL, "Out of resources while starting up.",
                     MB_OK | MB_ICONERROR);
-        net_cleanup();
-        return 1;
+        goto cleanup;
     }
 
     /* The status bar is one of the original Win95 common controls. */
     InitCommonControls();
 
     agent_init(&app->agent, &app->cfg);
+    agent_ok = 1;
     agent_new_conversation(&app->agent);
     agent_ensure_dirs(&app->agent);
     app->agent.on_event = gui_on_event;
@@ -4067,14 +4281,12 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (!RegisterClassExA(&wc)) {
         msgbox_utf8(NULL, "Cannot register the main window class.",
                     MB_OK | MB_ICONERROR);
-        net_cleanup();
-        return 1;
+        goto cleanup;
     }
     if (!a98tv_register(hinst)) {
         msgbox_utf8(NULL, "Cannot register the transcript view class.",
                     MB_OK | MB_ICONERROR);
-        net_cleanup();
-        return 1;
+        goto cleanup;
     }
 
     app->hwnd = CreateWindowExA(0, A98_CLASS_NAME, "AIagent98",
@@ -4086,8 +4298,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (app->hwnd == NULL) {
         msgbox_utf8(NULL, "Cannot create the main window.",
                     MB_OK | MB_ICONERROR);
-        net_cleanup();
-        return 1;
+        goto cleanup;
     }
 
     ShowWindow(app->hwnd, win_max ? SW_MAXIMIZE
@@ -4112,6 +4323,7 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         TranslateMessage(&msg);
         DispatchMessageA(&msg);
     }
+    rc = (int)msg.wParam;
 
     app->cancel = 1;
     if (app->shutdown_event != NULL) {
@@ -4129,16 +4341,12 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
         }
         app->thread = NULL;
     }
-    if (!app->leaked_worker) {
-        agent_free(&app->agent);
-        net_cleanup();
-        log_info("AIagent98 GUI stopped");
-        log_shutdown();
-    } else {
-        /* The worker is still alive and may be touching the agent state,
-         * sockets and log file: do not free/close any of it.  Deliberate
-         * leak; the process exit reclaims everything. */
-        log_info("AIagent98 GUI stopped with the worker abandoned");
+    /* Single exit path: every early return above jumps here, so OLE, Winsock,
+     * the log and the GUI resources are balanced on failure as well. */
+cleanup:
+    if (app->accel != NULL) {
+        DestroyAcceleratorTable(app->accel);
+        app->accel = NULL;
     }
     if (app->shutdown_event != NULL) {
         CloseHandle(app->shutdown_event);
@@ -4159,13 +4367,27 @@ int WINAPI WinMain(HINSTANCE hinst, HINSTANCE prev, LPSTR cmdline, int show)
     if (app->rich_dll != NULL) {
         FreeLibrary(app->rich_dll);
     }
-    OleUninitialize();
+    if (!app->leaked_worker) {
+        if (agent_ok) agent_free(&app->agent);
+        if (net_ok) net_cleanup();
+        if (log_ok) {
+            log_info("AIagent98 GUI stopped");
+            log_shutdown();
+        }
+    } else {
+        /* The worker is still alive and may be touching the agent state,
+         * sockets and log file: do not free/close any of it.  Deliberate
+         * leak; the process exit reclaims everything. */
+        if (log_ok)
+            log_info("AIagent98 GUI stopped with the worker abandoned");
+    }
+    if (ole_ok) OleUninitialize();
     if (app->single_mutex != NULL) {
         /* Releases the named mutex so a new instance can start right away. */
         CloseHandle(app->single_mutex);
         app->single_mutex = NULL;
     }
-    return (int)msg.wParam;
+    return rc;
 }
 
 

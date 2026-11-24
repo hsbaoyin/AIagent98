@@ -1,0 +1,13 @@
+Fix the bug in counter_add() in src/counter.c in the workspace.
+
+Specification:
+- `counter` points to an integer that must always stay in the range [0, 100].
+- On success, add `delta` to `*counter`, store the result, and return 0.
+- Return -1 and leave `*counter` unchanged if `counter` is NULL, if the
+  result would be below 0 or above 100, or if the addition would overflow
+  a C `int`.
+- Do NOT change the signature or the contract in include/counter.h.
+
+You may edit any file in the workspace, add helpers, and run commands. Run
+`run_tests.bat` (or `make test`) and make sure all visible tests pass before
+you finish. Then reply with a short summary of what you fixed and the result.

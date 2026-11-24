@@ -1,4 +1,4 @@
-﻿# AIagent98 Tools Reference (47)
+﻿# AIagent98 Tools Reference (46)
 
 ## Read / Search
 | Tool | Confirm | Notes |
@@ -106,7 +106,28 @@ exceeds the threshold, the older messages are summarized through one extra API
 call and replaced by a single system summary; the last `compact_keep` messages
 stay unchanged. A failed summary is non-fatal (the full history is kept). The
 transcript shows a `[info] Compacting conversation...` line when it happens.
-All three values are editable in Tools -> Settings... -> Agent.
+Both values are editable in Tools -> Settings... -> Agent. The summary uses a
+fixed field layout (task, files read/changed, last test command and result,
+outstanding work, do-not-re-read list). If the summary API call fails, a local
+deterministic summary with the same fields is used instead.
+
+## Round-efficiency tools and profiles
+
+`[agent] tool_profile` chooses the tool list advertised to the model: `coding`
+(default) hides network/skill tools, `network` and `docs` advertise focused
+subsets, and `full` advertises everything. This is request filtering only: all
+registered tools remain executable for loaded sessions and skills.
+
+`[agent] tool_call_fallback` (default 1) salvages plain-text tool calls in DSML,
+JSON (`arguments`/`args`), flattened and `name({...})` forms when a provider
+does not fill the native `tool_calls` field. `[agent] read_cache` (default 1)
+skips byte-identical re-reads of the same path/range until a writer tool runs,
+and `[agent] nudge_on_success` (default 1) hints the model to stop after a
+successful build/test result following a file change.
+
+`toolchain_probe` takes no arguments. It checks PATH for compilers and make
+tools, looks for common build scripts in the workspace, and prints a
+recommended command. It is advertised in every profile except `docs`.
 
 ## Safety
 - All paths stay under workspace (resolve_path) unless `full_access=1`.

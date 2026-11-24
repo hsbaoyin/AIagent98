@@ -40,6 +40,17 @@ typedef struct {
     char net_search_url[512];
     char net_github_token[256];
     int max_steps;
+    /* Round-efficiency switches (all on by default except tool_profile):
+     * tool_call_fallback salvages tool calls from plain-text replies that do
+     * not use the native tool_calls field.  read_cache returns a short
+     * "unchanged" notice for byte-identical re-reads.  nudge_on_success adds
+     * a hint to the last tool result when the acceptance checks passed.
+     * tool_profile selects which tools are advertised to the model:
+     * "coding" (default), "network", "docs" or "full". */
+    int tool_call_fallback;
+    int read_cache;
+    int nudge_on_success;
+    char tool_profile[32];
     /* Conversation compaction: when the estimated context bytes exceed
      * compact_threshold, older messages are summarized via the API and
      * replaced by one summary message; the last compact_keep messages stay.

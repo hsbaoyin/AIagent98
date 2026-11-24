@@ -112,6 +112,11 @@
 #define IDC_SKILL_NAME   2067
 #define IDC_SKILL_DESC   2068
 #define IDC_SKILL_CONTENT 2069
+#define IDC_TOOL_PROFILE 2070
+#define IDC_L_TOOL_PROFILE 2071
+#define IDC_TOOL_CALL_FALLBACK 2072
+#define IDC_READ_CACHE 2073
+#define IDC_NUDGE_ON_SUCCESS 2074
 
 #define IDC_CONFIRM_TOOL   2100
 #define IDC_CONFIRM_ARGS   2101
@@ -122,5 +127,9 @@
 #define IDC_EMOJI_LIST     2104
 #define IDC_EMOJI_FILTER   2105
 #define IDC_EMOJI_HINT     2106
+
+/* About dialog (filled in at runtime from base.h version/build macros) */
+#define IDC_ABOUT_VERSION  2107
+#define IDC_ABOUT_BUILD    2108
 
 #endif /* A98_GUI_RESOURCE_H */

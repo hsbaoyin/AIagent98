@@ -12,6 +12,14 @@ typedef enum {
     AGENT_EV_INFO           /* status/info line */
 } AgentEventType;
 
+typedef struct {
+    int rounds;          /* model requests issued in the last agent_run() */
+    int tool_calls;      /* tool calls attempted */
+    int failed_calls;    /* errors, denials and loop-guard blocks */
+    int blocked_calls;   /* loop-guard blocks only */
+    int nudge_count;     /* "checks passed" hints sent to the model */
+} AgentStats;
+
 typedef void (*AgentEventFn)(void *ctx, AgentEventType type, const char *text);
 
 /* Return 1 to allow the tool call, 0 to deny it. */
@@ -26,6 +34,7 @@ typedef struct Agent {
     void *confirm_ctx;
     volatile int *cancel;
     char workspace[A98_MAX_PATH];
+    AgentStats stats;    /* counters for the most recent run */
 } Agent;
 
 void agent_init(Agent *a, Config *cfg);
@@ -33,6 +42,9 @@ void agent_free(Agent *a);
 void agent_new_conversation(Agent *a);
 
 int agent_run(Agent *a, const char *user_text, char *err, size_t errcap);
+
+/* Copy the counters from the most recent run. */
+void agent_stats(const Agent *a, AgentStats *out);
 
 /* Session files are JSON. Returns 0 on success. */
 int agent_save_session(Agent *a, const char *path, char *err, size_t errcap);

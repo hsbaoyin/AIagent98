@@ -23,6 +23,19 @@ int tools_resolve_path(struct Agent *a, const char *user, char *out, size_t cap,
 const ToolDef *tools_all(int *count);
 const ToolDef *tools_find(const char *name);
 
+/* Whether `name` is advertised to the model under `profile`.
+ * Profiles: "full", "coding" (default), "network", "docs".  This only
+ * filters the tool list sent in the request; every tool remains callable
+ * so that a saved session or a skill cannot lose access. */
+int tools_profile_allows(const char *profile, const char *name);
+
+/* Clear the unchanged-read cache (new conversation, loaded session, etc.). */
+void tools_read_cache_clear(void);
+
+/* True for tools that change workspace files (used by the read cache and the
+ * "checks passed" nudge). */
+int tools_tool_is_writer(const char *name);
+
 /* Execute a tool by name. `args_json` may be empty. Returns 0 on success;
  * on failure returns -1 and puts a model-readable message in `err`. */
 int tools_execute(struct Agent *agent, const char *name, const char *args_json,
