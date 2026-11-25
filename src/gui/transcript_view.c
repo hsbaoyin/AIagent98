@@ -727,7 +727,12 @@ static LRESULT CALLBACK tv_wndproc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         return (d->line_h > 0) ? (d->scroll_y / d->line_h) : 0;
 
     case EM_EXLINEFROMCHAR:
-        if (lp != 0) *(long *)lp = 0;
+        /* RichEdit takes the character index in wParam and returns a line
+         * index.  The GUI's at-bottom probe instead passes the value returned
+         * by our EM_GETFIRSTVISIBLELINE in lParam, i.e. an integer, NOT a
+         * pointer.  Never write through lp here: doing so faults on Win9x as
+         * soon as the user scrolls away from line 0.  Both messages report
+         * the same first-visible line in this control. */
         return (d != NULL && d->line_h > 0) ? (d->scroll_y / d->line_h) : 0;
 
     case EM_LINEINDEX:
